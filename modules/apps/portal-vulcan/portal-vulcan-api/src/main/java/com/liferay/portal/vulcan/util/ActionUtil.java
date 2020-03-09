@@ -43,12 +43,9 @@ public class ActionUtil {
 		String actionName, Class clazz, GroupedModel groupedModel,
 		String methodName, Object object, UriInfo uriInfo) {
 
-		Class<? extends GroupedModel> groupedModelClass =
-			groupedModel.getClass();
+		Class<?> groupedModelClass = groupedModel.getModelClass();
 
-		Class<?> superClass = groupedModelClass.getSuperclass();
-
-		Class<?>[] interfaceClasses = superClass.getInterfaces();
+		Class<?>[] interfaceClasses = groupedModelClass.getInterfaces();
 
 		return addAction(
 			actionName, clazz, (Long)groupedModel.getPrimaryKeyObj(),
