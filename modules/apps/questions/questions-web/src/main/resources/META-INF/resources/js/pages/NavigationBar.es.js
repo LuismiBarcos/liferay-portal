@@ -49,7 +49,9 @@ export default withRouter(
 											}
 
 											return history.push(
-												`/questions/${stringToSlug(sectionTitle)}`
+												`/questions/${stringToSlug(
+													sectionTitle
+												)}`
 											);
 										}}
 									>
@@ -71,7 +73,9 @@ export default withRouter(
 											}
 
 											return history.push(
-												`/questions/${stringToSlug(sectionTitle)}/tags`
+												`/questions/${stringToSlug(
+													sectionTitle
+												)}/tags`
 											);
 										}}
 									>
