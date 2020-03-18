@@ -15,7 +15,6 @@
 import {cleanup, fireEvent, render} from '@testing-library/react';
 import React from 'react';
 
-import {AppContext} from '../../../../src/main/resources/META-INF/resources/js/AppContext.es';
 import UpperToolbar from '../../../../src/main/resources/META-INF/resources/js/components/upper-toolbar/UpperToolbar.es';
 
 describe('UpperToolbar', () => {
@@ -26,34 +25,29 @@ describe('UpperToolbar', () => {
 
 	it('renders UpperToolbar with children', () => {
 		const onClickCallback = jest.fn();
-		const query = {
-			appDeploymentType: 'standalone-app',
-		};
 
 		const {container, queryByPlaceholderText, queryByRole} = render(
-			<AppContext.Provider value={query}>
-				<UpperToolbar>
-					<UpperToolbar.Input placeholder="placeholder1" />
+			<UpperToolbar className="upperToolbarClassName">
+				<UpperToolbar.Input placeholder="placeholder1" />
 
-					<UpperToolbar.Input
-						onChange={() => {}}
-						placeholder="placeholder2"
-					/>
+				<UpperToolbar.Input
+					onChange={() => {}}
+					placeholder="placeholder2"
+				/>
 
-					<UpperToolbar.Group>
-						<UpperToolbar.Button onClick={onClickCallback}>
-							Search
-						</UpperToolbar.Button>
-					</UpperToolbar.Group>
-				</UpperToolbar>
-			</AppContext.Provider>
+				<UpperToolbar.Group>
+					<UpperToolbar.Button onClick={onClickCallback}>
+						Button
+					</UpperToolbar.Button>
+				</UpperToolbar.Group>
+			</UpperToolbar>
 		);
 
 		const input1 = queryByPlaceholderText('placeholder1');
 		const input2 = queryByPlaceholderText('placeholder2');
 		const button = queryByRole('button');
 
-		expect(container.querySelector('.standalone-app')).toBeTruthy();
+		expect(container.querySelector('.upperToolbarClassName')).toBeTruthy();
 		expect(button).toBeTruthy();
 		expect(input1.value).toBe('');
 		expect(input2.value).toBe('');
