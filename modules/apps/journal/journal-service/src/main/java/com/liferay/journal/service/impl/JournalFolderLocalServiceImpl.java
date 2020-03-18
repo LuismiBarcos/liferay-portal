@@ -1048,15 +1048,15 @@ public class JournalFolderLocalServiceImpl
 			(parentFolderId !=
 				JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID)) {
 
-			JournalFolder ancestorWithRestriction = _getAncestorWithRestriction(
-				getFolder(parentFolderId));
+			JournalFolder restrictedAncestorFolder =
+				_getRestrictedAncestorFolder(getFolder(parentFolderId));
 
-			if (ancestorWithRestriction != null) {
+			if (restrictedAncestorFolder != null) {
 				List<DDMStructureLink> ancestorDDMStructureLinks =
 					_ddmStructureLinkLocalService.getStructureLinks(
 						_classNameLocalService.getClassNameId(
 							JournalFolder.class),
-						ancestorWithRestriction.getFolderId());
+						restrictedAncestorFolder.getFolderId());
 
 				Stream<DDMStructureLink> ancestorDDMStructureLinksStream =
 					ancestorDDMStructureLinks.stream();
@@ -1494,7 +1494,7 @@ public class JournalFolderLocalServiceImpl
 			folder, parentFolderId);
 	}
 
-	private JournalFolder _getAncestorWithRestriction(JournalFolder folder)
+	private JournalFolder _getRestrictedAncestorFolder(JournalFolder folder)
 		throws PortalException {
 
 		if (folder.getRestrictionType() ==
@@ -1508,7 +1508,7 @@ public class JournalFolderLocalServiceImpl
 			return null;
 		}
 
-		return _getAncestorWithRestriction(folder.getParentFolder());
+		return _getRestrictedAncestorFolder(folder.getParentFolder());
 	}
 
 	private JournalFolderModelValidator _getJournalFolderModelValidator() {
