@@ -18,6 +18,7 @@ import React, {useContext} from 'react';
 import {Link, withRouter} from 'react-router-dom';
 
 import {AppContext} from '../AppContext.es';
+import {stringToSlug} from '../utils/utils.es';
 
 export default withRouter(
 	({
@@ -48,7 +49,7 @@ export default withRouter(
 											}
 
 											return history.push(
-												`/questions/${sectionTitle}`
+												`/questions/${stringToSlug(sectionTitle)}`
 											);
 										}}
 									>
@@ -70,7 +71,7 @@ export default withRouter(
 											}
 
 											return history.push(
-												`/questions/${sectionTitle}/tags`
+												`/questions/${stringToSlug(sectionTitle)}/tags`
 											);
 										}}
 									>
