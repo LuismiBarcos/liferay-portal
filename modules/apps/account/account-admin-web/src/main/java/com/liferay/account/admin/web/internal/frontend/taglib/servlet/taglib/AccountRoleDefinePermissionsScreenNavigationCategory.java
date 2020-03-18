@@ -147,25 +147,25 @@ public class AccountRoleDefinePermissionsScreenNavigationCategory
 	}
 
 	private String _getRedirect(HttpServletRequest httpServletRequest) {
-		PortletURL redirect = _portal.getControlPanelPortletURL(
+		PortletURL redirectURL = _portal.getControlPanelPortletURL(
 			httpServletRequest, AccountPortletKeys.ACCOUNT_ENTRIES_ADMIN,
 			PortletRequest.RENDER_PHASE);
 
-		redirect.setParameter(
+		redirectURL.setParameter(
 			"mvcRenderCommandName",
 			"/account_admin/edit_account_role_permissions");
-		redirect.setParameter(
+		redirectURL.setParameter(
 			"screenNavigationCategoryKey",
 			AccountScreenNavigationEntryConstants.
 				CATEGORY_KEY_DEFINE_PERMISSIONS);
-		redirect.setParameter(
+		redirectURL.setParameter(
 			"accountEntryId",
 			ParamUtil.getString(httpServletRequest, "accountEntryId"));
-		redirect.setParameter(
+		redirectURL.setParameter(
 			"accountRoleId",
 			ParamUtil.getString(httpServletRequest, "accountRoleId"));
 
-		return redirect.toString();
+		return redirectURL.toString();
 	}
 
 	@Reference

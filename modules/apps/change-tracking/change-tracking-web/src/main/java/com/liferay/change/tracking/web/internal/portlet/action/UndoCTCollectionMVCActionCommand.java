@@ -74,16 +74,16 @@ public class UndoCTCollectionMVCActionCommand extends BaseMVCActionCommand {
 		CTCollection ctCollection = _ctCollectionLocalService.undoCTCollection(
 			ctCollectionId, themeDisplay.getUserId(), name, description);
 
-		PortletURL redirect = PortletURLFactoryUtil.create(
+		PortletURL redirectURL = PortletURLFactoryUtil.create(
 			actionRequest, CTPortletKeys.CHANGE_LISTS,
 			PortletRequest.RENDER_PHASE);
 
-		redirect.setParameter(
+		redirectURL.setParameter(
 			"mvcRenderCommandName", "/change_lists/view_changes");
-		redirect.setParameter(
+		redirectURL.setParameter(
 			"ctCollectionId", String.valueOf(ctCollection.getCtCollectionId()));
 
-		sendRedirect(actionRequest, actionResponse, redirect.toString());
+		sendRedirect(actionRequest, actionResponse, redirectURL.toString());
 	}
 
 	@Reference

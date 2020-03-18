@@ -31,8 +31,8 @@ CTCollection ctCollection = (CTCollection)row.getObject();
 >
 	<c:if test="<%= ctCollection.getCtCollectionId() != changeListsDisplayContext.getCtCollectionId() %>">
 		<liferay-portlet:actionURL name="/change_lists/checkout_ct_collection" var="checkoutURL">
-			<portlet:param name="ctCollectionId" value="<%= String.valueOf(ctCollection.getCtCollectionId()) %>" />
 			<portlet:param name="redirect" value="<%= currentURL %>" />
+			<portlet:param name="ctCollectionId" value="<%= String.valueOf(ctCollection.getCtCollectionId()) %>" />
 		</liferay-portlet:actionURL>
 
 		<liferay-ui:icon
@@ -43,8 +43,8 @@ CTCollection ctCollection = (CTCollection)row.getObject();
 
 	<liferay-portlet:renderURL var="editURL">
 		<portlet:param name="mvcRenderCommandName" value="/change_lists/edit_ct_collection" />
-		<portlet:param name="ctCollectionId" value="<%= String.valueOf(ctCollection.getCtCollectionId()) %>" />
 		<portlet:param name="redirect" value="<%= currentURL %>" />
+		<portlet:param name="ctCollectionId" value="<%= String.valueOf(ctCollection.getCtCollectionId()) %>" />
 	</liferay-portlet:renderURL>
 
 	<liferay-ui:icon
@@ -68,8 +68,8 @@ CTCollection ctCollection = (CTCollection)row.getObject();
 
 		<liferay-portlet:renderURL var="conflictsURL">
 			<portlet:param name="mvcRenderCommandName" value="/change_lists/view_conflicts" />
-			<portlet:param name="ctCollectionId" value="<%= String.valueOf(ctCollection.getCtCollectionId()) %>" />
 			<portlet:param name="redirect" value="<%= currentURL %>" />
+			<portlet:param name="ctCollectionId" value="<%= String.valueOf(ctCollection.getCtCollectionId()) %>" />
 		</liferay-portlet:renderURL>
 
 		<liferay-ui:icon
@@ -81,8 +81,8 @@ CTCollection ctCollection = (CTCollection)row.getObject();
 	<li aria-hidden="true" class="dropdown-divider" role="presentation"></li>
 
 	<liferay-portlet:actionURL name="/change_lists/delete_ct_collection" var="deleteURL">
-		<portlet:param name="ctCollectionId" value="<%= String.valueOf(ctCollection.getCtCollectionId()) %>" />
 		<portlet:param name="redirect" value="<%= currentURL %>" />
+		<portlet:param name="ctCollectionId" value="<%= String.valueOf(ctCollection.getCtCollectionId()) %>" />
 	</liferay-portlet:actionURL>
 
 	<liferay-ui:icon-delete
