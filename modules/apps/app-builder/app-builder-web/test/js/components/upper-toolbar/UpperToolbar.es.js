@@ -12,7 +12,7 @@
  * details.
  */
 
-import {act, cleanup, fireEvent, render} from '@testing-library/react';
+import {cleanup, fireEvent, render} from '@testing-library/react';
 import React from 'react';
 
 import {AppContext} from '../../../../src/main/resources/META-INF/resources/js/AppContext.es';
@@ -24,21 +24,24 @@ describe('UpperToolbar', () => {
 		jest.restoreAllMocks();
 	});
 
-	it('render UpperToolbar with Childrens', async () => {
-		const handleSearch = jest.fn();
+	it('renders UpperToolbar with children', () => {
+		const onClickCallback = jest.fn();
 		const query = {
 			appDeploymentType: 'standalone-app',
 		};
+
 		const {container, queryByPlaceholderText, queryByRole} = render(
 			<AppContext.Provider value={query}>
 				<UpperToolbar>
-					<UpperToolbar.Input placeholder="first..." />
+					<UpperToolbar.Input placeholder="placeholder1" />
+
 					<UpperToolbar.Input
 						onChange={() => {}}
-						placeholder="last..."
+						placeholder="placeholder2"
 					/>
+
 					<UpperToolbar.Group>
-						<UpperToolbar.Button onClick={handleSearch}>
+						<UpperToolbar.Button onClick={onClickCallback}>
 							Search
 						</UpperToolbar.Button>
 					</UpperToolbar.Group>
@@ -46,30 +49,23 @@ describe('UpperToolbar', () => {
 			</AppContext.Provider>
 		);
 
-		const first = queryByPlaceholderText('first...');
-		const last = queryByPlaceholderText('last...');
+		const input1 = queryByPlaceholderText('placeholder1');
+		const input2 = queryByPlaceholderText('placeholder2');
 		const button = queryByRole('button');
 
 		expect(container.querySelector('.standalone-app')).toBeTruthy();
 		expect(button).toBeTruthy();
-		expect(first.value).toBe('');
-		expect(last.value).toBe('');
+		expect(input1.value).toBe('');
+		expect(input2.value).toBe('');
 
-		await act(async () => {
-			fireEvent.change(first, {target: {value: 'first'}});
-		});
+		fireEvent.change(input1, {target: {value: 'value1'}});
+		fireEvent.change(input2, {target: {value: 'value2'}});
 
-		await act(async () => {
-			fireEvent.change(last, {target: {value: 'last'}});
-		});
+		expect(input1.value).toBe('value1');
+		expect(input2.value).toBe('value2');
 
-		expect(first.value).toBe('first');
-		expect(last.value).toBe('last');
+		fireEvent.click(button);
 
-		await act(async () => {
-			button.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-		});
-
-		expect(handleSearch.mock.calls.length).toBe(1);
+		expect(onClickCallback.mock.calls.length).toBe(1);
 	});
 });
