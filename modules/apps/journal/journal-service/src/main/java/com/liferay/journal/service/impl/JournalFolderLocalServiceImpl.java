@@ -1494,6 +1494,13 @@ public class JournalFolderLocalServiceImpl
 			folder, parentFolderId);
 	}
 
+	private JournalFolderModelValidator _getJournalFolderModelValidator() {
+		ModelValidator<JournalFolder> modelValidator =
+			ModelValidatorRegistryUtil.getModelValidator(JournalFolder.class);
+
+		return (JournalFolderModelValidator)modelValidator;
+	}
+
 	private JournalFolder _getRestrictedAncestorFolder(JournalFolder folder)
 		throws PortalException {
 
@@ -1509,13 +1516,6 @@ public class JournalFolderLocalServiceImpl
 		}
 
 		return _getRestrictedAncestorFolder(folder.getParentFolder());
-	}
-
-	private JournalFolderModelValidator _getJournalFolderModelValidator() {
-		ModelValidator<JournalFolder> modelValidator =
-			ModelValidatorRegistryUtil.getModelValidator(JournalFolder.class);
-
-		return (JournalFolderModelValidator)modelValidator;
 	}
 
 	@Reference
