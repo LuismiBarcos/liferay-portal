@@ -18,7 +18,7 @@ import React, {useContext} from 'react';
 import {Link, withRouter} from 'react-router-dom';
 
 import {AppContext} from '../AppContext.es';
-import {stringToSlug} from '../utils/utils.es';
+import {historyPushWithSlug} from '../utils/utils.es';
 
 export default withRouter(
 	({
@@ -32,6 +32,8 @@ export default withRouter(
 
 		const context = useContext(AppContext);
 
+		const historyPushParser = historyPushWithSlug(history.push);
+
 		return (
 			<section className="border-bottom questions-section questions-section-nav">
 				<div className="questions-container">
@@ -43,15 +45,13 @@ export default withRouter(
 										active={!isActive('tags')}
 										onClick={() => {
 											if (!sectionTitle) {
-												return history.push(
+												return historyPushParser(
 													'/questions'
 												);
 											}
 
-											return history.push(
-												`/questions/${stringToSlug(
-													sectionTitle
-												)}`
+											return historyPushParser(
+												`/questions/${sectionTitle}`
 											);
 										}}
 									>
@@ -67,15 +67,13 @@ export default withRouter(
 										active={isActive('tags')}
 										onClick={() => {
 											if (!sectionTitle) {
-												return history.push(
+												return historyPushParser(
 													'/questions'
 												);
 											}
 
-											return history.push(
-												`/questions/${stringToSlug(
-													sectionTitle
-												)}/tags`
+											return historyPushParser(
+												`/questions/${sectionTitle}/tags`
 											);
 										}}
 									>
