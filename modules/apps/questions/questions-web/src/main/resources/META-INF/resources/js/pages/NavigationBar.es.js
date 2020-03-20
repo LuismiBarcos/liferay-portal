@@ -15,9 +15,10 @@
 import ClayLink from '@clayui/link';
 import ClayNavigationBar from '@clayui/navigation-bar';
 import React, {useContext} from 'react';
-import {Link, withRouter} from 'react-router-dom';
+import {withRouter} from 'react-router-dom';
 
 import {AppContext} from '../AppContext.es';
+import Link from '../components/Link.es';
 import {historyPushWithSlug} from '../utils/utils.es';
 
 export default withRouter(
