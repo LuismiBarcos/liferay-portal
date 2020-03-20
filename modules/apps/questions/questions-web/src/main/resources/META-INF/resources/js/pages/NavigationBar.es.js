@@ -14,11 +14,10 @@
 
 import ClayLink from '@clayui/link';
 import ClayNavigationBar from '@clayui/navigation-bar';
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import {withRouter} from 'react-router-dom';
 
 import {AppContext} from '../AppContext.es';
-import Link from '../components/Link.es';
 import {historyPushWithSlug} from '../utils/utils.es';
 
 export default withRouter(
@@ -34,6 +33,11 @@ export default withRouter(
 		const context = useContext(AppContext);
 
 		const historyPushParser = historyPushWithSlug(history.push);
+		useEffect(() => {
+			if (sectionTitle) {
+				context.setSection(sectionTitle);
+			}
+		}, [context, sectionTitle]);
 
 		return (
 			<section className="border-bottom questions-section questions-section-nav">
@@ -43,18 +47,12 @@ export default withRouter(
 							<div className="align-items-center col d-flex justify-content-between">
 								<ClayNavigationBar triggerLabel="Questions">
 									<ClayNavigationBar.Item
-										active={!isActive('tags')}
-										onClick={() => {
-											if (!sectionTitle) {
-												return historyPushParser(
-													'/questions'
-												);
-											}
-
-											return historyPushParser(
-												`/questions/${sectionTitle}`
-											);
-										}}
+										active={!isActive('activity')}
+										onClick={() =>
+											historyPushParser(
+												`/questions/${context.section}`
+											)
+										}
 									>
 										<ClayLink
 											className="nav-link"
@@ -65,35 +63,23 @@ export default withRouter(
 									</ClayNavigationBar.Item>
 
 									<ClayNavigationBar.Item
-										active={isActive('tags')}
-										onClick={() => {
-											if (!sectionTitle) {
-												return historyPushParser(
-													'/questions'
-												);
-											}
-
-											return historyPushParser(
-												`/questions/${sectionTitle}/tags`
-											);
-										}}
+										active={isActive('activity')}
+										onClick={() =>
+											historyPushParser(
+												`/activity/${context.userId}`
+											)
+										}
 									>
 										<ClayLink
 											className="nav-link"
 											displayType="unstyled"
 										>
-											{Liferay.Language.get('tags')}
+											{Liferay.Language.get(
+												'my-activity'
+											)}
 										</ClayLink>
 									</ClayNavigationBar.Item>
 								</ClayNavigationBar>
-
-								<Link
-									className="nav-link small text-secondary"
-									displayType="unstyled"
-									to={`/activity/${context.userId}`}
-								>
-									{Liferay.Language.get('my-activity')}
-								</Link>
 							</div>
 						)}
 					</div>
