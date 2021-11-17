@@ -1,0 +1,96 @@
+components:
+    schemas:
+        Webhook:
+            properties:
+                url:
+                    description: The URL of the Webhook
+                    type: string
+                apiKey:
+                    description: The apiKey for the authentication
+                    type: string
+info:
+    description: "WebhooksRest REST API"
+    license:
+        name: "Apache 2.0"
+        url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+    title: "WebhooksRest"
+    version: v1.0
+openapi: 3.0.1
+paths:
+    "/sites/{siteId}/webhooks":
+        get:
+            description:
+                Retrieves a Site's webhooks.
+            parameters:
+                - in: path
+                  name: siteId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: "#/components/schemas/Webhook"
+                                type: array
+            tags: ["Webhook"]
+        post:
+            description:
+                Creates a new Webhook in a Site.
+            parameters:
+                - in: path
+                  name: siteId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Webhook"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Webhook"
+            tags: [ "Webhook" ]
+    "/webhooks/{webhookId}":
+        delete:
+            description:
+                Deletes the webhook and return a 204 if the operation succeeds.
+            parameters:
+                - in: path
+                  name: webhookId
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                204:
+                    content:
+                        application/json: { }
+                        application/xml: { }
+            tags: [ "Webhook" ]
+        get:
+            description:
+                Retrieves a Webhook.
+            parameters:
+                - in: path
+                  name: webhookId
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Webhook"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/Webhook"
+            tags: [ "Webhook" ]

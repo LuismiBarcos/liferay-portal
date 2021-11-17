@@ -1,0 +1,10 @@
+apiDir: "../webhooks-rest-api/src/main/java"
+apiPackagePath: "com.liferay.headless.webhooks"
+application:
+    baseURI: "/webhooks-rest"
+    className: "WebhooksRestApplication"
+    name: "Liferay.Headless.Webhooks"
+author: "Luis Miguel Barcos"
+clientDir: "../webhooks-rest-client/src/main/java"
+forcePredictableOperationId: true
+testDir: "../webhooks-rest-test/src/testIntegration/java"
