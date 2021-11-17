@@ -19,8 +19,10 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
 import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.service.BaseService;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Transactional;
+import com.liferay.webhooks.model.Webhook;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -47,6 +49,12 @@ public interface WebhookService extends BaseService {
 	 *
 	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.webhooks.service.impl.WebhookServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the webhook remote service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link WebhookServiceUtil} if injection and service tracking are not available.
 	 */
+	public Webhook addWebhook(
+			String apiKey, long userId, String webhookURL,
+			ServiceContext serviceContext)
+		throws PortalException;
+
+	public Webhook deleteWebhook(long webhookId) throws PortalException;
 
 	/**
 	 * Returns the OSGi service identifier.

@@ -30,6 +30,23 @@ public class WebhookServiceWrapper
 		_webhookService = webhookService;
 	}
 
+	@Override
+	public com.liferay.webhooks.model.Webhook addWebhook(
+			String apiKey, long userId, String webhookURL,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _webhookService.addWebhook(
+			apiKey, userId, webhookURL, serviceContext);
+	}
+
+	@Override
+	public com.liferay.webhooks.model.Webhook deleteWebhook(long webhookId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _webhookService.deleteWebhook(webhookId);
+	}
+
 	/**
 	 * Returns the OSGi service identifier.
 	 *

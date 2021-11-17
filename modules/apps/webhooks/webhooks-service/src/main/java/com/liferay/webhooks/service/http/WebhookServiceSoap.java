@@ -14,9 +14,15 @@
 
 package com.liferay.webhooks.service.http;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.webhooks.service.WebhookServiceUtil;
+
+import java.rmi.RemoteException;
+
 /**
  * Provides the SOAP utility for the
- * <code>com.liferay.webhooks.service.WebhookServiceUtil</code> service
+ * <code>WebhookServiceUtil</code> service
  * utility. The static methods of this class call the same methods of the
  * service utility. However, the signatures are different because it is
  * difficult for SOAP to support certain types.
@@ -56,4 +62,45 @@ package com.liferay.webhooks.service.http;
  */
 @Deprecated
 public class WebhookServiceSoap {
+
+	public static com.liferay.webhooks.model.WebhookSoap addWebhook(
+			String apiKey, long userId, String webhookURL,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws RemoteException {
+
+		try {
+			com.liferay.webhooks.model.Webhook returnValue =
+				WebhookServiceUtil.addWebhook(
+					apiKey, userId, webhookURL, serviceContext);
+
+			return com.liferay.webhooks.model.WebhookSoap.toSoapModel(
+				returnValue);
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+
+			throw new RemoteException(exception.getMessage());
+		}
+	}
+
+	public static com.liferay.webhooks.model.WebhookSoap deleteWebhook(
+			long webhookId)
+		throws RemoteException {
+
+		try {
+			com.liferay.webhooks.model.Webhook returnValue =
+				WebhookServiceUtil.deleteWebhook(webhookId);
+
+			return com.liferay.webhooks.model.WebhookSoap.toSoapModel(
+				returnValue);
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+
+			throw new RemoteException(exception.getMessage());
+		}
+	}
+
+	private static Log _log = LogFactoryUtil.getLog(WebhookServiceSoap.class);
+
 }
