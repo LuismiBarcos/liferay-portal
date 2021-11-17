@@ -1,0 +1,10 @@
+Bundle-Name: webhooks-api
+Bundle-SymbolicName: com.liferay.webhooks.api
+Bundle-Version: 1.0.0
+Export-Package:\
+	com.liferay.webhooks.exception,\
+	com.liferay.webhooks.model,\
+	com.liferay.webhooks.service,\
+	com.liferay.webhooks.service.persistence
+-check: EXPORTS
+-includeresource: META-INF/service.xml=../webhooks-service/service.xml

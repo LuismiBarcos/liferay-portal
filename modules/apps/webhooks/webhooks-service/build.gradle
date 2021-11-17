@@ -1,0 +1,7 @@
+buildService {
+	apiDir = "../webhooks-api/src/main/java"
+}
+dependencies {
+	compile project(":apps:webhooks:webhooks-api")
+}
+
