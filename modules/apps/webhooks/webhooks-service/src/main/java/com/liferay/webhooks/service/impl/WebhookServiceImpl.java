@@ -24,11 +24,12 @@ import com.liferay.webhooks.constants.WebhooksConstants;
 import com.liferay.webhooks.model.Webhook;
 import com.liferay.webhooks.service.WebhookLocalService;
 import com.liferay.webhooks.service.base.WebhookServiceBaseImpl;
-
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
+
+import java.util.List;
 
 /**
  * @author Brian Wing Shun Chan
@@ -47,36 +48,34 @@ public class WebhookServiceImpl extends WebhookServiceBaseImpl {
 		String apiKey, long userId, String webhookURL,
 		ServiceContext serviceContext) throws PortalException {
 
-		_portletResourcePermission.check(
-			getPermissionChecker(), serviceContext.getScopeGroupId(),
-			ActionKeys.ADD_ENTRY);
-
 		return _webhookLocalService.addWebhook(apiKey, userId, webhookURL, serviceContext);
 	}
 
 	@Override
 	public Webhook deleteWebhook(long webhookId) throws PortalException {
 
-		_blogsEntryModelResourcePermission.check(
-			getPermissionChecker(), webhookId, ActionKeys.DELETE);
-
 		return _webhookLocalService.deleteWebhook(webhookId);
 	}
 
-	@Reference(
-		policy = ReferencePolicy.DYNAMIC,
-		policyOption = ReferencePolicyOption.GREEDY,
-		target = "(model.class.name=com.liferay.webhooks.model.Webhook)"
-	)
-	private volatile ModelResourcePermission<Webhook>
-		_blogsEntryModelResourcePermission;
+	@Override
+	public Webhook getWebhook(long groupId, String webhookURL)
+		throws PortalException {
+		Webhook webhook = _webhookLocalService.getWebhook(groupId, webhookURL);
 
-	@Reference(
-		policy = ReferencePolicy.DYNAMIC,
-		policyOption = ReferencePolicyOption.GREEDY,
-		target = "(resource.name=" + WebhooksConstants.RESOURCE_NAME + ")"
-	)
-	private volatile PortletResourcePermission _portletResourcePermission;
+		return webhook;
+	}
+
+	@Override
+	public Webhook getWebhook(long webhookId) throws PortalException {
+		Webhook webhook = _webhookLocalService.getWebhook(webhookId);
+
+		return webhook;
+	}
+
+	@Override
+	public List<Webhook> getSiteWebhooks(long groupId) {
+		return webhookPersistence.findByGroupId(groupId);
+	}
 
 	@Reference
 	private WebhookLocalService _webhookLocalService;

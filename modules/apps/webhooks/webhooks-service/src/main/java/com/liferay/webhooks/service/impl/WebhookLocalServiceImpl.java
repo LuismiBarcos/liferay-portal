@@ -62,6 +62,12 @@ public class WebhookLocalServiceImpl extends WebhookLocalServiceBaseImpl {
 		return webhookPersistence.update(webhook);
 	}
 
+	@Override
+	public Webhook getWebhook(long groupId, String webhookURL)
+		throws PortalException {
+		return webhookPersistence.findByG_WU(groupId, webhookURL);
+	}
+
 	private String _validateWebhookURL(String webhookURL)
 		throws PortalException {
 		try {
