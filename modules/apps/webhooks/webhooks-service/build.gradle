@@ -2,6 +2,12 @@ buildService {
 	apiDir = "../webhooks-api/src/main/java"
 }
 dependencies {
-	compile project(":apps:webhooks:webhooks-api")
+	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
+	compileOnly group: "org.osgi", name: "org.osgi.service.component.annotations", version: "1.4.0"
+	compileOnly group: "org.osgi", name: "osgi.core", version: "6.0.0"
+	compileOnly project(":apps:portal:portal-aop-api")
+	compileOnly project(":apps:webhooks:webhooks-api")
+	compileOnly project(":core:petra:petra-lang")
+	compileOnly project(":core:petra:petra-sql-dsl-api")
+	compileOnly project(":core:petra:petra-string")
 }
-
