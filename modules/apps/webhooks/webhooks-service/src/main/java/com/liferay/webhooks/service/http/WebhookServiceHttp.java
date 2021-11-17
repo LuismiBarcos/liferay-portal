@@ -133,6 +133,118 @@ public class WebhookServiceHttp {
 		}
 	}
 
+	public static com.liferay.webhooks.model.Webhook getWebhook(
+			HttpPrincipal httpPrincipal, long groupId, String webhookURL)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		try {
+			MethodKey methodKey = new MethodKey(
+				WebhookServiceUtil.class, "getWebhook",
+				_getWebhookParameterTypes2);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, groupId, webhookURL);
+
+			Object returnObj = null;
+
+			try {
+				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
+			}
+			catch (Exception exception) {
+				if (exception instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						exception;
+				}
+
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					exception);
+			}
+
+			return (com.liferay.webhooks.model.Webhook)returnObj;
+		}
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
+
+			_log.error(systemException, systemException);
+
+			throw systemException;
+		}
+	}
+
+	public static com.liferay.webhooks.model.Webhook getWebhook(
+			HttpPrincipal httpPrincipal, long webhookId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		try {
+			MethodKey methodKey = new MethodKey(
+				WebhookServiceUtil.class, "getWebhook",
+				_getWebhookParameterTypes3);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, webhookId);
+
+			Object returnObj = null;
+
+			try {
+				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
+			}
+			catch (Exception exception) {
+				if (exception instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						exception;
+				}
+
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					exception);
+			}
+
+			return (com.liferay.webhooks.model.Webhook)returnObj;
+		}
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
+
+			_log.error(systemException, systemException);
+
+			throw systemException;
+		}
+	}
+
+	public static java.util.List<com.liferay.webhooks.model.Webhook>
+		getSiteWebhooks(HttpPrincipal httpPrincipal, long groupId) {
+
+		try {
+			MethodKey methodKey = new MethodKey(
+				WebhookServiceUtil.class, "getSiteWebhooks",
+				_getSiteWebhooksParameterTypes4);
+
+			MethodHandler methodHandler = new MethodHandler(methodKey, groupId);
+
+			Object returnObj = null;
+
+			try {
+				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
+			}
+			catch (Exception exception) {
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					exception);
+			}
+
+			return (java.util.List<com.liferay.webhooks.model.Webhook>)
+				returnObj;
+		}
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
+
+			_log.error(systemException, systemException);
+
+			throw systemException;
+		}
+	}
+
 	private static Log _log = LogFactoryUtil.getLog(WebhookServiceHttp.class);
 
 	private static final Class<?>[] _addWebhookParameterTypes0 = new Class[] {
@@ -140,6 +252,14 @@ public class WebhookServiceHttp {
 		com.liferay.portal.kernel.service.ServiceContext.class
 	};
 	private static final Class<?>[] _deleteWebhookParameterTypes1 =
+		new Class[] {long.class};
+	private static final Class<?>[] _getWebhookParameterTypes2 = new Class[] {
+		long.class, String.class
+	};
+	private static final Class<?>[] _getWebhookParameterTypes3 = new Class[] {
+		long.class
+	};
+	private static final Class<?>[] _getSiteWebhooksParameterTypes4 =
 		new Class[] {long.class};
 
 }

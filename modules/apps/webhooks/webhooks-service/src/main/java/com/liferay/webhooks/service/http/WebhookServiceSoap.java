@@ -101,6 +101,60 @@ public class WebhookServiceSoap {
 		}
 	}
 
+	public static com.liferay.webhooks.model.WebhookSoap getWebhook(
+			long groupId, String webhookURL)
+		throws RemoteException {
+
+		try {
+			com.liferay.webhooks.model.Webhook returnValue =
+				WebhookServiceUtil.getWebhook(groupId, webhookURL);
+
+			return com.liferay.webhooks.model.WebhookSoap.toSoapModel(
+				returnValue);
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+
+			throw new RemoteException(exception.getMessage());
+		}
+	}
+
+	public static com.liferay.webhooks.model.WebhookSoap getWebhook(
+			long webhookId)
+		throws RemoteException {
+
+		try {
+			com.liferay.webhooks.model.Webhook returnValue =
+				WebhookServiceUtil.getWebhook(webhookId);
+
+			return com.liferay.webhooks.model.WebhookSoap.toSoapModel(
+				returnValue);
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+
+			throw new RemoteException(exception.getMessage());
+		}
+	}
+
+	public static com.liferay.webhooks.model.WebhookSoap[] getSiteWebhooks(
+			long groupId)
+		throws RemoteException {
+
+		try {
+			java.util.List<com.liferay.webhooks.model.Webhook> returnValue =
+				WebhookServiceUtil.getSiteWebhooks(groupId);
+
+			return com.liferay.webhooks.model.WebhookSoap.toSoapModels(
+				returnValue);
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+
+			throw new RemoteException(exception.getMessage());
+		}
+	}
+
 	private static Log _log = LogFactoryUtil.getLog(WebhookServiceSoap.class);
 
 }

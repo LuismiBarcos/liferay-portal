@@ -304,6 +304,14 @@ public class WebhookLocalServiceWrapper
 		return _webhookLocalService.getWebhook(webhookId);
 	}
 
+	@Override
+	public com.liferay.webhooks.model.Webhook getWebhook(
+			long groupId, String webhookURL)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _webhookLocalService.getWebhook(groupId, webhookURL);
+	}
+
 	/**
 	 * Returns the webhook matching the UUID and group.
 	 *

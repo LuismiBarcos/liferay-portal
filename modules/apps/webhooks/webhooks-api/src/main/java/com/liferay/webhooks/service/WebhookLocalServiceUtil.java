@@ -278,6 +278,12 @@ public class WebhookLocalServiceUtil {
 		return getService().getWebhook(webhookId);
 	}
 
+	public static Webhook getWebhook(long groupId, String webhookURL)
+		throws PortalException {
+
+		return getService().getWebhook(groupId, webhookURL);
+	}
+
 	/**
 	 * Returns the webhook matching the UUID and group.
 	 *

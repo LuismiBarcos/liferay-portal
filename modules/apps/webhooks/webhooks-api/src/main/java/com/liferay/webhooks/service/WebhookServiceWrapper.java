@@ -58,6 +58,28 @@ public class WebhookServiceWrapper
 	}
 
 	@Override
+	public java.util.List<com.liferay.webhooks.model.Webhook> getSiteWebhooks(
+		long groupId) {
+
+		return _webhookService.getSiteWebhooks(groupId);
+	}
+
+	@Override
+	public com.liferay.webhooks.model.Webhook getWebhook(long webhookId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _webhookService.getWebhook(webhookId);
+	}
+
+	@Override
+	public com.liferay.webhooks.model.Webhook getWebhook(
+			long groupId, String webhookURL)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _webhookService.getWebhook(groupId, webhookURL);
+	}
+
+	@Override
 	public WebhookService getWrappedService() {
 		return _webhookService;
 	}

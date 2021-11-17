@@ -17,6 +17,8 @@ package com.liferay.webhooks.service;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.webhooks.model.Webhook;
 
+import java.util.List;
+
 /**
  * Provides the remote service utility for Webhook. This utility wraps
  * <code>com.liferay.webhooks.service.impl.WebhookServiceImpl</code> and is an
@@ -56,6 +58,20 @@ public class WebhookServiceUtil {
 	 */
 	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
+	}
+
+	public static List<Webhook> getSiteWebhooks(long groupId) {
+		return getService().getSiteWebhooks(groupId);
+	}
+
+	public static Webhook getWebhook(long webhookId) throws PortalException {
+		return getService().getWebhook(webhookId);
+	}
+
+	public static Webhook getWebhook(long groupId, String webhookURL)
+		throws PortalException {
+
+		return getService().getWebhook(groupId, webhookURL);
 	}
 
 	public static WebhookService getService() {

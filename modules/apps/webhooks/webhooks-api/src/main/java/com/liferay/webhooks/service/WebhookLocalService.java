@@ -251,6 +251,10 @@ public interface WebhookLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public Webhook getWebhook(long webhookId) throws PortalException;
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public Webhook getWebhook(long groupId, String webhookURL)
+		throws PortalException;
+
 	/**
 	 * Returns the webhook matching the UUID and group.
 	 *
