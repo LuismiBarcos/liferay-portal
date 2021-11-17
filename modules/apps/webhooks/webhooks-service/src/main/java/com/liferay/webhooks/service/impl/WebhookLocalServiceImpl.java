@@ -15,9 +15,18 @@
 package com.liferay.webhooks.service.impl;
 
 import com.liferay.portal.aop.AopService;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.util.Validator;
+import com.liferay.webhooks.model.Webhook;
 import com.liferay.webhooks.service.base.WebhookLocalServiceBaseImpl;
-
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * @author Brian Wing Shun Chan
@@ -27,4 +36,42 @@ import org.osgi.service.component.annotations.Component;
 	service = AopService.class
 )
 public class WebhookLocalServiceImpl extends WebhookLocalServiceBaseImpl {
+
+	@Override
+	public Webhook addWebhook(
+		String apiKey, long userId, String webhookURL,
+		ServiceContext serviceContext) throws PortalException {
+
+		if (Validator.isNotNull(webhookURL)) {
+			webhookURL = _validateWebhookURL(webhookURL);
+		}
+
+		User user = _userLocalService.getUser(userId);
+		long groupId = serviceContext.getScopeGroupId();
+		long webhookId = counterLocalService.increment();
+
+		Webhook webhook = webhookPersistence.create(webhookId);
+		webhook.setUuid(serviceContext.getUuid());
+		webhook.setGroupId(groupId);
+		webhook.setCompanyId(user.getCompanyId());
+		webhook.setUserId(user.getUserId());
+		webhook.setUserName(user.getFullName());
+		webhook.setWebhookURL(webhookURL);
+		webhook.setApiKey(apiKey);
+
+		return webhookPersistence.update(webhook);
+	}
+
+	private String _validateWebhookURL(String webhookURL)
+		throws PortalException {
+		try {
+			new URL(webhookURL);
+		} catch (MalformedURLException malformedURLException) {
+			throw new PortalException(malformedURLException.getMessage());
+		}
+		return webhookURL;
+	}
+
+	@Reference
+	private UserLocalService _userLocalService;
 }
