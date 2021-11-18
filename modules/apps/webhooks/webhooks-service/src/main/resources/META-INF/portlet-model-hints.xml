@@ -13,4 +13,16 @@
 		<field name="webhookURL" type="String" />
 		<field name="apiKey" type="String" />
 	</model>
+	<model name="com.liferay.webhooks.model.WebhookEntity">
+		<field name="uuid" type="String" />
+		<field name="webhookEntityId" type="long" />
+		<field name="groupId" type="long" />
+		<field name="companyId" type="long" />
+		<field name="userId" type="long" />
+		<field name="userName" type="String" />
+		<field name="createDate" type="Date" />
+		<field name="modifiedDate" type="Date" />
+		<field name="entityClassName" type="String" />
+		<field name="webhookId" type="long" />
+	</model>
 </model-hints>
