@@ -18,7 +18,6 @@ import com.liferay.headless.webhooks.dto.v1_0.Webhook;
 import com.liferay.headless.webhooks.internal.dto.v1_0.converter.WebhookDTOConverter;
 import com.liferay.headless.webhooks.resource.v1_0.WebhookResource;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
@@ -39,9 +38,9 @@ import java.util.Collections;
 public class WebhookResourceImpl extends BaseWebhookResourceImpl {
 
 	@Override
-	public Webhook getWebhook(String webhookId) throws Exception {
+	public Webhook getWebhook(Long webhookId) throws Exception {
 		return _toWebhook(
-			_webhookService.getWebhook(GetterUtil.getLong(webhookId)));
+			_webhookService.getWebhook(webhookId));
 	}
 
 	@Override
@@ -65,8 +64,8 @@ public class WebhookResourceImpl extends BaseWebhookResourceImpl {
 	}
 
 	@Override
-	public void deleteWebhook(String webhookId) throws Exception {
-		_webhookService.deleteWebhook(GetterUtil.getLong(webhookId));
+	public void deleteWebhook(Long webhookId) throws Exception {
+		_webhookService.deleteWebhook(webhookId);
 	}
 
 	private Webhook _toWebhook(com.liferay.webhooks.model.Webhook webhook) {
