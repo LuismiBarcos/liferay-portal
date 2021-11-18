@@ -93,7 +93,8 @@ paths:
                   name: webhookId
                   required: true
                   schema:
-                      type: string
+                      format: int64
+                      type: integer
             responses:
                 204:
                     content:
@@ -109,7 +110,8 @@ paths:
                   name: webhookId
                   required: true
                   schema:
-                      type: string
+                      format: int64
+                      type: integer
             responses:
                 200:
                     content:
@@ -124,12 +126,14 @@ paths:
         get:
             description:
                 Retrieves all the webhooks entities of a Site
+            operationId: getSiteWebhooksEntitiesPage
             parameters:
                 - in: path
                   name: siteId
                   required: true
                   schema:
-                      type: string
+                      format: int64
+                      type: integer
             responses:
                 200:
                     content:
@@ -138,10 +142,16 @@ paths:
                               items:
                                   $ref: "#/components/schemas/WebhookEntity"
                               type: array
+                        application/xml:
+                          schema:
+                              items:
+                                  $ref: "#/components/schemas/WebhookEntity"
+                              type: array
             tags: ["WebhookEntity"]
         post:
             description:
                 Creates a new webhook entity in a Site
+            operationId: postSiteWebhooksEntity
             parameters:
                 - in: path
                   name: siteId
@@ -171,12 +181,14 @@ paths:
         delete:
             description:
                 Deletes the webhook entity and return a 204 if the operation succeeds.
+            operationId: deleteWebhookEntity
             parameters:
                 - in: path
                   name: webhookEntityId
                   required: true
                   schema:
-                      type: string
+                      format: int64
+                      type: integer
             responses:
                 204:
                     content:
@@ -186,12 +198,14 @@ paths:
         get:
             description:
                 Retrieves a Webhook Entity.
+            operationId: getWebhookEntity
             parameters:
                 - in: path
                   name: webhookEntityId
                   required: true
                   schema:
-                      type: string
+                      format: int64
+                      type: integer
             responses:
                 200:
                     content:

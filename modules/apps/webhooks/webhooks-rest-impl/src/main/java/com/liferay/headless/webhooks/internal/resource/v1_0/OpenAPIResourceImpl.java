@@ -82,6 +82,8 @@ public class OpenAPIResourceImpl {
 		{
 			add(WebhookResourceImpl.class);
 
+			add(WebhookEntityResourceImpl.class);
+
 			add(OpenAPIResourceImpl.class);
 		}
 	};

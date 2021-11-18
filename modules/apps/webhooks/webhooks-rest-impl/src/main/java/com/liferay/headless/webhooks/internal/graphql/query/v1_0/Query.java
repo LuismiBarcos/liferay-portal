@@ -15,6 +15,8 @@
 package com.liferay.headless.webhooks.internal.graphql.query.v1_0;
 
 import com.liferay.headless.webhooks.dto.v1_0.Webhook;
+import com.liferay.headless.webhooks.dto.v1_0.WebhookEntity;
+import com.liferay.headless.webhooks.resource.v1_0.WebhookEntityResource;
 import com.liferay.headless.webhooks.resource.v1_0.WebhookResource;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
@@ -25,6 +27,7 @@ import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
+import com.liferay.portal.vulcan.graphql.annotation.GraphQLTypeExtension;
 import com.liferay.portal.vulcan.pagination.Page;
 
 import java.util.Map;
@@ -56,6 +59,14 @@ public class Query {
 			webhookResourceComponentServiceObjects;
 	}
 
+	public static void setWebhookEntityResourceComponentServiceObjects(
+		ComponentServiceObjects<WebhookEntityResource>
+			webhookEntityResourceComponentServiceObjects) {
+
+		_webhookEntityResourceComponentServiceObjects =
+			webhookEntityResourceComponentServiceObjects;
+	}
+
 	/**
 	 * Invoke this method with the command line:
 	 *
@@ -79,13 +90,68 @@ public class Query {
 	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {webhook(webhookId: ___){url, apiKey}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField(description = "Retrieves a Webhook.")
-	public Webhook webhook(@GraphQLName("webhookId") String webhookId)
+	public Webhook webhook(@GraphQLName("webhookId") Long webhookId)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
 			_webhookResourceComponentServiceObjects,
 			this::_populateResourceContext,
 			webhookResource -> webhookResource.getWebhook(webhookId));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {webhooksEntities(siteKey: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField(description = "Retrieves all the webhooks entities of a Site")
+	public WebhookEntityPage webhooksEntities(
+			@GraphQLName("siteKey") @NotEmpty String siteKey)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_webhookEntityResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			webhookEntityResource -> new WebhookEntityPage(
+				webhookEntityResource.getSiteWebhooksEntitiesPage(
+					Long.valueOf(siteKey))));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {webhookEntity(webhookEntityId: ___){entity, webhookId}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField(description = "Retrieves a Webhook Entity.")
+	public WebhookEntity webhookEntity(
+			@GraphQLName("webhookEntityId") Long webhookEntityId)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_webhookEntityResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			webhookEntityResource -> webhookEntityResource.getWebhookEntity(
+				webhookEntityId));
+	}
+
+	@GraphQLTypeExtension(WebhookEntity.class)
+	public class GetWebhookTypeExtension {
+
+		public GetWebhookTypeExtension(WebhookEntity webhookEntity) {
+			_webhookEntity = webhookEntity;
+		}
+
+		@GraphQLField(description = "Retrieves a Webhook.")
+		public Webhook webhook() throws Exception {
+			return _applyComponentServiceObjects(
+				_webhookResourceComponentServiceObjects,
+				Query.this::_populateResourceContext,
+				webhookResource -> webhookResource.getWebhook(
+					_webhookEntity.getWebhookId()));
+		}
+
+		private WebhookEntity _webhookEntity;
+
 	}
 
 	@GraphQLName("WebhookPage")
@@ -106,6 +172,39 @@ public class Query {
 
 		@GraphQLField
 		protected java.util.Collection<Webhook> items;
+
+		@GraphQLField
+		protected long lastPage;
+
+		@GraphQLField
+		protected long page;
+
+		@GraphQLField
+		protected long pageSize;
+
+		@GraphQLField
+		protected long totalCount;
+
+	}
+
+	@GraphQLName("WebhookEntityPage")
+	public class WebhookEntityPage {
+
+		public WebhookEntityPage(Page webhookEntityPage) {
+			actions = webhookEntityPage.getActions();
+
+			items = webhookEntityPage.getItems();
+			lastPage = webhookEntityPage.getLastPage();
+			page = webhookEntityPage.getPage();
+			pageSize = webhookEntityPage.getPageSize();
+			totalCount = webhookEntityPage.getTotalCount();
+		}
+
+		@GraphQLField
+		protected Map<String, Map> actions;
+
+		@GraphQLField
+		protected java.util.Collection<WebhookEntity> items;
 
 		@GraphQLField
 		protected long lastPage;
@@ -153,8 +252,25 @@ public class Query {
 		webhookResource.setRoleLocalService(_roleLocalService);
 	}
 
+	private void _populateResourceContext(
+			WebhookEntityResource webhookEntityResource)
+		throws Exception {
+
+		webhookEntityResource.setContextAcceptLanguage(_acceptLanguage);
+		webhookEntityResource.setContextCompany(_company);
+		webhookEntityResource.setContextHttpServletRequest(_httpServletRequest);
+		webhookEntityResource.setContextHttpServletResponse(
+			_httpServletResponse);
+		webhookEntityResource.setContextUriInfo(_uriInfo);
+		webhookEntityResource.setContextUser(_user);
+		webhookEntityResource.setGroupLocalService(_groupLocalService);
+		webhookEntityResource.setRoleLocalService(_roleLocalService);
+	}
+
 	private static ComponentServiceObjects<WebhookResource>
 		_webhookResourceComponentServiceObjects;
+	private static ComponentServiceObjects<WebhookEntityResource>
+		_webhookEntityResourceComponentServiceObjects;
 
 	private AcceptLanguage _acceptLanguage;
 	private com.liferay.portal.kernel.model.Company _company;

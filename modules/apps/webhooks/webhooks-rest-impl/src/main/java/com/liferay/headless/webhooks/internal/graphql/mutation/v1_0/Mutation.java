@@ -15,6 +15,8 @@
 package com.liferay.headless.webhooks.internal.graphql.mutation.v1_0;
 
 import com.liferay.headless.webhooks.dto.v1_0.Webhook;
+import com.liferay.headless.webhooks.dto.v1_0.WebhookEntity;
+import com.liferay.headless.webhooks.resource.v1_0.WebhookEntityResource;
 import com.liferay.headless.webhooks.resource.v1_0.WebhookResource;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
@@ -54,6 +56,14 @@ public class Mutation {
 			webhookResourceComponentServiceObjects;
 	}
 
+	public static void setWebhookEntityResourceComponentServiceObjects(
+		ComponentServiceObjects<WebhookEntityResource>
+			webhookEntityResourceComponentServiceObjects) {
+
+		_webhookEntityResourceComponentServiceObjects =
+			webhookEntityResourceComponentServiceObjects;
+	}
+
 	@GraphQLField(description = "Creates a new Webhook in a Site.")
 	public Webhook createSiteWebhook(
 			@GraphQLName("siteKey") @NotEmpty String siteKey,
@@ -84,7 +94,7 @@ public class Mutation {
 	@GraphQLField(
 		description = "Deletes the webhook and return a 204 if the operation succeeds."
 	)
-	public boolean deleteWebhook(@GraphQLName("webhookId") String webhookId)
+	public boolean deleteWebhook(@GraphQLName("webhookId") Long webhookId)
 		throws Exception {
 
 		_applyVoidComponentServiceObjects(
@@ -106,6 +116,50 @@ public class Mutation {
 			this::_populateResourceContext,
 			webhookResource -> webhookResource.deleteWebhookBatch(
 				callbackURL, object));
+	}
+
+	@GraphQLField(description = "Creates a new webhook entity in a Site")
+	public WebhookEntity createSiteWebhooksEntity(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("webhookEntity") WebhookEntity webhookEntity)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_webhookEntityResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			webhookEntityResource ->
+				webhookEntityResource.postSiteWebhooksEntity(
+					Long.valueOf(siteKey), webhookEntity));
+	}
+
+	@GraphQLField(
+		description = "Deletes the webhook entity and return a 204 if the operation succeeds."
+	)
+	public boolean deleteWebhookEntity(
+			@GraphQLName("webhookEntityId") Long webhookEntityId)
+		throws Exception {
+
+		_applyVoidComponentServiceObjects(
+			_webhookEntityResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			webhookEntityResource -> webhookEntityResource.deleteWebhookEntity(
+				webhookEntityId));
+
+		return true;
+	}
+
+	@GraphQLField
+	public Response deleteWebhookEntityBatch(
+			@GraphQLName("callbackURL") String callbackURL,
+			@GraphQLName("object") Object object)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_webhookEntityResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			webhookEntityResource ->
+				webhookEntityResource.deleteWebhookEntityBatch(
+					callbackURL, object));
 	}
 
 	private <T, R, E1 extends Throwable, E2 extends Throwable> R
@@ -159,8 +213,25 @@ public class Mutation {
 		webhookResource.setRoleLocalService(_roleLocalService);
 	}
 
+	private void _populateResourceContext(
+			WebhookEntityResource webhookEntityResource)
+		throws Exception {
+
+		webhookEntityResource.setContextAcceptLanguage(_acceptLanguage);
+		webhookEntityResource.setContextCompany(_company);
+		webhookEntityResource.setContextHttpServletRequest(_httpServletRequest);
+		webhookEntityResource.setContextHttpServletResponse(
+			_httpServletResponse);
+		webhookEntityResource.setContextUriInfo(_uriInfo);
+		webhookEntityResource.setContextUser(_user);
+		webhookEntityResource.setGroupLocalService(_groupLocalService);
+		webhookEntityResource.setRoleLocalService(_roleLocalService);
+	}
+
 	private static ComponentServiceObjects<WebhookResource>
 		_webhookResourceComponentServiceObjects;
+	private static ComponentServiceObjects<WebhookEntityResource>
+		_webhookEntityResourceComponentServiceObjects;
 
 	private AcceptLanguage _acceptLanguage;
 	private com.liferay.portal.kernel.model.Company _company;

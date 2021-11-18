@@ -16,6 +16,7 @@ package com.liferay.headless.webhooks.internal.graphql.servlet.v1_0;
 
 import com.liferay.headless.webhooks.internal.graphql.mutation.v1_0.Mutation;
 import com.liferay.headless.webhooks.internal.graphql.query.v1_0.Query;
+import com.liferay.headless.webhooks.resource.v1_0.WebhookEntityResource;
 import com.liferay.headless.webhooks.resource.v1_0.WebhookResource;
 import com.liferay.portal.vulcan.graphql.servlet.ServletData;
 
@@ -40,9 +41,13 @@ public class ServletDataImpl implements ServletData {
 	public void activate(BundleContext bundleContext) {
 		Mutation.setWebhookResourceComponentServiceObjects(
 			_webhookResourceComponentServiceObjects);
+		Mutation.setWebhookEntityResourceComponentServiceObjects(
+			_webhookEntityResourceComponentServiceObjects);
 
 		Query.setWebhookResourceComponentServiceObjects(
 			_webhookResourceComponentServiceObjects);
+		Query.setWebhookEntityResourceComponentServiceObjects(
+			_webhookEntityResourceComponentServiceObjects);
 	}
 
 	@Override
@@ -63,5 +68,9 @@ public class ServletDataImpl implements ServletData {
 	@Reference(scope = ReferenceScope.PROTOTYPE_REQUIRED)
 	private ComponentServiceObjects<WebhookResource>
 		_webhookResourceComponentServiceObjects;
+
+	@Reference(scope = ReferenceScope.PROTOTYPE_REQUIRED)
+	private ComponentServiceObjects<WebhookEntityResource>
+		_webhookEntityResourceComponentServiceObjects;
 
 }

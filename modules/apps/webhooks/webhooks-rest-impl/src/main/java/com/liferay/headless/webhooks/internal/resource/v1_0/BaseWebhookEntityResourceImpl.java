@@ -14,9 +14,8 @@
 
 package com.liferay.headless.webhooks.internal.resource.v1_0;
 
-import com.liferay.headless.webhooks.dto.v1_0.Webhook;
-import com.liferay.headless.webhooks.resource.v1_0.WebhookResource;
-import com.liferay.petra.function.UnsafeConsumer;
+import com.liferay.headless.webhooks.dto.v1_0.WebhookEntity;
+import com.liferay.headless.webhooks.resource.v1_0.WebhookEntityResource;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.GroupedModel;
@@ -64,17 +63,18 @@ import javax.ws.rs.core.UriInfo;
  */
 @Generated("")
 @javax.ws.rs.Path("/v1.0")
-public abstract class BaseWebhookResourceImpl
-	implements EntityModelResource, VulcanBatchEngineTaskItemDelegate<Webhook>,
-			   WebhookResource {
+public abstract class BaseWebhookEntityResourceImpl
+	implements EntityModelResource,
+			   VulcanBatchEngineTaskItemDelegate<WebhookEntity>,
+			   WebhookEntityResource {
 
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'GET' 'http://localhost:8080/o/webhooks-rest/v1.0/sites/{siteId}/webhooks'  -u 'test@liferay.com:test'
+	 * curl -X 'GET' 'http://localhost:8080/o/webhooks-rest/v1.0/sites/{siteId}/webhooksEntities'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieves a Site's webhooks."
+		description = "Retrieves all the webhooks entities of a Site"
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -85,13 +85,15 @@ public abstract class BaseWebhookResourceImpl
 		}
 	)
 	@io.swagger.v3.oas.annotations.tags.Tags(
-		value = {@io.swagger.v3.oas.annotations.tags.Tag(name = "Webhook")}
+		value = {
+			@io.swagger.v3.oas.annotations.tags.Tag(name = "WebhookEntity")
+		}
 	)
 	@javax.ws.rs.GET
-	@javax.ws.rs.Path("/sites/{siteId}/webhooks")
+	@javax.ws.rs.Path("/sites/{siteId}/webhooksEntities")
 	@javax.ws.rs.Produces({"application/json", "application/xml"})
 	@Override
-	public Page<Webhook> getSiteWebhooksPage(
+	public Page<WebhookEntity> getSiteWebhooksEntitiesPage(
 			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
 			@javax.validation.constraints.NotNull
 			@javax.ws.rs.PathParam("siteId")
@@ -104,10 +106,10 @@ public abstract class BaseWebhookResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/webhooks-rest/v1.0/sites/{siteId}/webhooks' -d $'{"apiKey": ___, "url": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/webhooks-rest/v1.0/sites/{siteId}/webhooksEntities' -d $'{"entity": ___, "webhookId": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Creates a new Webhook in a Site."
+		description = "Creates a new webhook entity in a Site"
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -118,111 +120,63 @@ public abstract class BaseWebhookResourceImpl
 		}
 	)
 	@io.swagger.v3.oas.annotations.tags.Tags(
-		value = {@io.swagger.v3.oas.annotations.tags.Tag(name = "Webhook")}
+		value = {
+			@io.swagger.v3.oas.annotations.tags.Tag(name = "WebhookEntity")
+		}
 	)
 	@javax.ws.rs.Consumes({"application/json", "application/xml"})
-	@javax.ws.rs.Path("/sites/{siteId}/webhooks")
+	@javax.ws.rs.Path("/sites/{siteId}/webhooksEntities")
 	@javax.ws.rs.POST
 	@javax.ws.rs.Produces({"application/json", "application/xml"})
 	@Override
-	public Webhook postSiteWebhook(
+	public WebhookEntity postSiteWebhooksEntity(
 			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
 			@javax.validation.constraints.NotNull
 			@javax.ws.rs.PathParam("siteId")
 			Long siteId,
-			Webhook webhook)
+			WebhookEntity webhookEntity)
 		throws Exception {
 
-		return new Webhook();
+		return new WebhookEntity();
 	}
 
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/webhooks-rest/v1.0/sites/{siteId}/webhooks/batch'  -u 'test@liferay.com:test'
-	 */
-	@io.swagger.v3.oas.annotations.Parameters(
-		value = {
-			@io.swagger.v3.oas.annotations.Parameter(
-				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
-				name = "siteId"
-			),
-			@io.swagger.v3.oas.annotations.Parameter(
-				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
-				name = "callbackURL"
-			)
-		}
-	)
-	@io.swagger.v3.oas.annotations.tags.Tags(
-		value = {@io.swagger.v3.oas.annotations.tags.Tag(name = "Webhook")}
-	)
-	@javax.ws.rs.Consumes("application/json")
-	@javax.ws.rs.Path("/sites/{siteId}/webhooks/batch")
-	@javax.ws.rs.POST
-	@javax.ws.rs.Produces("application/json")
-	@Override
-	public Response postSiteWebhookBatch(
-			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
-			@javax.validation.constraints.NotNull
-			@javax.ws.rs.PathParam("siteId")
-			Long siteId,
-			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
-			@javax.ws.rs.QueryParam("callbackURL")
-			String callbackURL,
-			Object object)
-		throws Exception {
-
-		vulcanBatchEngineImportTaskResource.setContextAcceptLanguage(
-			contextAcceptLanguage);
-		vulcanBatchEngineImportTaskResource.setContextCompany(contextCompany);
-		vulcanBatchEngineImportTaskResource.setContextHttpServletRequest(
-			contextHttpServletRequest);
-		vulcanBatchEngineImportTaskResource.setContextUriInfo(contextUriInfo);
-		vulcanBatchEngineImportTaskResource.setContextUser(contextUser);
-
-		Response.ResponseBuilder responseBuilder = Response.accepted();
-
-		return responseBuilder.entity(
-			vulcanBatchEngineImportTaskResource.postImportTask(
-				Webhook.class.getName(), callbackURL, null, object)
-		).build();
-	}
-
-	/**
-	 * Invoke this method with the command line:
-	 *
-	 * curl -X 'DELETE' 'http://localhost:8080/o/webhooks-rest/v1.0/webhooks/{webhookId}'  -u 'test@liferay.com:test'
+	 * curl -X 'DELETE' 'http://localhost:8080/o/webhooks-rest/v1.0/webhook-entity/{webhookEntityId}'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Deletes the webhook and return a 204 if the operation succeeds."
+		description = "Deletes the webhook entity and return a 204 if the operation succeeds."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
-				name = "webhookId"
+				name = "webhookEntityId"
 			)
 		}
 	)
 	@io.swagger.v3.oas.annotations.tags.Tags(
-		value = {@io.swagger.v3.oas.annotations.tags.Tag(name = "Webhook")}
+		value = {
+			@io.swagger.v3.oas.annotations.tags.Tag(name = "WebhookEntity")
+		}
 	)
 	@javax.ws.rs.DELETE
-	@javax.ws.rs.Path("/webhooks/{webhookId}")
+	@javax.ws.rs.Path("/webhook-entity/{webhookEntityId}")
 	@javax.ws.rs.Produces({"application/json", "application/xml"})
 	@Override
-	public void deleteWebhook(
+	public void deleteWebhookEntity(
 			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
 			@javax.validation.constraints.NotNull
-			@javax.ws.rs.PathParam("webhookId")
-			Long webhookId)
+			@javax.ws.rs.PathParam("webhookEntityId")
+			Long webhookEntityId)
 		throws Exception {
 	}
 
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'DELETE' 'http://localhost:8080/o/webhooks-rest/v1.0/webhooks/batch'  -u 'test@liferay.com:test'
+	 * curl -X 'DELETE' 'http://localhost:8080/o/webhooks-rest/v1.0/webhook-entity/batch'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
@@ -233,14 +187,16 @@ public abstract class BaseWebhookResourceImpl
 		}
 	)
 	@io.swagger.v3.oas.annotations.tags.Tags(
-		value = {@io.swagger.v3.oas.annotations.tags.Tag(name = "Webhook")}
+		value = {
+			@io.swagger.v3.oas.annotations.tags.Tag(name = "WebhookEntity")
+		}
 	)
 	@javax.ws.rs.Consumes("application/json")
 	@javax.ws.rs.DELETE
-	@javax.ws.rs.Path("/webhooks/batch")
+	@javax.ws.rs.Path("/webhook-entity/batch")
 	@javax.ws.rs.Produces("application/json")
 	@Override
-	public Response deleteWebhookBatch(
+	public Response deleteWebhookEntityBatch(
 			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
 			@javax.ws.rs.QueryParam("callbackURL")
 			String callbackURL,
@@ -259,66 +215,56 @@ public abstract class BaseWebhookResourceImpl
 
 		return responseBuilder.entity(
 			vulcanBatchEngineImportTaskResource.deleteImportTask(
-				Webhook.class.getName(), callbackURL, object)
+				WebhookEntity.class.getName(), callbackURL, object)
 		).build();
 	}
 
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'GET' 'http://localhost:8080/o/webhooks-rest/v1.0/webhooks/{webhookId}'  -u 'test@liferay.com:test'
+	 * curl -X 'GET' 'http://localhost:8080/o/webhooks-rest/v1.0/webhook-entity/{webhookEntityId}'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
-		description = "Retrieves a Webhook."
+		description = "Retrieves a Webhook Entity."
 	)
 	@io.swagger.v3.oas.annotations.Parameters(
 		value = {
 			@io.swagger.v3.oas.annotations.Parameter(
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
-				name = "webhookId"
+				name = "webhookEntityId"
 			)
 		}
 	)
 	@io.swagger.v3.oas.annotations.tags.Tags(
-		value = {@io.swagger.v3.oas.annotations.tags.Tag(name = "Webhook")}
+		value = {
+			@io.swagger.v3.oas.annotations.tags.Tag(name = "WebhookEntity")
+		}
 	)
 	@javax.ws.rs.GET
-	@javax.ws.rs.Path("/webhooks/{webhookId}")
+	@javax.ws.rs.Path("/webhook-entity/{webhookEntityId}")
 	@javax.ws.rs.Produces({"application/json", "application/xml"})
 	@Override
-	public Webhook getWebhook(
+	public WebhookEntity getWebhookEntity(
 			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
 			@javax.validation.constraints.NotNull
-			@javax.ws.rs.PathParam("webhookId")
-			Long webhookId)
+			@javax.ws.rs.PathParam("webhookEntityId")
+			Long webhookEntityId)
 		throws Exception {
 
-		return new Webhook();
+		return new WebhookEntity();
 	}
 
 	@Override
 	@SuppressWarnings("PMD.UnusedLocalVariable")
 	public void create(
-			java.util.Collection<Webhook> webhooks,
+			java.util.Collection<WebhookEntity> webhookEntities,
 			Map<String, Serializable> parameters)
 		throws Exception {
-
-		UnsafeConsumer<Webhook, Exception> webhookUnsafeConsumer = webhook -> {
-		};
-
-		if (parameters.containsKey("siteId")) {
-			webhookUnsafeConsumer = webhook -> postSiteWebhook(
-				(Long)parameters.get("siteId"), webhook);
-		}
-
-		for (Webhook webhook : webhooks) {
-			webhookUnsafeConsumer.accept(webhook);
-		}
 	}
 
 	@Override
 	public void delete(
-			java.util.Collection<Webhook> webhooks,
+			java.util.Collection<WebhookEntity> webhookEntities,
 			Map<String, Serializable> parameters)
 		throws Exception {
 	}
@@ -339,17 +285,12 @@ public abstract class BaseWebhookResourceImpl
 	}
 
 	@Override
-	public Page<Webhook> read(
+	public Page<WebhookEntity> read(
 			Filter filter, Pagination pagination, Sort[] sorts,
 			Map<String, Serializable> parameters, String search)
 		throws Exception {
 
-		if (parameters.containsKey("siteId")) {
-			return getSiteWebhooksPage((Long)parameters.get("siteId"));
-		}
-		else {
-			return null;
-		}
+		return null;
 	}
 
 	@Override
@@ -376,7 +317,7 @@ public abstract class BaseWebhookResourceImpl
 
 	@Override
 	public void update(
-			java.util.Collection<Webhook> webhooks,
+			java.util.Collection<WebhookEntity> webhookEntities,
 			Map<String, Serializable> parameters)
 		throws Exception {
 	}
@@ -549,6 +490,6 @@ public abstract class BaseWebhookResourceImpl
 		vulcanBatchEngineImportTaskResource;
 
 	private static final com.liferay.portal.kernel.log.Log _log =
-		LogFactoryUtil.getLog(BaseWebhookResourceImpl.class);
+		LogFactoryUtil.getLog(BaseWebhookEntityResourceImpl.class);
 
 }

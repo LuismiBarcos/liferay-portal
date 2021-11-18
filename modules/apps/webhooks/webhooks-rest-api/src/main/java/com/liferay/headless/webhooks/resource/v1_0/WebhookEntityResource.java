@@ -14,7 +14,7 @@
 
 package com.liferay.headless.webhooks.resource.v1_0;
 
-import com.liferay.headless.webhooks.dto.v1_0.Webhook;
+import com.liferay.headless.webhooks.dto.v1_0.WebhookEntity;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
@@ -50,27 +50,26 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @Generated("")
 @ProviderType
-public interface WebhookResource {
+public interface WebhookEntityResource {
 
 	public static Builder builder() {
 		return FactoryHolder.factory.create();
 	}
 
-	public Page<Webhook> getSiteWebhooksPage(Long siteId) throws Exception;
-
-	public Webhook postSiteWebhook(Long siteId, Webhook webhook)
+	public Page<WebhookEntity> getSiteWebhooksEntitiesPage(Long siteId)
 		throws Exception;
 
-	public Response postSiteWebhookBatch(
-			Long siteId, String callbackURL, Object object)
+	public WebhookEntity postSiteWebhooksEntity(
+			Long siteId, WebhookEntity webhookEntity)
 		throws Exception;
 
-	public void deleteWebhook(Long webhookId) throws Exception;
+	public void deleteWebhookEntity(Long webhookEntityId) throws Exception;
 
-	public Response deleteWebhookBatch(String callbackURL, Object object)
+	public Response deleteWebhookEntityBatch(String callbackURL, Object object)
 		throws Exception;
 
-	public Webhook getWebhook(Long webhookId) throws Exception;
+	public WebhookEntity getWebhookEntity(Long webhookEntityId)
+		throws Exception;
 
 	public default void setContextAcceptLanguage(
 		AcceptLanguage contextAcceptLanguage) {
@@ -129,7 +128,7 @@ public interface WebhookResource {
 	@ProviderType
 	public interface Builder {
 
-		public WebhookResource build();
+		public WebhookEntityResource build();
 
 		public Builder checkPermissions(boolean checkPermissions);
 

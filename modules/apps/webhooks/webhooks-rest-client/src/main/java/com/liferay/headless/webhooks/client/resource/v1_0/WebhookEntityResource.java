@@ -14,11 +14,11 @@
 
 package com.liferay.headless.webhooks.client.resource.v1_0;
 
-import com.liferay.headless.webhooks.client.dto.v1_0.Webhook;
+import com.liferay.headless.webhooks.client.dto.v1_0.WebhookEntity;
 import com.liferay.headless.webhooks.client.http.HttpInvoker;
 import com.liferay.headless.webhooks.client.pagination.Page;
 import com.liferay.headless.webhooks.client.problem.Problem;
-import com.liferay.headless.webhooks.client.serdes.v1_0.WebhookSerDes;
+import com.liferay.headless.webhooks.client.serdes.v1_0.WebhookEntitySerDes;
 
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -33,47 +33,45 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public interface WebhookResource {
+public interface WebhookEntityResource {
 
 	public static Builder builder() {
 		return new Builder();
 	}
 
-	public Page<Webhook> getSiteWebhooksPage(Long siteId) throws Exception;
-
-	public HttpInvoker.HttpResponse getSiteWebhooksPageHttpResponse(Long siteId)
+	public Page<WebhookEntity> getSiteWebhooksEntitiesPage(Long siteId)
 		throws Exception;
 
-	public Webhook postSiteWebhook(Long siteId, Webhook webhook)
+	public HttpInvoker.HttpResponse getSiteWebhooksEntitiesPageHttpResponse(
+			Long siteId)
 		throws Exception;
 
-	public HttpInvoker.HttpResponse postSiteWebhookHttpResponse(
-			Long siteId, Webhook webhook)
+	public WebhookEntity postSiteWebhooksEntity(
+			Long siteId, WebhookEntity webhookEntity)
 		throws Exception;
 
-	public void postSiteWebhookBatch(
-			Long siteId, String callbackURL, Object object)
+	public HttpInvoker.HttpResponse postSiteWebhooksEntityHttpResponse(
+			Long siteId, WebhookEntity webhookEntity)
 		throws Exception;
 
-	public HttpInvoker.HttpResponse postSiteWebhookBatchHttpResponse(
-			Long siteId, String callbackURL, Object object)
+	public void deleteWebhookEntity(Long webhookEntityId) throws Exception;
+
+	public HttpInvoker.HttpResponse deleteWebhookEntityHttpResponse(
+			Long webhookEntityId)
 		throws Exception;
 
-	public void deleteWebhook(Long webhookId) throws Exception;
-
-	public HttpInvoker.HttpResponse deleteWebhookHttpResponse(Long webhookId)
+	public void deleteWebhookEntityBatch(String callbackURL, Object object)
 		throws Exception;
 
-	public void deleteWebhookBatch(String callbackURL, Object object)
-		throws Exception;
-
-	public HttpInvoker.HttpResponse deleteWebhookBatchHttpResponse(
+	public HttpInvoker.HttpResponse deleteWebhookEntityBatchHttpResponse(
 			String callbackURL, Object object)
 		throws Exception;
 
-	public Webhook getWebhook(Long webhookId) throws Exception;
+	public WebhookEntity getWebhookEntity(Long webhookEntityId)
+		throws Exception;
 
-	public HttpInvoker.HttpResponse getWebhookHttpResponse(Long webhookId)
+	public HttpInvoker.HttpResponse getWebhookEntityHttpResponse(
+			Long webhookEntityId)
 		throws Exception;
 
 	public static class Builder {
@@ -85,8 +83,8 @@ public interface WebhookResource {
 			return this;
 		}
 
-		public WebhookResource build() {
-			return new WebhookResourceImpl(this);
+		public WebhookEntityResource build() {
+			return new WebhookEntityResourceImpl(this);
 		}
 
 		public Builder endpoint(String host, int port, String scheme) {
@@ -145,11 +143,14 @@ public interface WebhookResource {
 
 	}
 
-	public static class WebhookResourceImpl implements WebhookResource {
+	public static class WebhookEntityResourceImpl
+		implements WebhookEntityResource {
 
-		public Page<Webhook> getSiteWebhooksPage(Long siteId) throws Exception {
+		public Page<WebhookEntity> getSiteWebhooksEntitiesPage(Long siteId)
+			throws Exception {
+
 			HttpInvoker.HttpResponse httpResponse =
-				getSiteWebhooksPageHttpResponse(siteId);
+				getSiteWebhooksEntitiesPageHttpResponse(siteId);
 
 			String content = httpResponse.getContent();
 
@@ -177,7 +178,7 @@ public interface WebhookResource {
 			}
 
 			try {
-				return Page.of(content, WebhookSerDes::toDTO);
+				return Page.of(content, WebhookEntitySerDes::toDTO);
 			}
 			catch (Exception e) {
 				_logger.log(
@@ -188,7 +189,7 @@ public interface WebhookResource {
 			}
 		}
 
-		public HttpInvoker.HttpResponse getSiteWebhooksPageHttpResponse(
+		public HttpInvoker.HttpResponse getSiteWebhooksEntitiesPageHttpResponse(
 				Long siteId)
 			throws Exception {
 
@@ -216,7 +217,7 @@ public interface WebhookResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/webhooks-rest/v1.0/sites/{siteId}/webhooks");
+						"/o/webhooks-rest/v1.0/sites/{siteId}/webhooksEntities");
 
 			httpInvoker.path("siteId", siteId);
 
@@ -226,11 +227,12 @@ public interface WebhookResource {
 			return httpInvoker.invoke();
 		}
 
-		public Webhook postSiteWebhook(Long siteId, Webhook webhook)
+		public WebhookEntity postSiteWebhooksEntity(
+				Long siteId, WebhookEntity webhookEntity)
 			throws Exception {
 
-			HttpInvoker.HttpResponse httpResponse = postSiteWebhookHttpResponse(
-				siteId, webhook);
+			HttpInvoker.HttpResponse httpResponse =
+				postSiteWebhooksEntityHttpResponse(siteId, webhookEntity);
 
 			String content = httpResponse.getContent();
 
@@ -258,7 +260,7 @@ public interface WebhookResource {
 			}
 
 			try {
-				return WebhookSerDes.toDTO(content);
+				return WebhookEntitySerDes.toDTO(content);
 			}
 			catch (Exception e) {
 				_logger.log(
@@ -269,13 +271,13 @@ public interface WebhookResource {
 			}
 		}
 
-		public HttpInvoker.HttpResponse postSiteWebhookHttpResponse(
-				Long siteId, Webhook webhook)
+		public HttpInvoker.HttpResponse postSiteWebhooksEntityHttpResponse(
+				Long siteId, WebhookEntity webhookEntity)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
 
-			httpInvoker.body(webhook.toString(), "application/json");
+			httpInvoker.body(webhookEntity.toString(), "application/json");
 
 			if (_builder._locale != null) {
 				httpInvoker.header(
@@ -299,7 +301,7 @@ public interface WebhookResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/webhooks-rest/v1.0/sites/{siteId}/webhooks");
+						"/o/webhooks-rest/v1.0/sites/{siteId}/webhooksEntities");
 
 			httpInvoker.path("siteId", siteId);
 
@@ -309,87 +311,9 @@ public interface WebhookResource {
 			return httpInvoker.invoke();
 		}
 
-		public void postSiteWebhookBatch(
-				Long siteId, String callbackURL, Object object)
-			throws Exception {
-
+		public void deleteWebhookEntity(Long webhookEntityId) throws Exception {
 			HttpInvoker.HttpResponse httpResponse =
-				postSiteWebhookBatchHttpResponse(siteId, callbackURL, object);
-
-			String content = httpResponse.getContent();
-
-			if ((httpResponse.getStatusCode() / 100) != 2) {
-				_logger.log(
-					Level.WARNING,
-					"Unable to process HTTP response content: " + content);
-				_logger.log(
-					Level.WARNING,
-					"HTTP response message: " + httpResponse.getMessage());
-				_logger.log(
-					Level.WARNING,
-					"HTTP response status code: " +
-						httpResponse.getStatusCode());
-
-				throw new Problem.ProblemException(Problem.toDTO(content));
-			}
-			else {
-				_logger.fine("HTTP response content: " + content);
-				_logger.fine(
-					"HTTP response message: " + httpResponse.getMessage());
-				_logger.fine(
-					"HTTP response status code: " +
-						httpResponse.getStatusCode());
-			}
-		}
-
-		public HttpInvoker.HttpResponse postSiteWebhookBatchHttpResponse(
-				Long siteId, String callbackURL, Object object)
-			throws Exception {
-
-			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
-
-			httpInvoker.body(object.toString(), "application/json");
-
-			if (_builder._locale != null) {
-				httpInvoker.header(
-					"Accept-Language", _builder._locale.toLanguageTag());
-			}
-
-			for (Map.Entry<String, String> entry :
-					_builder._headers.entrySet()) {
-
-				httpInvoker.header(entry.getKey(), entry.getValue());
-			}
-
-			for (Map.Entry<String, String> entry :
-					_builder._parameters.entrySet()) {
-
-				httpInvoker.parameter(entry.getKey(), entry.getValue());
-			}
-
-			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
-
-			if (callbackURL != null) {
-				httpInvoker.parameter(
-					"callbackURL", String.valueOf(callbackURL));
-			}
-
-			httpInvoker.path(
-				_builder._scheme + "://" + _builder._host + ":" +
-					_builder._port +
-						"/o/webhooks-rest/v1.0/sites/{siteId}/webhooks/batch");
-
-			httpInvoker.path("siteId", siteId);
-
-			httpInvoker.userNameAndPassword(
-				_builder._login + ":" + _builder._password);
-
-			return httpInvoker.invoke();
-		}
-
-		public void deleteWebhook(Long webhookId) throws Exception {
-			HttpInvoker.HttpResponse httpResponse = deleteWebhookHttpResponse(
-				webhookId);
+				deleteWebhookEntityHttpResponse(webhookEntityId);
 
 			String content = httpResponse.getContent();
 
@@ -428,8 +352,8 @@ public interface WebhookResource {
 			}
 		}
 
-		public HttpInvoker.HttpResponse deleteWebhookHttpResponse(
-				Long webhookId)
+		public HttpInvoker.HttpResponse deleteWebhookEntityHttpResponse(
+				Long webhookEntityId)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -456,9 +380,9 @@ public interface WebhookResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/webhooks-rest/v1.0/webhooks/{webhookId}");
+						"/o/webhooks-rest/v1.0/webhook-entity/{webhookEntityId}");
 
-			httpInvoker.path("webhookId", webhookId);
+			httpInvoker.path("webhookEntityId", webhookEntityId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -466,11 +390,11 @@ public interface WebhookResource {
 			return httpInvoker.invoke();
 		}
 
-		public void deleteWebhookBatch(String callbackURL, Object object)
+		public void deleteWebhookEntityBatch(String callbackURL, Object object)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
-				deleteWebhookBatchHttpResponse(callbackURL, object);
+				deleteWebhookEntityBatchHttpResponse(callbackURL, object);
 
 			String content = httpResponse.getContent();
 
@@ -498,7 +422,7 @@ public interface WebhookResource {
 			}
 		}
 
-		public HttpInvoker.HttpResponse deleteWebhookBatchHttpResponse(
+		public HttpInvoker.HttpResponse deleteWebhookEntityBatchHttpResponse(
 				String callbackURL, Object object)
 			throws Exception {
 
@@ -532,7 +456,8 @@ public interface WebhookResource {
 
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
-					_builder._port + "/o/webhooks-rest/v1.0/webhooks/batch");
+					_builder._port +
+						"/o/webhooks-rest/v1.0/webhook-entity/batch");
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -540,9 +465,11 @@ public interface WebhookResource {
 			return httpInvoker.invoke();
 		}
 
-		public Webhook getWebhook(Long webhookId) throws Exception {
-			HttpInvoker.HttpResponse httpResponse = getWebhookHttpResponse(
-				webhookId);
+		public WebhookEntity getWebhookEntity(Long webhookEntityId)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				getWebhookEntityHttpResponse(webhookEntityId);
 
 			String content = httpResponse.getContent();
 
@@ -570,7 +497,7 @@ public interface WebhookResource {
 			}
 
 			try {
-				return WebhookSerDes.toDTO(content);
+				return WebhookEntitySerDes.toDTO(content);
 			}
 			catch (Exception e) {
 				_logger.log(
@@ -581,7 +508,8 @@ public interface WebhookResource {
 			}
 		}
 
-		public HttpInvoker.HttpResponse getWebhookHttpResponse(Long webhookId)
+		public HttpInvoker.HttpResponse getWebhookEntityHttpResponse(
+				Long webhookEntityId)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -608,9 +536,9 @@ public interface WebhookResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port +
-						"/o/webhooks-rest/v1.0/webhooks/{webhookId}");
+						"/o/webhooks-rest/v1.0/webhook-entity/{webhookEntityId}");
 
-			httpInvoker.path("webhookId", webhookId);
+			httpInvoker.path("webhookEntityId", webhookEntityId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -618,12 +546,12 @@ public interface WebhookResource {
 			return httpInvoker.invoke();
 		}
 
-		private WebhookResourceImpl(Builder builder) {
+		private WebhookEntityResourceImpl(Builder builder) {
 			_builder = builder;
 		}
 
 		private static final Logger _logger = Logger.getLogger(
-			WebhookResource.class.getName());
+			WebhookEntityResource.class.getName());
 
 		private Builder _builder;
 
