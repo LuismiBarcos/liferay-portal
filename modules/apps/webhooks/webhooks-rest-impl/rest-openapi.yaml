@@ -8,6 +8,15 @@ components:
                 apiKey:
                     description: The apiKey for the authentication
                     type: string
+        WebhookEntity:
+            description:
+                Represents the entity which events will send to the Webhook specified
+            properties:
+                entity:
+                    type: string
+                webhookId:
+                    format: int64
+                    type: integer
 info:
     description:
         "WebhooksRest REST API. A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
@@ -111,3 +120,85 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Webhook"
             tags: [ "Webhook" ]
+    "/sites/{siteId}/webhooksEntities":
+        get:
+            description:
+                Retrieves all the webhooks entities of a Site
+            parameters:
+                - in: path
+                  name: siteId
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                200:
+                    content:
+                        application/json:
+                          schema:
+                              items:
+                                  $ref: "#/components/schemas/WebhookEntity"
+                              type: array
+            tags: ["WebhookEntity"]
+        post:
+            description:
+                Creates a new webhook entity in a Site
+            parameters:
+                - in: path
+                  name: siteId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/WebhookEntity"
+                    application/xml:
+                        schema:
+                            $ref: "#/components/schemas/WebhookEntity"
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/WebhookEntity"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/WebhookEntity"
+            tags: [ "WebhookEntity" ]
+    "/webhook-entity/{webhookEntityId}":
+        delete:
+            description:
+                Deletes the webhook entity and return a 204 if the operation succeeds.
+            parameters:
+                - in: path
+                  name: webhookEntityId
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                204:
+                    content:
+                        application/json: { }
+                        application/xml: { }
+            tags: [ "WebhookEntity" ]
+        get:
+            description:
+                Retrieves a Webhook Entity.
+            parameters:
+                - in: path
+                  name: webhookEntityId
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/WebhookEntity"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/WebhookEntity"
+            tags: [ "WebhookEntity" ]
