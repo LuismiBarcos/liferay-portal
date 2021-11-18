@@ -33,6 +33,16 @@ public class WebhookEntityLocalServiceWrapper
 		_webhookEntityLocalService = webhookEntityLocalService;
 	}
 
+	@Override
+	public com.liferay.webhooks.model.WebhookEntity addWebhookEntity(
+			String entityClassName, long userId, long webhookId,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _webhookEntityLocalService.addWebhookEntity(
+			entityClassName, userId, webhookId, serviceContext);
+	}
+
 	/**
 	 * Adds the webhook entity to the database. Also notifies the appropriate model listeners.
 	 *

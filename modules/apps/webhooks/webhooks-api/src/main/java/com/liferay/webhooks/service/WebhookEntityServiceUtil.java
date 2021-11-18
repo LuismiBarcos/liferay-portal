@@ -14,6 +14,11 @@
 
 package com.liferay.webhooks.service;
 
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.webhooks.model.WebhookEntity;
+
+import java.util.List;
+
 /**
  * Provides the remote service utility for WebhookEntity. This utility wraps
  * <code>com.liferay.webhooks.service.impl.WebhookEntityServiceImpl</code> and is an
@@ -33,14 +38,32 @@ public class WebhookEntityServiceUtil {
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.webhooks.service.impl.WebhookEntityServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
+	public static WebhookEntity addWebhookEntity(
+			String entityClassName, long userId, long webhookId,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws PortalException {
+
+		return getService().addWebhookEntity(
+			entityClassName, userId, webhookId, serviceContext);
+	}
+
+	public static WebhookEntity deleteWebhookEntity(long webhookEntityId)
+		throws PortalException {
+
+		return getService().deleteWebhookEntity(webhookEntityId);
+	}
 
 	/**
 	 * Returns the OSGi service identifier.
 	 *
 	 * @return the OSGi service identifier
 	 */
-	public static java.lang.String getOSGiServiceIdentifier() {
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
+	}
+
+	public static List<WebhookEntity> getSiteWebhookEntities(long groupId) {
+		return getService().getSiteWebhookEntities(groupId);
 	}
 
 	public static WebhookEntityService getService() {

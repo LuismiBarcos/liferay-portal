@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalService;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
@@ -63,6 +64,10 @@ public interface WebhookEntityLocalService
 	 *
 	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.webhooks.service.impl.WebhookEntityLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the webhook entity local service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link WebhookEntityLocalServiceUtil} if injection and service tracking are not available.
 	 */
+	public WebhookEntity addWebhookEntity(
+			String entityClassName, long userId, long webhookId,
+			ServiceContext serviceContext)
+		throws PortalException;
 
 	/**
 	 * Adds the webhook entity to the database. Also notifies the appropriate model listeners.

@@ -14,9 +14,15 @@
 
 package com.liferay.webhooks.service.http;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.webhooks.service.WebhookEntityServiceUtil;
+
+import java.rmi.RemoteException;
+
 /**
  * Provides the SOAP utility for the
- * <code>com.liferay.webhooks.service.WebhookEntityServiceUtil</code> service
+ * <code>WebhookEntityServiceUtil</code> service
  * utility. The static methods of this class call the same methods of the
  * service utility. However, the signatures are different because it is
  * difficult for SOAP to support certain types.
@@ -56,4 +62,65 @@ package com.liferay.webhooks.service.http;
  */
 @Deprecated
 public class WebhookEntityServiceSoap {
+
+	public static com.liferay.webhooks.model.WebhookEntitySoap
+			deleteWebhookEntity(long webhookEntityId)
+		throws RemoteException {
+
+		try {
+			com.liferay.webhooks.model.WebhookEntity returnValue =
+				WebhookEntityServiceUtil.deleteWebhookEntity(webhookEntityId);
+
+			return com.liferay.webhooks.model.WebhookEntitySoap.toSoapModel(
+				returnValue);
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+
+			throw new RemoteException(exception.getMessage());
+		}
+	}
+
+	public static com.liferay.webhooks.model.WebhookEntitySoap[]
+			getSiteWebhookEntities(long groupId)
+		throws RemoteException {
+
+		try {
+			java.util.List<com.liferay.webhooks.model.WebhookEntity>
+				returnValue = WebhookEntityServiceUtil.getSiteWebhookEntities(
+					groupId);
+
+			return com.liferay.webhooks.model.WebhookEntitySoap.toSoapModels(
+				returnValue);
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+
+			throw new RemoteException(exception.getMessage());
+		}
+	}
+
+	public static com.liferay.webhooks.model.WebhookEntitySoap addWebhookEntity(
+			String entityClassName, long userId, long webhookId,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws RemoteException {
+
+		try {
+			com.liferay.webhooks.model.WebhookEntity returnValue =
+				WebhookEntityServiceUtil.addWebhookEntity(
+					entityClassName, userId, webhookId, serviceContext);
+
+			return com.liferay.webhooks.model.WebhookEntitySoap.toSoapModel(
+				returnValue);
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+
+			throw new RemoteException(exception.getMessage());
+		}
+	}
+
+	private static Log _log = LogFactoryUtil.getLog(
+		WebhookEntityServiceSoap.class);
+
 }

@@ -14,13 +14,21 @@
 
 package com.liferay.webhooks.service.http;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.security.auth.HttpPrincipal;
+import com.liferay.portal.kernel.service.http.TunnelUtil;
+import com.liferay.portal.kernel.util.MethodHandler;
+import com.liferay.portal.kernel.util.MethodKey;
+import com.liferay.webhooks.service.WebhookEntityServiceUtil;
+
 /**
  * Provides the HTTP utility for the
- * <code>com.liferay.webhooks.service.WebhookEntityServiceUtil</code> service
+ * <code>WebhookEntityServiceUtil</code> service
  * utility. The
  * static methods of this class calls the same methods of the service utility.
  * However, the signatures are different because it requires an additional
- * <code>com.liferay.portal.kernel.security.auth.HttpPrincipal</code> parameter.
+ * <code>HttpPrincipal</code> parameter.
  *
  * <p>
  * The benefits of using the HTTP utility is that it is fast and allows for
@@ -42,4 +50,132 @@ package com.liferay.webhooks.service.http;
  * @generated
  */
 public class WebhookEntityServiceHttp {
+
+	public static com.liferay.webhooks.model.WebhookEntity deleteWebhookEntity(
+			HttpPrincipal httpPrincipal, long webhookEntityId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		try {
+			MethodKey methodKey = new MethodKey(
+				WebhookEntityServiceUtil.class, "deleteWebhookEntity",
+				_deleteWebhookEntityParameterTypes0);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, webhookEntityId);
+
+			Object returnObj = null;
+
+			try {
+				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
+			}
+			catch (Exception exception) {
+				if (exception instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						exception;
+				}
+
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					exception);
+			}
+
+			return (com.liferay.webhooks.model.WebhookEntity)returnObj;
+		}
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
+
+			_log.error(systemException, systemException);
+
+			throw systemException;
+		}
+	}
+
+	public static java.util.List<com.liferay.webhooks.model.WebhookEntity>
+		getSiteWebhookEntities(HttpPrincipal httpPrincipal, long groupId) {
+
+		try {
+			MethodKey methodKey = new MethodKey(
+				WebhookEntityServiceUtil.class, "getSiteWebhookEntities",
+				_getSiteWebhookEntitiesParameterTypes1);
+
+			MethodHandler methodHandler = new MethodHandler(methodKey, groupId);
+
+			Object returnObj = null;
+
+			try {
+				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
+			}
+			catch (Exception exception) {
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					exception);
+			}
+
+			return (java.util.List<com.liferay.webhooks.model.WebhookEntity>)
+				returnObj;
+		}
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
+
+			_log.error(systemException, systemException);
+
+			throw systemException;
+		}
+	}
+
+	public static com.liferay.webhooks.model.WebhookEntity addWebhookEntity(
+			HttpPrincipal httpPrincipal, String entityClassName, long userId,
+			long webhookId,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		try {
+			MethodKey methodKey = new MethodKey(
+				WebhookEntityServiceUtil.class, "addWebhookEntity",
+				_addWebhookEntityParameterTypes2);
+
+			MethodHandler methodHandler = new MethodHandler(
+				methodKey, entityClassName, userId, webhookId, serviceContext);
+
+			Object returnObj = null;
+
+			try {
+				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
+			}
+			catch (Exception exception) {
+				if (exception instanceof
+						com.liferay.portal.kernel.exception.PortalException) {
+
+					throw (com.liferay.portal.kernel.exception.PortalException)
+						exception;
+				}
+
+				throw new com.liferay.portal.kernel.exception.SystemException(
+					exception);
+			}
+
+			return (com.liferay.webhooks.model.WebhookEntity)returnObj;
+		}
+		catch (com.liferay.portal.kernel.exception.SystemException
+					systemException) {
+
+			_log.error(systemException, systemException);
+
+			throw systemException;
+		}
+	}
+
+	private static Log _log = LogFactoryUtil.getLog(
+		WebhookEntityServiceHttp.class);
+
+	private static final Class<?>[] _deleteWebhookEntityParameterTypes0 =
+		new Class[] {long.class};
+	private static final Class<?>[] _getSiteWebhookEntitiesParameterTypes1 =
+		new Class[] {long.class};
+	private static final Class<?>[] _addWebhookEntityParameterTypes2 =
+		new Class[] {
+			String.class, long.class, long.class,
+			com.liferay.portal.kernel.service.ServiceContext.class
+		};
+
 }

@@ -44,6 +44,14 @@ public class WebhookEntityLocalServiceUtil {
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.webhooks.service.impl.WebhookEntityLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
+	public static WebhookEntity addWebhookEntity(
+			String entityClassName, long userId, long webhookId,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws PortalException {
+
+		return getService().addWebhookEntity(
+			entityClassName, userId, webhookId, serviceContext);
+	}
 
 	/**
 	 * Adds the webhook entity to the database. Also notifies the appropriate model listeners.

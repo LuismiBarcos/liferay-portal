@@ -32,6 +32,24 @@ public class WebhookEntityServiceWrapper
 		_webhookEntityService = webhookEntityService;
 	}
 
+	@Override
+	public com.liferay.webhooks.model.WebhookEntity addWebhookEntity(
+			String entityClassName, long userId, long webhookId,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _webhookEntityService.addWebhookEntity(
+			entityClassName, userId, webhookId, serviceContext);
+	}
+
+	@Override
+	public com.liferay.webhooks.model.WebhookEntity deleteWebhookEntity(
+			long webhookEntityId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _webhookEntityService.deleteWebhookEntity(webhookEntityId);
+	}
+
 	/**
 	 * Returns the OSGi service identifier.
 	 *
@@ -40,6 +58,13 @@ public class WebhookEntityServiceWrapper
 	@Override
 	public String getOSGiServiceIdentifier() {
 		return _webhookEntityService.getOSGiServiceIdentifier();
+	}
+
+	@Override
+	public java.util.List<com.liferay.webhooks.model.WebhookEntity>
+		getSiteWebhookEntities(long groupId) {
+
+		return _webhookEntityService.getSiteWebhookEntities(groupId);
 	}
 
 	@Override
