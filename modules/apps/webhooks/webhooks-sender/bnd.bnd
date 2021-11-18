@@ -1,0 +1,3 @@
+Bundle-Name: webhooks-sender
+Bundle-SymbolicName: com.liferay.webhooks.sender
+Bundle-Version: 1.0.0
