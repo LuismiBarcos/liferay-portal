@@ -71,12 +71,9 @@ public class BlogPostingDTOConverter
 	}
 
 	@Override
-	public BlogPosting toDTO(DTOConverterContext dtoConverterContext)
+	public BlogPosting toDTO(
+		DTOConverterContext dtoConverterContext, BlogsEntry blogsEntry)
 		throws Exception {
-
-		BlogsEntry blogsEntry = _blogsEntryService.getEntry(
-			(Long)dtoConverterContext.getId());
-
 		return new BlogPosting() {
 			{
 				actions = dtoConverterContext.getActions();
@@ -143,10 +140,20 @@ public class BlogPostingDTOConverter
 						_layoutDisplayPageProviderTracker, _layoutLocalService,
 						_layoutPageTemplateEntryService,
 						"getBlogPostingRenderedContentByDisplayPageDisplay" +
-							"PageKey"));
+						"PageKey"));
 				viewableBy = ViewableBy.ANYONE;
 			}
 		};
+	}
+
+	@Override
+	public BlogPosting toDTO(DTOConverterContext dtoConverterContext)
+		throws Exception {
+
+		BlogsEntry blogsEntry = _blogsEntryService.getEntry(
+			(Long)dtoConverterContext.getId());
+
+		return toDTO(dtoConverterContext, blogsEntry);
 	}
 
 	private Image _getImage(
