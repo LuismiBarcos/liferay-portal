@@ -14,45 +14,27 @@
 
 package com.liferay.webhooks.sender;
 
-import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.portal.kernel.exception.ModelListenerException;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.BaseModelListener;
-import com.liferay.portal.kernel.model.ModelListener;
-import org.osgi.framework.BundleContext;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
+import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
+import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
+import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author luismiguelbarcos
  */
-@Component(
-	immediate = true,
-	service = ModelListener.class
-)
 public class WebhooksModelListener extends BaseModelListener {
 
-	public WebhooksModelListener(){
-		_modelClass = BlogsEntry.class;
-	}
 
-//	@Activate
-//	protected void activate(BundleContext bundleContext) throws Exception {
-//		_serviceRegistration = bundleContext.registerService(
-//			ModelListener.class.getName(),
-//			new WebhooksModelListener(BlogsEntry.class),
-//			null);
-//	}
-//
-//	@Deactivate
-//	protected void deactivate() throws Exception {
-//		_serviceRegistration.unregister();
-//	}
-
-	public WebhooksModelListener(Class<?> modelClass) {
+	public WebhooksModelListener(Class<?> modelClass, DefaultDTOConverterContext defaultDTOConverterContext, DTOConverterRegistry dtoConverterRegistry) {
 		_modelClass = modelClass;
+		_defaultDTOConverterContext = defaultDTOConverterContext;
+		_dtoConverterRegistry = dtoConverterRegistry;
 	}
 
 	@Override
@@ -62,15 +44,27 @@ public class WebhooksModelListener extends BaseModelListener {
 
 	@Override
 	public void onAfterCreate(BaseModel model) throws ModelListenerException {
-		System.out.println("onAfterCreate");
+		System.out.println("onAfterCreate -> " + model.getModelClassName());
+		DTOConverter dtoConverter =
+			_dtoConverterRegistry.getDTOConverter(model.getModelClassName());
+		try {
+			Object o = dtoConverter.toDTO(_defaultDTOConverterContext, model);
+			WebhookSender sender = new WebhookSender();
+			sender.sendEventInformation(o);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void onAfterRemove(BaseModel model) throws ModelListenerException {
-		System.out.println("onAfterRemove");
+		System.out.println("onAfterRemove -> " + model.getModelClassName());
 	}
+
+	private final DTOConverterRegistry _dtoConverterRegistry;
 
 	private final Class<?> _modelClass;
 
-	private ServiceRegistration<?> _serviceRegistration;
+	private final DefaultDTOConverterContext _defaultDTOConverterContext;
 }

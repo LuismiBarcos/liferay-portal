@@ -14,6 +14,7 @@ dependencies {
 	compileOnly project(":apps:portal-vulcan:portal-vulcan-api")
 	compileOnly project(":apps:webhooks:webhooks-api")
 	compileOnly project(":apps:webhooks:webhooks-rest-api")
+	compileOnly project(":apps:webhooks:webhooks-sender")
 	compileOnly project(":core:petra:petra-function")
 	compileOnly project(":core:petra:petra-string")
 }

@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
+import com.liferay.webhooks.sender.WebhookRegister;
 import com.liferay.webhooks.service.WebhookEntityService;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -58,10 +59,19 @@ public class WebhookEntityResourceImpl extends BaseWebhookEntityResourceImpl {
 		Long siteId, WebhookEntity webhookEntity) throws Exception {
 		ServiceContext serviceContext = new ServiceContext();
 		serviceContext.setScopeGroupId(siteId);
-		return _toWebhookEntity(
+
+		com.liferay.webhooks.model.WebhookEntity webhookEntityServiceBuilder =
 			_webhookEntityService.addWebhookEntity(webhookEntity.getEntity(),
 				contextUser.getUserId(), webhookEntity.getWebhookId(),
-				serviceContext));
+				serviceContext);
+
+		_webhookRegister.register(webhookEntity.getEntity(), new DefaultDTOConverterContext(
+			contextAcceptLanguage.isAcceptAllLanguages(),
+			Collections.emptyMap(), _dtoConverterRegistry,
+			webhookEntityServiceBuilder.getWebhookEntityId(), contextAcceptLanguage.getPreferredLocale(),
+			contextUriInfo, contextUser));
+
+		return _toWebhookEntity(webhookEntityServiceBuilder);
 	}
 
 	private WebhookEntity _toWebhookEntity(
@@ -81,4 +91,7 @@ public class WebhookEntityResourceImpl extends BaseWebhookEntityResourceImpl {
 
 	@Reference
 	private DTOConverterRegistry _dtoConverterRegistry;
+
+	@Reference
+	private WebhookRegister _webhookRegister;
 }
