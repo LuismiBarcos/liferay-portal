@@ -420,6 +420,9 @@ public class ObjectEntryManagerImpl implements ObjectEntryManager {
 		defaultDTOConverterContext.setAttribute(
 			"objectDefinition", objectDefinition);
 
+		defaultDTOConverterContext.setAttribute(
+			"pagination", dtoConverterContext.getAttribute("pagination"));
+
 		return _objectEntryDTOConverter.toDTO(
 			defaultDTOConverterContext, objectEntry);
 	}

@@ -48,6 +48,7 @@ import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
+import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 
 import java.io.Serializable;
@@ -58,6 +59,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
@@ -318,57 +320,79 @@ public class ObjectEntryDTOConverter
 			}
 		}
 
-		if(nestedFieldsDepth > 0) {
+		if (nestedFieldsDepth > 0) {
 			List<ObjectRelationship> objectRelationships =
 				_objectRelationshipLocalService.getObjectRelationships(
 					objectDefinition.getObjectDefinitionId());
 
+			Stream<ObjectRelationship> objectRelationshipsStream =
+				objectRelationships.stream();
+
 			List<ObjectRelationship> manyToManyRelationships =
-				objectRelationships.stream().filter(
+				objectRelationshipsStream.filter(
 					objectRelationship -> Objects.equals(
 						objectRelationship.getType(),
-						ObjectRelationshipConstants.TYPE_MANY_TO_MANY)).collect(
-					Collectors.toList());
+						ObjectRelationshipConstants.TYPE_MANY_TO_MANY)
+				).collect(
+					Collectors.toList()
+				);
 
-			manyToManyRelationships.forEach(objectRelationship -> {
-				try {
+			manyToManyRelationships.forEach(
+				objectRelationship -> {
+					try {
+						boolean reverse = objectRelationship.isReverse();
 
-					boolean reverse = objectRelationship.isReverse();
+						if (objectRelationship.isReverse()) {
+							objectRelationship =
+								_objectRelationshipLocalService.
+									fetchReverseObjectRelationship(
+										objectRelationship, false);
+						}
 
-					if (objectRelationship.isReverse()) {
-						objectRelationship =
-							_objectRelationshipLocalService.fetchReverseObjectRelationship(
-								objectRelationship, false);
+						Pagination pagination =
+							(Pagination)dtoConverterContext.getAttribute(
+								"pagination");
+
+						List<com.liferay.object.model.ObjectEntry>
+							manyToManyRelatedObjectEntries =
+								_objectEntryLocalService.
+									getManyToManyRelatedObjectEntries(
+										objectEntry.getGroupId(),
+										objectRelationship.
+											getObjectRelationshipId(),
+										objectEntry.getObjectEntryId(), reverse,
+										pagination.getStartPosition(),
+										pagination.getEndPosition());
+
+						Stream<com.liferay.object.model.ObjectEntry>
+							manyToManyRelatedObjectEntriesStream =
+								manyToManyRelatedObjectEntries.stream();
+
+						map.put(
+							objectRelationship.getName(),
+							manyToManyRelatedObjectEntriesStream.map(
+								objectEntry1 -> {
+									try {
+										return _toDTO(
+											_getDTOConverterContext(
+												dtoConverterContext,
+												objectEntry1.
+													getObjectEntryId()),
+											nestedFieldsDepth - 1,
+											objectEntry1);
+									}
+									catch (Exception exception) {
+										exception.printStackTrace();
+
+										return null;
+									}
+								}
+							).toArray());
 					}
-
-					List<com.liferay.object.model.ObjectEntry>
-						manyToManyRelatedObjectEntries =
-						_objectEntryLocalService.getManyToManyRelatedObjectEntries(
-							objectEntry.getGroupId(),
-							objectRelationship.getObjectRelationshipId(),
-							objectEntry.getObjectEntryId(), reverse, 0, 20);
-
-					Object[] objectEntries =
-						manyToManyRelatedObjectEntries.stream().map(
-							objectEntry1 -> {
-								try {
-									return _toDTO(
-										_getDTOConverterContext(
-											dtoConverterContext,
-											objectEntry1.getObjectEntryId()),
-										nestedFieldsDepth - 1, objectEntry1);
-								}
-								catch (Exception e) {
-									e.printStackTrace();
-									return null;
-								}
-							}).toArray();
-					map.put(objectRelationship.getName(), objectEntries);
-				}
-				catch (PortalException e) {
-					e.printStackTrace();
-				}
-			});
+					catch (PortalException portalException) {
+						portalException.printStackTrace();
+					}
+				});
 		}
 
 		values.remove(objectDefinition.getPKObjectFieldName());

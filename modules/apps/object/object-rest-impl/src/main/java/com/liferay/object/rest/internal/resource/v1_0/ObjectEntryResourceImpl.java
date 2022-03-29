@@ -119,7 +119,7 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 		throws Exception {
 
 		return _objectEntryManager.getObjectEntry(
-			_getDTOConverterContext(null), externalReferenceCode,
+			_getDTOConverterContext(null, null), externalReferenceCode,
 			contextCompany.getCompanyId(), _objectDefinition, null);
 	}
 
@@ -138,13 +138,14 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 
 		return _objectEntryManager.getObjectEntries(
 			contextCompany.getCompanyId(), _objectDefinition, null, aggregation,
-			_getDTOConverterContext(null), filter, pagination, search, sorts);
+			_getDTOConverterContext(null, pagination), filter, pagination,
+			search, sorts);
 	}
 
 	@Override
 	public ObjectEntry getObjectEntry(Long objectEntryId) throws Exception {
 		return _objectEntryManager.getObjectEntry(
-			_getDTOConverterContext(objectEntryId), _objectDefinition,
+			_getDTOConverterContext(objectEntryId, null), _objectDefinition,
 			objectEntryId);
 	}
 
@@ -154,7 +155,7 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 		throws Exception {
 
 		return _objectEntryManager.getObjectEntry(
-			_getDTOConverterContext(null), externalReferenceCode,
+			_getDTOConverterContext(null, null), externalReferenceCode,
 			contextCompany.getCompanyId(), _objectDefinition, scopeKey);
 	}
 
@@ -167,8 +168,8 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 
 		return _objectEntryManager.getObjectEntries(
 			contextCompany.getCompanyId(), _objectDefinition, scopeKey,
-			aggregation, _getDTOConverterContext(null), filter, pagination,
-			search, sorts);
+			aggregation, _getDTOConverterContext(null, pagination), filter,
+			pagination, search, sorts);
 	}
 
 	@Override
@@ -176,7 +177,7 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 		throws Exception {
 
 		return _objectEntryManager.addObjectEntry(
-			_getDTOConverterContext(null), _objectDefinition, objectEntry,
+			_getDTOConverterContext(null, null), _objectDefinition, objectEntry,
 			null);
 	}
 
@@ -186,7 +187,7 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 		throws Exception {
 
 		return _objectEntryManager.addObjectEntry(
-			_getDTOConverterContext(null), _objectDefinition, objectEntry,
+			_getDTOConverterContext(null, null), _objectDefinition, objectEntry,
 			scopeKey);
 	}
 
@@ -196,7 +197,7 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 		throws Exception {
 
 		return _objectEntryManager.addOrUpdateObjectEntry(
-			_getDTOConverterContext(null), externalReferenceCode,
+			_getDTOConverterContext(null, null), externalReferenceCode,
 			_objectDefinition, objectEntry, null);
 	}
 
@@ -206,7 +207,7 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 		throws Exception {
 
 		return _objectEntryManager.updateObjectEntry(
-			_getDTOConverterContext(objectEntryId), _objectDefinition,
+			_getDTOConverterContext(objectEntryId, null), _objectDefinition,
 			objectEntryId, objectEntry);
 	}
 
@@ -217,7 +218,7 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 		throws Exception {
 
 		return _objectEntryManager.addOrUpdateObjectEntry(
-			_getDTOConverterContext(null), externalReferenceCode,
+			_getDTOConverterContext(null, null), externalReferenceCode,
 			_objectDefinition, objectEntry, scopeKey);
 	}
 
@@ -257,13 +258,20 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 	}
 
 	private DefaultDTOConverterContext _getDTOConverterContext(
-		Long objectEntryId) {
+		Long objectEntryId, Pagination pagination) {
 
-		return new DefaultDTOConverterContext(
-			contextAcceptLanguage.isAcceptAllLanguages(), null, null,
-			contextHttpServletRequest, objectEntryId,
-			contextAcceptLanguage.getPreferredLocale(), contextUriInfo,
-			contextUser);
+		DefaultDTOConverterContext defaultDTOConverterContext =
+			new DefaultDTOConverterContext(
+				contextAcceptLanguage.isAcceptAllLanguages(), null, null,
+				contextHttpServletRequest, objectEntryId,
+				contextAcceptLanguage.getPreferredLocale(), contextUriInfo,
+				contextUser);
+
+		defaultDTOConverterContext.setAttribute(
+			"pagination",
+			(pagination == null) ? Pagination.of(1, 20) : pagination);
+
+		return defaultDTOConverterContext;
 	}
 
 	private void _loadObjectDefinition(Map<String, Serializable> parameters)
