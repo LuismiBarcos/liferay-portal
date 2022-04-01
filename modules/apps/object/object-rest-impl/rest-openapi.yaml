@@ -198,6 +198,33 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/ObjectEntry"
             tags: ["ObjectEntry"]
+    "{objectEntryId}/relationshipName/{relationshipName}/relatedObject/{relatedObjectId}":
+        put:
+            parameters:
+                - in: path
+                  name: objectEntryId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+                - in: path
+                  name: relationshipName
+                  required: true
+                  schema:
+                      type: string
+                - in: path
+                  name: relatedObjectId
+                  required: true
+                  schema:
+                      format: int64
+                      type: integer
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ObjectEntry"
+            tags: ["ObjectEntry"]
     "/scopes/{scopeKey}/by-external-reference-code/{externalReferenceCode}":
         delete:
             operationId: deleteScopeScopeKeyByExternalReferenceCode
