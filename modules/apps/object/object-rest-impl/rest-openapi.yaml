@@ -200,6 +200,7 @@ paths:
             tags: ["ObjectEntry"]
     "{objectEntryId}/relationshipName/{relationshipName}/relatedObject/{relatedObjectId}":
         put:
+            operationId: putObjectEntryRelationshipNameRelatedObject
             parameters:
                 - in: path
                   name: objectEntryId
@@ -222,6 +223,9 @@ paths:
                 200:
                     content:
                         application/json:
+                            schema:
+                                $ref: "#/components/schemas/ObjectEntry"
+                        application/xml:
                             schema:
                                 $ref: "#/components/schemas/ObjectEntry"
             tags: ["ObjectEntry"]

@@ -76,6 +76,10 @@ public interface ObjectEntryResource {
 			String externalReferenceCode, ObjectEntry objectEntry)
 		throws Exception;
 
+	public ObjectEntry putObjectEntryRelationshipNameRelatedObject(
+			Long objectEntryId, String relationshipName, Long relatedObjectId)
+		throws Exception;
+
 	public void deleteScopeScopeKeyByExternalReferenceCode(
 			String scopeKey, String externalReferenceCode)
 		throws Exception;
