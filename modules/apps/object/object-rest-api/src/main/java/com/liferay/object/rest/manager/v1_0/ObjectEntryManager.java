@@ -40,6 +40,11 @@ public interface ObjectEntryManager {
 			ObjectEntry objectEntry, String scopeKey)
 		throws Exception;
 
+	public ObjectEntry addObjectRelationshipMappingTableValues(
+		DTOConverterContext dtoConverterContext, long userId, ObjectDefinition objectDefinition,
+		String objectRelationshipName, long primaryKey1, long primaryKey2)
+		throws Exception;
+
 	public void deleteObjectEntry(
 			ObjectDefinition objectDefinition, long objectEntryId)
 		throws Exception;

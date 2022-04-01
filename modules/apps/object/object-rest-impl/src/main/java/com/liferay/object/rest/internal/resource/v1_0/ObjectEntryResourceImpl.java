@@ -124,6 +124,17 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 	}
 
 	@Override
+	public ObjectEntry putObjectEntryRelationshipNameRelatedObject(
+		Long objectEntryId, String relationshipName, Long relatedObjectId)
+		throws Exception {
+
+		return _objectEntryManager.addObjectRelationshipMappingTableValues(
+			_getDTOConverterContext(objectEntryId, null),
+			contextUser.getUserId(), _objectDefinition, relationshipName,
+			objectEntryId, relatedObjectId);
+	}
+
+	@Override
 	public EntityModel getEntityModel(MultivaluedMap multivaluedMap) {
 		return new ObjectEntryEntityModel(
 			_objectFieldLocalService.getObjectFields(

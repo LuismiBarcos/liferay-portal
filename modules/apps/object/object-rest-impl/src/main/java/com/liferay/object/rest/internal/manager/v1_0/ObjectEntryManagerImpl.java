@@ -19,6 +19,7 @@ import com.liferay.object.constants.ObjectConstants;
 import com.liferay.object.exception.NoSuchObjectEntryException;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectField;
+import com.liferay.object.model.ObjectRelationship;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.internal.dto.v1_0.converter.ObjectEntryDTOConverter;
 import com.liferay.object.rest.internal.resource.v1_0.ObjectEntryResourceImpl;
@@ -28,6 +29,7 @@ import com.liferay.object.scope.ObjectScopeProvider;
 import com.liferay.object.scope.ObjectScopeProviderRegistry;
 import com.liferay.object.service.ObjectEntryService;
 import com.liferay.object.service.ObjectFieldLocalService;
+import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Sort;
@@ -66,6 +68,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.MultivaluedMap;
@@ -97,6 +101,35 @@ public class ObjectEntryManagerImpl implements ObjectEntryManager {
 					objectEntry.getProperties(),
 					dtoConverterContext.getLocale()),
 				new ServiceContext()));
+	}
+
+	@Override
+	public ObjectEntry addObjectRelationshipMappingTableValues(
+		DTOConverterContext dtoConverterContext, long userId, ObjectDefinition objectDefinition,
+		String objectRelationshipName, long primaryKey1, long primaryKey2)
+		throws Exception {
+
+		// Checking permissions by retrieving the objects from Remote Service
+		com.liferay.object.model.ObjectEntry objectEntry =
+			_objectEntryService.getObjectEntry(primaryKey1);
+		_objectEntryService.getObjectEntry(primaryKey2);
+
+		List<ObjectRelationship> objectRelationships =
+			_objectRelationshipLocalService.getObjectRelationships(objectDefinition.getObjectDefinitionId()).stream()
+				.filter( objectRelationship -> objectRelationship.getName().equals(objectRelationshipName))
+				.collect(Collectors.toList());
+
+		long objectRelationshipId = -1;
+		if(objectRelationships.size() > 0) {
+			objectRelationshipId = objectRelationships.get(0).getObjectRelationshipId();
+		}
+
+		_objectRelationshipLocalService.addObjectRelationshipMappingTableValues(
+			userId, objectRelationshipId, primaryKey1, primaryKey2,
+			new ServiceContext());
+
+		return getObjectEntry(
+			dtoConverterContext, objectDefinition, primaryKey1);
 	}
 
 	@Override
@@ -482,6 +515,9 @@ public class ObjectEntryManagerImpl implements ObjectEntryManager {
 
 	@Reference
 	private ObjectScopeProviderRegistry _objectScopeProviderRegistry;
+
+	@Reference
+	private ObjectRelationshipLocalService _objectRelationshipLocalService;
 
 	@Reference
 	private Queries _queries;
