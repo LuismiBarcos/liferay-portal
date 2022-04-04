@@ -80,6 +80,10 @@ public interface ObjectEntryResource {
 			Long objectEntryId, String relationshipName)
 		throws Exception;
 
+	public ObjectEntry putObjectEntryRelationshipName(
+			Long objectEntryId, String relationshipName, String string)
+		throws Exception;
+
 	public ObjectEntry putObjectEntryRelationshipNameRelatedObject(
 			Long objectEntryId, String relationshipName, Long relatedObjectId)
 		throws Exception;

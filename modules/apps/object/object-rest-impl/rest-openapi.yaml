@@ -228,6 +228,7 @@ paths:
                                 type: array
             tags: ["ObjectEntry"]
         put:
+            operationId: putObjectEntryRelationshipName
             parameters:
                 - in: path
                   name: objectEntryId
