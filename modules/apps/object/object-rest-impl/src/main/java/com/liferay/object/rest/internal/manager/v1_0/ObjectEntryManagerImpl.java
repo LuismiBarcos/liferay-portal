@@ -33,7 +33,7 @@ import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.service.ObjectEntryService;
 import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
-import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.object.service.ObjectRelationshipService;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Sort;
@@ -74,7 +74,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.MultivaluedMap;
@@ -252,6 +251,27 @@ public class ObjectEntryManagerImpl implements ObjectEntryManager {
 		}
 
 		return null;
+	}
+
+	@Override
+	public void deleteRelatedObject(
+		Long objectEntryId, String relationshipName,
+		Long relatedObjectId, ObjectDefinition objectDefinition) throws Exception {
+
+		List<ObjectRelationship> objectRelationships =
+			_objectRelationshipLocalService.getObjectRelationships(
+				objectDefinition.getObjectDefinitionId()).stream().filter(
+				objectRelationship -> objectRelationship.getName().equals(
+					relationshipName)).collect(Collectors.toList());
+
+		long objectRelationshipId;
+		if(objectRelationships.size() == 0) {
+			return;
+		}
+		objectRelationshipId = objectRelationships.get(0).getObjectRelationshipId();
+
+		_objectRelationshipLocalService.deleteObjectRelationshipMappingTableValues(
+			objectRelationshipId, objectEntryId, relatedObjectId);
 	}
 
 	@Override
@@ -582,6 +602,9 @@ public class ObjectEntryManagerImpl implements ObjectEntryManager {
 
 	@Reference
 	private ObjectDefinitionLocalService _objectDefinitionLocalService;
+
+	@Reference
+	private ObjectRelationshipService _objectRelationshipService;
 
 	@Reference
 	private Queries _queries;

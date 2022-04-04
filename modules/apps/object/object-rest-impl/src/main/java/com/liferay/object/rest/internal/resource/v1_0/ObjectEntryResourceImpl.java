@@ -105,6 +105,15 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 	}
 
 	@Override
+	public void deleteObjectEntryRelationshipNameRelatedObject(
+		Long objectEntryId, String relationshipName, Long relatedObjectId)
+		throws Exception {
+		_objectEntryManager.deleteRelatedObject(
+			objectEntryId, relationshipName, relatedObjectId,
+			_objectDefinition);
+	}
+
+	@Override
 	public void deleteScopeScopeKeyByExternalReferenceCode(
 			String scopeKey, String externalReferenceCode)
 		throws Exception {
