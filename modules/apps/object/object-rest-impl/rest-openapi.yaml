@@ -288,6 +288,7 @@ paths:
                                 $ref: "#/components/schemas/ObjectEntry"
             tags: ["ObjectEntry"]
         delete:
+            operationId: deleteObjectEntryRelationshipNameRelatedObject
             parameters:
                 - in: path
                   name: objectEntryId

@@ -84,6 +84,10 @@ public interface ObjectEntryResource {
 			Long objectEntryId, String relationshipName, String string)
 		throws Exception;
 
+	public void deleteObjectEntryRelationshipNameRelatedObject(
+			Long objectEntryId, String relationshipName, Long relatedObjectId)
+		throws Exception;
+
 	public ObjectEntry putObjectEntryRelationshipNameRelatedObject(
 			Long objectEntryId, String relationshipName, Long relatedObjectId)
 		throws Exception;
