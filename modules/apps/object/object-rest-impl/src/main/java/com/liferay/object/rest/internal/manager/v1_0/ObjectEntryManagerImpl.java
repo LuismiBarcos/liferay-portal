@@ -16,6 +16,7 @@ package com.liferay.object.rest.internal.manager.v1_0;
 
 import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.object.constants.ObjectConstants;
+import com.liferay.object.constants.ObjectRelationshipConstants;
 import com.liferay.object.exception.NoSuchObjectEntryException;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectField;
@@ -27,9 +28,12 @@ import com.liferay.object.rest.internal.search.aggregation.AggregationUtil;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.scope.ObjectScopeProvider;
 import com.liferay.object.scope.ObjectScopeProviderRegistry;
+import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.service.ObjectEntryService;
 import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Sort;
@@ -61,6 +65,7 @@ import java.io.Serializable;
 
 import java.text.ParseException;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -75,6 +80,7 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
+import com.liferay.portal.vulcan.util.TransformUtil;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -101,6 +107,58 @@ public class ObjectEntryManagerImpl implements ObjectEntryManager {
 					objectEntry.getProperties(),
 					dtoConverterContext.getLocale()),
 				new ServiceContext()));
+	}
+
+	@Override
+	public Page<ObjectEntry> getRelatedObjectEntries(
+		DTOConverterContext dtoConverterContext, long userId,
+		ObjectDefinition objectDefinition, String objectRelationshipName,
+		long primaryKey1) throws Exception {
+		// Checking permissions by retrieving the objects from Remote Service
+		_objectEntryService.getObjectEntry(primaryKey1);
+
+		List<ObjectRelationship> objectRelationships =
+			_objectRelationshipLocalService.getObjectRelationships(
+				objectDefinition.getObjectDefinitionId()).stream().filter(
+				objectRelationship -> objectRelationship.getName().equals(
+					objectRelationshipName)).collect(Collectors.toList());
+
+		ObjectRelationship objectRelationship;
+		if(objectRelationships.size() == 0) {
+			return null;
+		}
+		objectRelationship = objectRelationships.get(0);
+
+		List<com.liferay.object.model.ObjectEntry> objectEntries = Collections.emptyList();
+
+		Pagination pagination =
+			(Pagination)dtoConverterContext.getAttribute(
+				"pagination");
+		switch (objectRelationship.getType()) {
+			case ObjectRelationshipConstants.TYPE_MANY_TO_MANY:
+				objectEntries =
+					_objectEntryLocalService.getManyToManyRelatedObjectEntries(
+						0, objectRelationship.getObjectRelationshipId(),
+						primaryKey1, objectRelationship.isReverse(),
+						pagination.getStartPosition(),
+						pagination.getEndPosition());
+				break;
+			case ObjectRelationshipConstants.TYPE_ONE_TO_MANY:
+				objectEntries =
+					_objectEntryLocalService.getOneToManyRelatedObjectEntries(
+						0, objectRelationship.getObjectRelationshipId(),
+						primaryKey1, pagination.getStartPosition(),
+						pagination.getEndPosition());
+				break;
+		}
+
+		return Page.of(TransformUtil.transform(
+			objectEntries, objectEntry1 -> _toObjectEntry(
+				dtoConverterContext,
+				_objectDefinitionLocalService.getObjectDefinition(
+					objectEntry1.getObjectDefinitionId()),
+				_objectEntryService.getObjectEntry(
+					objectEntry1.getObjectEntryId()))));
 	}
 
 	@Override
@@ -518,6 +576,12 @@ public class ObjectEntryManagerImpl implements ObjectEntryManager {
 
 	@Reference
 	private ObjectRelationshipLocalService _objectRelationshipLocalService;
+
+	@Reference
+	private ObjectEntryLocalService _objectEntryLocalService;
+
+	@Reference
+	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 	@Reference
 	private Queries _queries;

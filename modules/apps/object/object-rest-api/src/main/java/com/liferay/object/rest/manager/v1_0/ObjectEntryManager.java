@@ -54,6 +54,11 @@ public interface ObjectEntryManager {
 			ObjectDefinition objectDefinition, String scopeKey)
 		throws Exception;
 
+	public Page<ObjectEntry> getRelatedObjectEntries(
+		DTOConverterContext dtoConverterContext, long userId,
+		ObjectDefinition objectDefinition, String objectRelationshipName,
+		long primaryKey1) throws Exception;
+
 	public ObjectEntry fetchObjectEntry(
 			DTOConverterContext dtoConverterContext,
 			ObjectDefinition objectDefinition, long objectEntryId)

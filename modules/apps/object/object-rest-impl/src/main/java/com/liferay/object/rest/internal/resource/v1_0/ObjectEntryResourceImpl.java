@@ -135,6 +135,15 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 	}
 
 	@Override
+	public Page<ObjectEntry> getObjectEntryRelationshipNameRelationshipNamePage(
+		Long objectEntryId, String relationshipName) throws Exception {
+		return _objectEntryManager.getRelatedObjectEntries(
+			_getDTOConverterContext(objectEntryId, null),
+			contextUser.getUserId(), _objectDefinition, relationshipName,
+			objectEntryId);
+	}
+
+	@Override
 	public EntityModel getEntityModel(MultivaluedMap multivaluedMap) {
 		return new ObjectEntryEntityModel(
 			_objectFieldLocalService.getObjectFields(
