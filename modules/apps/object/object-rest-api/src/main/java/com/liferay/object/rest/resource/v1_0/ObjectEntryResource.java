@@ -76,6 +76,10 @@ public interface ObjectEntryResource {
 			String externalReferenceCode, ObjectEntry objectEntry)
 		throws Exception;
 
+	public Page<ObjectEntry> getObjectEntryRelationshipNameRelationshipNamePage(
+			Long objectEntryId, String relationshipName)
+		throws Exception;
+
 	public ObjectEntry putObjectEntryRelationshipNameRelatedObject(
 			Long objectEntryId, String relationshipName, Long relatedObjectId)
 		throws Exception;

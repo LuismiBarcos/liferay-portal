@@ -200,6 +200,7 @@ paths:
             tags: ["ObjectEntry"]
     "{objectEntryId}/relationshipName/{relationshipName}":
         get:
+            operationId: getObjectEntryRelationshipNameRelationshipNamePage
             parameters:
                 - in: path
                   name: objectEntryId
