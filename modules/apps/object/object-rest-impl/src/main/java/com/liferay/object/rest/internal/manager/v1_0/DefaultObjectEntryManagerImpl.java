@@ -20,11 +20,12 @@ import com.liferay.account.service.AccountEntryLocalService;
 import com.liferay.object.constants.ObjectConstants;
 import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.constants.ObjectFieldConstants;
-import com.liferay.object.constants.ObjectRelationshipConstants;
 import com.liferay.object.exception.NoSuchObjectEntryException;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectRelationship;
+import com.liferay.object.related.models.ObjectRelatedModelsProvider;
+import com.liferay.object.related.models.ObjectRelatedModelsProviderRegistry;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.internal.dto.v1_0.converter.ObjectEntryDTOConverter;
 import com.liferay.object.rest.internal.odata.entity.v1_0.ObjectEntryEntityModel;
@@ -36,13 +37,15 @@ import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.service.ObjectEntryService;
 import com.liferay.object.service.ObjectFieldLocalService;
-import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.object.service.ObjectRelationshipService;
 import com.liferay.petra.sql.dsl.expression.Predicate;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Sort;
@@ -50,6 +53,7 @@ import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.search.filter.TermFilter;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -71,11 +75,14 @@ import com.liferay.portal.search.query.Queries;
 import com.liferay.portal.search.searcher.SearchRequestBuilder;
 import com.liferay.portal.vulcan.aggregation.Aggregation;
 import com.liferay.portal.vulcan.aggregation.Facet;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
+import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.util.ActionUtil;
+import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 import com.liferay.portal.vulcan.util.SearchUtil;
 import com.liferay.portal.vulcan.util.TransformUtil;
 
@@ -84,6 +91,7 @@ import java.io.Serializable;
 import java.text.ParseException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -92,6 +100,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
@@ -471,48 +480,76 @@ public class DefaultObjectEntryManagerImpl
 		com.liferay.object.model.ObjectEntry objectEntry =
 			_objectEntryService.getObjectEntry(objectEntryId);
 
-		List<ObjectEntry> objectEntries = new ArrayList<>();
-
 		ObjectRelationship objectRelationship =
 			_objectRelationshipService.getObjectRelationship(
 				objectDefinition.getObjectDefinitionId(),
 				objectRelationshipName);
 
-		if (Objects.equals(
-				objectRelationship.getType(),
-				ObjectRelationshipConstants.TYPE_ONE_TO_MANY)) {
+		if (objectRelationship.getObjectDefinitionId1() ==
+				objectDefinition.getObjectDefinitionId()) {
 
-			objectEntries = _toObjectEntries(
-				dtoConverterContext,
-				_objectEntryLocalService.getOneToManyRelatedObjectEntries(
-					objectEntry.getGroupId(),
-					objectRelationship.getObjectRelationshipId(),
-					objectEntry.getObjectEntryId(),
-					pagination.getStartPosition(),
-					pagination.getEndPosition()));
+			objectDefinition =
+				_objectDefinitionLocalService.getObjectDefinition(
+					objectRelationship.getObjectDefinitionId2());
 		}
-		else if (Objects.equals(
-					objectRelationship.getType(),
-					ObjectRelationshipConstants.TYPE_MANY_TO_MANY)) {
 
-			boolean reverse = objectRelationship.isReverse();
+		ObjectRelatedModelsProvider objectRelatedModelsProvider =
+			_objectRelatedModelsProviderRegistry.getObjectRelatedModelsProvider(
+				objectDefinition.getClassName(), objectRelationship.getType());
 
-			if (reverse) {
-				objectRelationship =
-					_objectRelationshipLocalService.
-						fetchReverseObjectRelationship(
-							objectRelationship, false);
-			}
+		if (objectDefinition.isSystem()) {
+			return Page.of(
+				TransformUtil.transform(
+					(List<BaseModel<?>>)
+						objectRelatedModelsProvider.getRelatedModels(
+							objectEntry.getGroupId(),
+							objectRelationship.getObjectRelationshipId(),
+							objectEntry.getPrimaryKey(), QueryUtil.ALL_POS,
+							QueryUtil.ALL_POS),
+					relatedModel -> {
+						DTOConverter<BaseModel<?>, ?> dtoConverter =
+							(DTOConverter<BaseModel<?>, ?>)
+								_dtoConverterRegistry.getDTOConverter(
+									relatedModel.getModelClassName());
 
-			objectEntries = _toObjectEntries(
-				dtoConverterContext,
-				_objectEntryLocalService.getManyToManyRelatedObjectEntries(
-					objectEntry.getGroupId(),
-					objectRelationship.getObjectRelationshipId(),
-					objectEntry.getObjectEntryId(), reverse,
-					pagination.getStartPosition(),
-					pagination.getEndPosition()));
+						if (dtoConverter == null) {
+							throw new InternalServerErrorException(
+								"No DTO converter found");
+						}
+
+						User user = _userLocalService.getUser(
+							objectEntry.getUserId());
+
+						DefaultDTOConverterContext defaultDTOConverterContext =
+							new DefaultDTOConverterContext(
+								false, Collections.emptyMap(),
+								_dtoConverterRegistry,
+								relatedModel.getPrimaryKeyObj(),
+								user.getLocale(), null, user);
+
+						Object relatedDTOModel = dtoConverter.toDTO(
+							defaultDTOConverterContext, relatedModel);
+
+						Map<String, Object> relatedObjectProperties =
+							ObjectMapperUtil.readValue(
+								Map.class, relatedDTOModel.toString());
+
+						return new ObjectEntry() {
+							{
+								actions = Collections.emptyMap();
+								id = (Long)relatedModel.getPrimaryKeyObj();
+								properties = relatedObjectProperties;
+							}
+						};
+					}));
 		}
+
+		List<com.liferay.object.model.ObjectEntry> objectEntries =
+			objectRelatedModelsProvider.getRelatedModels(
+				objectEntry.getGroupId(),
+				objectRelationship.getObjectRelationshipId(),
+				objectEntry.getPrimaryKey(), QueryUtil.ALL_POS,
+				QueryUtil.ALL_POS);
 
 		return Page.of(
 			HashMapBuilder.put(
@@ -526,7 +563,7 @@ public class DefaultObjectEntryManagerImpl
 						objectEntry.getObjectDefinitionId()),
 					objectEntry.getGroupId(), dtoConverterContext.getUriInfo())
 			).build(),
-			objectEntries);
+			_toObjectEntries(dtoConverterContext, objectEntries));
 	}
 
 	@Override
@@ -804,6 +841,9 @@ public class DefaultObjectEntryManagerImpl
 	@Reference
 	private Aggregations _aggregations;
 
+	@Reference
+	private DTOConverterRegistry _dtoConverterRegistry;
+
 	@Reference(
 		target = "(result.class.name=com.liferay.portal.kernel.search.filter.Filter)"
 	)
@@ -812,6 +852,9 @@ public class DefaultObjectEntryManagerImpl
 
 	@Reference
 	private FilterParserProvider _filterParserProvider;
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 	@Reference
 	private ObjectDefinitionLocalService _objectDefinitionLocalService;
@@ -829,7 +872,8 @@ public class DefaultObjectEntryManagerImpl
 	private ObjectFieldLocalService _objectFieldLocalService;
 
 	@Reference
-	private ObjectRelationshipLocalService _objectRelationshipLocalService;
+	private ObjectRelatedModelsProviderRegistry
+		_objectRelatedModelsProviderRegistry;
 
 	@Reference
 	private ObjectRelationshipService _objectRelationshipService;
@@ -839,5 +883,8 @@ public class DefaultObjectEntryManagerImpl
 
 	@Reference
 	private SearchRequestBuilderFactory _searchRequestBuilderFactory;
+
+	@Reference
+	private UserLocalService _userLocalService;
 
 }
