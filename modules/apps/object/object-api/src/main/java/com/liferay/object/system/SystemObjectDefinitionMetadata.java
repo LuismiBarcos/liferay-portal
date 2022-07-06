@@ -15,6 +15,7 @@
 package com.liferay.object.system;
 
 import com.liferay.object.model.ObjectField;
+import com.liferay.object.model.ObjectRelationship;
 import com.liferay.petra.sql.dsl.Column;
 import com.liferay.petra.sql.dsl.Table;
 
@@ -37,6 +38,10 @@ public interface SystemObjectDefinitionMetadata {
 	public String getName();
 
 	public List<ObjectField> getObjectFields();
+
+	public default List<ObjectRelationship> getObjectRelationships() {
+		return null;
+	}
 
 	public Map<Locale, String> getPluralLabelMap();
 

@@ -16,12 +16,15 @@ package com.liferay.object.system;
 
 import com.liferay.object.action.engine.ObjectActionEngine;
 import com.liferay.object.model.ObjectField;
+import com.liferay.object.model.ObjectRelationship;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
+import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.object.system.model.listener.SystemObjectDefinitionMetadataModelListener;
 import com.liferay.object.util.LocalizedMapUtil;
 import com.liferay.object.util.ObjectFieldUtil;
 import com.liferay.petra.sql.dsl.Table;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.ModelListener;
@@ -29,6 +32,8 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -63,6 +68,26 @@ public abstract class BaseSystemObjectDefinitionMetadata
 		}
 
 		return tableName;
+	}
+
+	@Override
+	public List<ObjectRelationship> getObjectRelationships() {
+		return objectDefinitionLocalService.getObjectDefinitions(
+			QueryUtil.ALL_POS, QueryUtil.ALL_POS
+		).stream(
+		).filter(
+			objectDefinition -> objectDefinition.getDBTableName(
+			).equals(
+				getTable().getTableName()
+			)
+		).findFirst(
+		).map(
+			objectDefinition ->
+				objectRelationshipLocalService.getObjectRelationships(
+					objectDefinition.getObjectDefinitionId())
+		).orElse(
+			Collections.emptyList()
+		);
 	}
 
 	@Override
@@ -121,6 +146,9 @@ public abstract class BaseSystemObjectDefinitionMetadata
 
 	@Reference
 	protected ObjectEntryLocalService objectEntryLocalService;
+
+	@Reference
+	protected ObjectRelationshipLocalService objectRelationshipLocalService;
 
 	@Reference
 	protected UserLocalService userLocalService;

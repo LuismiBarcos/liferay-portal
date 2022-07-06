@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.vulcan.internal.configuration.util.ConfigurationUtil;
+import com.liferay.portal.vulcan.jaxrs.extension.OpenAPIEndpointsExtension;
 import com.liferay.portal.vulcan.openapi.DTOProperty;
 import com.liferay.portal.vulcan.openapi.OpenAPISchemaFilter;
 import com.liferay.portal.vulcan.resource.OpenAPIResource;
@@ -130,11 +131,24 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 			openAPI.setServers(Collections.singletonList(server));
 		}
 
+		Map<String, PathItem> extendedEndpoints =
+			_openAPIEndpointsExtension.getExtendedEndpoints();
+
+		OpenAPI finalOpenAPI = openAPI;
+
+		if (extendedEndpoints != null && !extendedEndpoints.isEmpty()) {
+			extendedEndpoints.forEach(
+				(key, pathItem) -> finalOpenAPI.getPaths(
+				).addPathItem(
+					key, pathItem
+				));
+		}
+
 		if (StringUtil.equalsIgnoreCase("yaml", type)) {
 			return Response.status(
 				Response.Status.OK
 			).entity(
-				Yaml.pretty(openAPI)
+				Yaml.pretty(finalOpenAPI)
 			).type(
 				"application/yaml"
 			).build();
@@ -143,7 +157,7 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 		return Response.status(
 			Response.Status.OK
 		).entity(
-			openAPI
+			finalOpenAPI
 		).type(
 			MediaType.APPLICATION_JSON_TYPE
 		).build();
@@ -479,5 +493,8 @@ public class OpenAPIResourceImpl implements OpenAPIResource {
 
 	@Reference
 	private ConfigurationAdmin _configurationAdmin;
+
+	@Reference
+	private OpenAPIEndpointsExtension _openAPIEndpointsExtension;
 
 }
