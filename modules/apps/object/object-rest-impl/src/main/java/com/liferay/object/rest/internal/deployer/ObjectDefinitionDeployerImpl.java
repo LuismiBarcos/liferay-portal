@@ -17,11 +17,13 @@ package com.liferay.object.rest.internal.deployer;
 import com.liferay.object.deployer.ObjectDefinitionDeployer;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
+import com.liferay.object.rest.extension.RelationshipsResource;
 import com.liferay.object.rest.internal.graphql.dto.v1_0.ObjectDefinitionGraphQLDTOContributor;
 import com.liferay.object.rest.internal.jaxrs.context.provider.ObjectDefinitionContextProvider;
 import com.liferay.object.rest.internal.jaxrs.exception.mapper.ObjectEntryValuesExceptionMapper;
 import com.liferay.object.rest.internal.jaxrs.exception.mapper.ObjectValidationRuleEngineExceptionMapper;
 import com.liferay.object.rest.internal.jaxrs.exception.mapper.RequiredObjectRelationshipExceptionMapper;
+import com.liferay.object.rest.internal.jaxrs.extension.RelationshipsResourceImpl;
 import com.liferay.object.rest.internal.resource.v1_0.BaseObjectEntryResourceImpl;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerTracker;
 import com.liferay.object.scope.ObjectScopeProvider;
@@ -122,6 +124,15 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 							"osgi.jaxrs.application.select",
 							"(osgi.jaxrs.name=" + objectDefinition.getName() +
 								")"
+						).put(
+							"osgi.jaxrs.resource", "true"
+						).build()),
+					_relationshipsResourceComponentFactory.newInstance(
+						HashMapDictionaryBuilder.<String, Object>put(
+							"api.version", "v1.0"
+						).put(
+							"osgi.jaxrs.application.select",
+							"(osgi.jaxrs.name=Liferay.Headless.Delivery)"
 						).put(
 							"osgi.jaxrs.resource", "true"
 						).build())));
@@ -333,6 +344,11 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 		target = "(component.factory=com.liferay.object.rest.internal.resource.v1_0.ObjectEntryResource)"
 	)
 	private ComponentFactory _objectEntryResourceComponentFactory;
+
+	@Reference(
+		target = "(component.factory=com.liferay.object.rest.extension.RelationshipsResource)"
+	)
+	private ComponentFactory _relationshipsResourceComponentFactory;
 
 	@Reference
 	private ObjectFieldLocalService _objectFieldLocalService;
