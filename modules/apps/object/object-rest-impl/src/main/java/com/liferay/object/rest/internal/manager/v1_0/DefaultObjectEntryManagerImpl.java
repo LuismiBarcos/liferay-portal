@@ -461,7 +461,7 @@ public class DefaultObjectEntryManagerImpl
 	}
 
 	@Override
-	public Page<ObjectEntry> getObjectEntryRelatedObjectEntries(
+	public Page<Object> getObjectEntryRelatedObjectEntries(
 			DTOConverterContext dtoConverterContext,
 			ObjectDefinition objectDefinition, Long objectEntryId,
 			String objectRelationshipName, Pagination pagination)
@@ -683,7 +683,7 @@ public class DefaultObjectEntryManagerImpl
 		return dtoConverter.toDTO(defaultDTOConverterContext, baseModel);
 	}
 
-	private Page<ObjectEntry> _getSystemObjectRelatedObjectEntries(
+	private Page<Object> _getSystemObjectRelatedObjectEntries(
 			ObjectDefinition currentObjectDefinition, long currentObjectEntryId,
 			ObjectRelatedModelsProvider objectRelatedModelsProvider,
 			DTOConverterContext dtoConverterContext,
