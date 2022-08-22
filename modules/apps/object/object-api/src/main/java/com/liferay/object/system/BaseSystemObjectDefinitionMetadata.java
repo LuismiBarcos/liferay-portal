@@ -15,14 +15,22 @@
 package com.liferay.object.system;
 
 import com.liferay.object.model.ObjectField;
+import com.liferay.object.model.ObjectRelationship;
+import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.object.util.LocalizedMapUtil;
 import com.liferay.object.util.ObjectFieldUtil;
 import com.liferay.petra.sql.dsl.Table;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Marco Leo
@@ -56,6 +64,26 @@ public abstract class BaseSystemObjectDefinitionMetadata
 		return "id";
 	}
 
+	@Override
+	public List<ObjectRelationship> getSystemObjectRelationships() {
+		return objectDefinitionLocalService.getObjectDefinitions(
+			QueryUtil.ALL_POS, QueryUtil.ALL_POS
+		).stream(
+		).filter(
+			objectDefinition -> objectDefinition.getDBTableName(
+			).equals(
+				getTable().getTableName()
+			)
+		).findFirst(
+		).map(
+			objectDefinition ->
+				objectRelationshipLocalService.getObjectRelationships(
+					objectDefinition.getObjectDefinitionId())
+		).orElse(
+			Collections.emptyList()
+		);
+	}
+
 	protected Map<Locale, String> createLabelMap(String labelKey) {
 		return LocalizedMapUtil.getLocalizedMap(_translate(labelKey));
 	}
@@ -76,6 +104,12 @@ public abstract class BaseSystemObjectDefinitionMetadata
 			0, businessType, dbColumnName, dbType, false, false, null,
 			_translate(labelKey), name, required, system);
 	}
+
+	@Reference
+	protected ObjectDefinitionLocalService objectDefinitionLocalService;
+
+	@Reference
+	protected ObjectRelationshipLocalService objectRelationshipLocalService;
 
 	private String _translate(String labelKey) {
 		return LanguageUtil.get(LocaleUtil.getDefault(), labelKey);
