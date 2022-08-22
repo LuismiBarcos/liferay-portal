@@ -20,26 +20,30 @@ import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.system.SystemObjectDefinitionMetadata;
 import com.liferay.object.system.SystemObjectDefinitionMetadataTracker;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
+import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.extension.OpenAPIEndpointsExtension;
+import com.liferay.portal.vulcan.util.TransformUtil;
 
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.parameters.Parameter;
-import javafx.util.Pair;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
-import javax.ws.rs.core.UriInfo;
+import java.net.URI;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import javax.ws.rs.core.UriInfo;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Luis Miguel Barcos
@@ -54,88 +58,196 @@ public class OpenAPIRelationshipsExtendedEndpoints
 
 		Map<String, PathItem> pathItemMap = new HashMap<>();
 
-		List<ObjectDefinition> systemObjectDefinitions =
-			_objectDefinitionLocalService.getSystemObjectDefinitions();
+		List<SystemObjectDefinitionMetadata>
+			objectDefinitionSystemObjectDefinitionMetadataMap =
+				_getSystemObjectDefinitionSystemObjectDefinitionMetadata(
+					_objectDefinitionLocalService.getSystemObjectDefinitions(),
+					uriInfo);
 
-		String basePath = uriInfo.getBaseUri().getPath();
+		for (SystemObjectDefinitionMetadata systemObjectDefinitionMetadata :
+				objectDefinitionSystemObjectDefinitionMetadataMap) {
 
-		Map<ObjectDefinition, SystemObjectDefinitionMetadata> objectDefinitionSystemObjectDefinitionMetadataMap =
-			new HashMap<>(Collections.emptyMap());
-
-		for (ObjectDefinition systemObjectDefinition : systemObjectDefinitions) {
-			SystemObjectDefinitionMetadata systemObjectDefinitionMetadata =
-				_getSystemObjectDefinitionMetadata(systemObjectDefinition);
-			if (basePath.contains(_getSystemObjectBasePath(
-				systemObjectDefinitionMetadata.getRESTContextPath()))) {
-				objectDefinitionSystemObjectDefinitionMetadataMap.put(
-					systemObjectDefinition, systemObjectDefinitionMetadata);
-			}
-		}
-
-		for (Map.Entry<ObjectDefinition, SystemObjectDefinitionMetadata> objectDefinitionSystemObjectDefinitionMetadataEntry : objectDefinitionSystemObjectDefinitionMetadataMap.entrySet()) {
-			ObjectDefinition currentObjectDefinition =
-				objectDefinitionSystemObjectDefinitionMetadataEntry.getKey();
-			SystemObjectDefinitionMetadata currentSystemObjectDefinitionMetadata =
-				objectDefinitionSystemObjectDefinitionMetadataEntry.getValue();
-			List<ObjectRelationship> systemObjectRelationships =
-				currentSystemObjectDefinitionMetadata.getSystemObjectRelationships();
-
-			for (ObjectRelationship systemObjectRelationship : systemObjectRelationships) {
-				String path = StringUtil.lowerCaseFirstLetter(uriInfo.getPath().split(StringPool.SLASH)[0] + StringPool.SLASH +
-				  StringUtil.lowerCaseFirstLetter(currentSystemObjectDefinitionMetadata.getRESTContextPath().split(StringPool.SLASH)[2]) +
-					StringPool.SLASH +
-					"{" + StringUtil.lowerCaseFirstLetter(
-						currentObjectDefinition.getName()) + "Id}" +
-					StringPool.SLASH + systemObjectRelationship.getName());
-				System.out.println(path);
-				pathItemMap.put(path, _createPathItem());
-			}
+			_populatePathItems(
+				systemObjectDefinitionMetadata, uriInfo, pathItemMap);
 		}
 
 		return pathItemMap;
 	}
 
-	private PathItem _createPathItem() {
-		return new PathItem(){{
-			get(_getOperation());
-		}};
+	private PathItem _createPathItem(
+		ObjectRelationship objectRelationship,
+		SystemObjectDefinitionMetadata systemObjectDefinitionMetadata) {
+
+		return new PathItem() {
+			{
+				get(
+					_getOperation(
+						objectRelationship, systemObjectDefinitionMetadata));
+			}
+		};
 	}
 
-	private Operation _getOperation() {
-		Map<String, Parameter> parameters = new HashMap<>();
+	private String _getBaseUriPath(UriInfo uriInfo) {
+		URI baseURI = uriInfo.getBaseUri();
 
-		parameters.put("userId",
-			new Parameter(){
-				{
-					name("userId");
-					in("query");
-					required(true);
-				}
+		return baseURI.getPath();
+	}
+
+	private String _getCurrentSystemObjectBasePath(UriInfo uriInfo) {
+		String baseUriPath = _getBaseUriPath(uriInfo);
+
+		String[] baseUriPathSplit = baseUriPath.split(StringPool.SLASH);
+
+		return StringUtil.lowerCaseFirstLetter(
+			baseUriPathSplit[baseUriPathSplit.length - 1]);
+	}
+
+	private String _getExternalType(
+		SystemObjectDefinitionMetadata systemObjectDefinitionMetadata) {
+
+		DTOConverter<?, ?> dtoConverter = _dtoConverterRegistry.getDTOConverter(
+			systemObjectDefinitionMetadata.getModelClassName());
+
+		return dtoConverter.getContentType();
+	}
+
+	private String _getJaxRsVersion(UriInfo uriInfo) {
+		String path = uriInfo.getPath();
+
+		return path.split(StringPool.SLASH)[0];
+	}
+
+	private Operation _getOperation(
+		ObjectRelationship objectRelationship,
+		SystemObjectDefinitionMetadata systemObjectDefinitionMetadata) {
+
+		String systemObjectDefinitionExternalType =
+			StringUtil.lowerCaseFirstLetter(
+				_getExternalType(systemObjectDefinitionMetadata));
+
+		String parameterName = systemObjectDefinitionExternalType + "Id";
+
+		Map<String, Parameter> parameters = new HashMap<String, Parameter>() {
+			{
+				put(
+					parameterName,
+					new Parameter() {
+						{
+							name(parameterName);
+							in("path");
+							required(true);
+						}
+					});
 			}
-		);
-		return new Operation(){{
-			operationId("operationId");
-			parameters(new ArrayList<>(parameters.values()));
-			tags(Collections.singletonList("UserAccount"));
-		}};
+		};
+
+		return new Operation() {
+			{
+				operationId(
+					StringBundler.concat(
+						"get", systemObjectDefinitionMetadata.getName(),
+						StringUtil.upperCaseFirstLetter(
+							objectRelationship.getName())));
+				parameters(new ArrayList<>(parameters.values()));
+				tags(
+					Collections.singletonList(
+						_getExternalType(systemObjectDefinitionMetadata)));
+			}
+		};
+	}
+
+	private String _getPath(
+		UriInfo uriInfo,
+		SystemObjectDefinitionMetadata systemObjectDefinitionMetadata,
+		ObjectRelationship systemObjectRelationship) {
+
+		return StringBundler.concat(
+			StringPool.SLASH, _getJaxRsVersion(uriInfo), StringPool.SLASH,
+			_getCurrentSystemObjectBasePath(uriInfo), StringPool.SLASH,
+			_getSystemObjectDefinitionPathName(systemObjectDefinitionMetadata),
+			StringPool.SLASH, systemObjectRelationship.getName());
 	}
 
 	private String _getSystemObjectBasePath(
 		String systemObjectRESTContextPath) {
-		return systemObjectRESTContextPath.split("/")[0];
+
+		return systemObjectRESTContextPath.split(StringPool.SLASH)[0];
 	}
 
 	private SystemObjectDefinitionMetadata _getSystemObjectDefinitionMetadata(
 		ObjectDefinition objectDefinition) {
-		return _systemObjectDefinitionMetadataTracker.getSystemObjectDefinitionMetadata(
-			objectDefinition.getName());
+
+		return _systemObjectDefinitionMetadataTracker.
+			getSystemObjectDefinitionMetadata(objectDefinition.getName());
 	}
+
+	private String _getSystemObjectDefinitionPathName(
+		SystemObjectDefinitionMetadata systemObjectDefinitionMetadata) {
+
+		return StringBundler.concat(
+			StringPool.OPEN_CURLY_BRACE,
+			StringUtil.lowerCaseFirstLetter(
+				_getExternalType(systemObjectDefinitionMetadata)),
+			"Id}");
+	}
+
+	private List<SystemObjectDefinitionMetadata>
+		_getSystemObjectDefinitionSystemObjectDefinitionMetadata(
+			List<ObjectDefinition> systemObjectDefinitions, UriInfo uriInfo) {
+
+		return ListUtil.filter(
+			TransformUtil.transform(
+				systemObjectDefinitions,
+				this::_getSystemObjectDefinitionMetadata),
+			systemObjectDefinitionMetadata ->
+				_shouldGenerateSystemObjectEndpoints(
+					uriInfo, systemObjectDefinitionMetadata));
+	}
+
+	private void _populatePathItems(
+		SystemObjectDefinitionMetadata currentSystemObjectDefinitionMetadata,
+		UriInfo uriInfo, Map<String, PathItem> pathItemMap) {
+
+		List<ObjectRelationship> systemObjectRelationships =
+			currentSystemObjectDefinitionMetadata.
+				getSystemObjectRelationships();
+
+		for (ObjectRelationship systemObjectRelationship :
+				systemObjectRelationships) {
+
+			System.out.println(
+				_getPath(
+					uriInfo, currentSystemObjectDefinitionMetadata,
+					systemObjectRelationship));
+			pathItemMap.put(
+				_getPath(
+					uriInfo, currentSystemObjectDefinitionMetadata,
+					systemObjectRelationship),
+				_createPathItem(
+					systemObjectRelationship,
+					currentSystemObjectDefinitionMetadata));
+		}
+	}
+
+	private boolean _shouldGenerateSystemObjectEndpoints(
+		UriInfo uriInfo,
+		SystemObjectDefinitionMetadata systemObjectDefinitionMetadata) {
+
+		String baseURIPath = _getBaseUriPath(uriInfo);
+
+		return baseURIPath.contains(
+			_getSystemObjectBasePath(
+				systemObjectDefinitionMetadata.getRESTContextPath()));
+	}
+
+	@Reference
+	private DTOConverterRegistry _dtoConverterRegistry;
+
+	@Reference
+	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 	@Reference
 	private SystemObjectDefinitionMetadataTracker
 		_systemObjectDefinitionMetadataTracker;
-
-	@Reference
-	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 }
