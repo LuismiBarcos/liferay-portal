@@ -128,7 +128,8 @@ public class ObjectEntryResourceTest {
 			StringBundler.concat(
 				_objectDefinition.getRESTContextPath(), StringPool.SLASH,
 				_objectEntry.getPrimaryKey(), StringPool.SLASH,
-				objectRelationship.getName()));
+				objectRelationship.getName()),
+			Http.Method.GET);
 
 		JSONArray itemsJSONArray = jsonObject.getJSONArray("items");
 
@@ -152,8 +153,68 @@ public class ObjectEntryResourceTest {
 			relatedObjectDefinition);
 	}
 
-	private JSONObject _invoke(String endpoint) throws Exception {
+	@Test
+	public void testPutCustomObjectRelatedCustomObject() throws Exception {
+		String objectFieldName = "x" + RandomTestUtil.randomString();
+		String objectFieldValue = RandomTestUtil.randomString();
+
+		ObjectDefinition relatedObjectDefinition = _publishObjectDefinition(
+			Collections.singletonList(
+				ObjectFieldUtil.createObjectField(
+					"Text", "String", true, true, null,
+					RandomTestUtil.randomString(), objectFieldName, false)));
+
+		ObjectEntry relatedObjectEntry =
+			ObjectEntryLocalServiceUtil.addObjectEntry(
+				TestPropsValues.getUserId(), 0,
+				relatedObjectDefinition.getObjectDefinitionId(),
+				HashMapBuilder.<String, Serializable>put(
+					objectFieldName, objectFieldValue
+				).build(),
+				ServiceContextTestUtil.getServiceContext());
+
+		ObjectRelationship objectRelationship =
+			ObjectRelationshipLocalServiceUtil.addObjectRelationship(
+				TestPropsValues.getUserId(),
+				_objectDefinition.getObjectDefinitionId(),
+				relatedObjectDefinition.getObjectDefinitionId(), 0,
+				ObjectRelationshipConstants.DELETION_TYPE_PREVENT,
+				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
+				StringUtil.randomId(),
+				ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+
+		JSONObject jsonObject = _invoke(
+			StringBundler.concat(
+				_objectDefinition.getRESTContextPath(), StringPool.SLASH,
+				_objectEntry.getPrimaryKey(), StringPool.SLASH,
+				objectRelationship.getName(), StringPool.SLASH,
+				relatedObjectEntry.getPrimaryKey()),
+			Http.Method.PUT);
+
+		Assert.assertEquals(
+			objectFieldValue, jsonObject.getString(objectFieldName));
+
+		ObjectRelationshipLocalServiceUtil.
+			deleteObjectRelationshipMappingTableValues(
+				objectRelationship.getObjectRelationshipId(),
+				_objectEntry.getPrimaryKey(),
+				relatedObjectEntry.getPrimaryKey());
+
+		ObjectRelationshipLocalServiceUtil.deleteObjectRelationship(
+			objectRelationship);
+
+		_objectDefinitionLocalService.deleteObjectDefinition(
+			relatedObjectDefinition);
+	}
+
+	private JSONObject _invoke(String endpoint, Http.Method httpMethod)
+		throws Exception {
+
 		Http.Options options = new Http.Options();
+
+		if (httpMethod == Http.Method.PUT) {
+			options.setPut(true);
+		}
 
 		options.addHeader(
 			HttpHeaders.CONTENT_TYPE, ContentTypes.APPLICATION_JSON);
