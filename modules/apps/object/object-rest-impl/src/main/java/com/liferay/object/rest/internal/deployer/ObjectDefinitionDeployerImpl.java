@@ -138,6 +138,16 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 						).put(
 							"osgi.jaxrs.name", objectDefinition.getName()
 						).build()),
+					_relatedCustomObjectEntryResourceFactory.newInstance(
+						HashMapDictionaryBuilder.<String, Object>put(
+							"api.version", "v1.0"
+						).put(
+							"osgi.jaxrs.application.select",
+							"(osgi.jaxrs.name=" + objectDefinition.getName() +
+								")"
+						).put(
+							"osgi.jaxrs.resource", "true"
+						).build()),
 					_objectEntryResourceComponentFactory.newInstance(
 						HashMapDictionaryBuilder.<String, Object>put(
 							"api.version", "v1.0"
@@ -412,6 +422,11 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 
 	@Reference
 	private Portal _portal;
+
+	@Reference(
+		target = "(component.factory=com.liferay.object.rest.internal.resource.v1_0.RelatedCustomObjectEntryResource)"
+	)
+	private ComponentFactory _relatedCustomObjectEntryResourceFactory;
 
 	@Reference(
 		target = "(component.factory=com.liferay.object.rest.internal.resource.v1_0.RelatedObjectEntryResource)"
