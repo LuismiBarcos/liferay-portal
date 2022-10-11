@@ -121,6 +121,28 @@ public class ObjectEntryDTOConverter
 			objectEntry);
 	}
 
+	private void _addNestedFields(
+		String nestedFields, Map<String, Object> map, Object object,
+		String objectFieldName, ObjectRelationship objectRelationship) {
+
+		String[] nestedFieldKeys = {
+			objectFieldName, objectRelationship.getName()
+		};
+
+		List<String> nestedFieldsList = Arrays.asList(nestedFields.split(","));
+
+		for (String nestedFieldKey : nestedFieldKeys) {
+			if (nestedFieldsList.contains(nestedFieldKey)) {
+				if (nestedFieldKey.equals(objectFieldName)) {
+					nestedFieldKey = StringUtil.replaceLast(
+						objectFieldName, "Id", "");
+				}
+
+				map.put(nestedFieldKey, object);
+			}
+		}
+	}
+
 	private DTOConverterContext _getDTOConverterContext(
 		DTOConverterContext dtoConverterContext, long objectEntryId) {
 
@@ -395,6 +417,11 @@ public class ObjectEntryDTOConverter
 
 				long objectEntryId = 0;
 
+				ObjectRelationship objectRelationship =
+					_objectRelationshipLocalService.
+						fetchObjectRelationshipByObjectFieldId2(
+							objectField.getObjectFieldId());
+
 				if (serializable != null) {
 					if (GetterUtil.getLong(serializable) > 0) {
 						objectEntryId = (long)serializable;
@@ -403,57 +430,43 @@ public class ObjectEntryDTOConverter
 					Optional<UriInfo> uriInfoOptional =
 						dtoConverterContext.getUriInfoOptional();
 
-					int underlineLastIndex = objectFieldName.lastIndexOf(
-						StringPool.UNDERLINE);
+					Optional<String> nestedFieldsOptional = uriInfoOptional.map(
+						UriInfo::getQueryParameters
+					).map(
+						queryParameters -> queryParameters.getFirst(
+							"nestedFields")
+					);
 
 					if ((objectEntryId != 0) &&
-						uriInfoOptional.map(
-							UriInfo::getQueryParameters
-						).map(
-							queryParameters -> queryParameters.getFirst(
-								"nestedFields")
-						).map(
-							nestedFields -> nestedFields.contains(
-								StringUtil.replaceLast(
-									objectFieldName.substring(
-										underlineLastIndex + 1),
-									"Id", ""))
-						).orElse(
-							false
-						)) {
-
-						ObjectRelationship objectRelationship =
-							_objectRelationshipLocalService.
-								fetchObjectRelationshipByObjectFieldId2(
-									objectField.getObjectFieldId());
+						nestedFieldsOptional.isPresent()) {
 
 						ObjectDefinition relatedObjectDefinition =
 							_objectDefinitionLocalService.getObjectDefinition(
 								objectRelationship.getObjectDefinitionId1());
 
 						if (relatedObjectDefinition.isSystem()) {
-							map.put(
-								StringUtil.replaceLast(
-									objectFieldName, "Id", ""),
+							_addNestedFields(
+								nestedFieldsOptional.get(), map,
 								_objectEntryLocalService.
 									getSystemModelAttributes(
-										relatedObjectDefinition,
-										objectEntryId));
+										relatedObjectDefinition, objectEntryId),
+								objectFieldName, objectRelationship);
 						}
 						else {
-							map.put(
-								StringUtil.replaceLast(
-									objectFieldName, "Id", ""),
+							_addNestedFields(
+								nestedFieldsOptional.get(), map,
 								_toDTO(
 									_getDTOConverterContext(
 										dtoConverterContext, objectEntryId),
 									nestedFieldsDepth - 1,
 									_objectEntryLocalService.getObjectEntry(
-										objectEntryId)));
+										objectEntryId)),
+								objectFieldName, objectRelationship);
 						}
 					}
 				}
 
+				map.putIfAbsent(objectRelationship.getName(), objectEntryId);
 				map.put(objectFieldName, objectEntryId);
 			}
 			else {
