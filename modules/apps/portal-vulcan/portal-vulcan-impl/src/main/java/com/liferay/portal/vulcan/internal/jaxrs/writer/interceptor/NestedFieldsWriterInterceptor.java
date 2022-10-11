@@ -26,6 +26,7 @@ import com.liferay.portal.vulcan.fields.NestedFieldSupport;
 import com.liferay.portal.vulcan.fields.NestedFieldsContext;
 import com.liferay.portal.vulcan.fields.NestedFieldsContextThreadLocal;
 import com.liferay.portal.vulcan.internal.fields.servlet.NestedFieldsHttpServletRequestWrapper;
+import com.liferay.portal.vulcan.internal.jaxrs.extension.ExtendedEntity;
 import com.liferay.portal.vulcan.pagination.Page;
 
 import java.io.IOException;
@@ -661,7 +662,14 @@ public class NestedFieldsWriterInterceptor implements WriterInterceptor {
 			}
 
 			for (Object item : items) {
-				Class<?> itemClass = item.getClass();
+				Class<?> itemClass = null;
+
+				if(item instanceof ExtendedEntity) {
+					Object entity1 = ((ExtendedEntity) item).getEntity();
+					itemClass = entity1.getClass();
+				} else {
+					itemClass = item.getClass();
+				}
 
 				Field field = _getField(itemClass, fieldName);
 
