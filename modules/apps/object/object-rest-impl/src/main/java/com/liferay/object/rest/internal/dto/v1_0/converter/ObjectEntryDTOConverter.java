@@ -51,6 +51,7 @@ import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.language.LanguageResources;
@@ -139,7 +140,10 @@ public class ObjectEntryDTOConverter
 					StringUtil.replaceLast(objectFieldName, "Id", ""), object);
 			}
 
-			if (nestedField.equals(objectRelationship.getName())) {
+			if (GetterUtil.getBoolean(
+					PropsUtil.get("feature.flag.LPS-161364")) &&
+				nestedField.equals(objectRelationship.getName())) {
+
 				map.put(nestedField, object);
 			}
 		}
@@ -468,7 +472,13 @@ public class ObjectEntryDTOConverter
 					}
 				}
 
-				map.putIfAbsent(objectRelationship.getName(), objectEntryId);
+				if (GetterUtil.getBoolean(
+						PropsUtil.get("feature.flag.LPS-161364"))) {
+
+					map.putIfAbsent(
+						objectRelationship.getName(), objectEntryId);
+				}
+
 				map.put(objectFieldName, objectEntryId);
 			}
 			else {
