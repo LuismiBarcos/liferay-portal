@@ -51,7 +51,6 @@ import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.language.LanguageResources;
@@ -126,29 +125,22 @@ public class ObjectEntryDTOConverter
 		String nestedFields, Map<String, Object> map, Object object,
 		String objectFieldName, ObjectRelationship objectRelationship) {
 
-		String[] nestedFieldKeys = {
-			objectFieldName, objectRelationship.getName()
-		};
+		String[] nestedFieldsList = nestedFields.split(",");
 
-		List<String> nestedFieldsList = Arrays.asList(nestedFields.split(","));
+		for (String nestedField : nestedFieldsList) {
+			if (nestedField.contains(
+					StringUtil.replaceLast(
+						objectFieldName.substring(
+							objectFieldName.lastIndexOf(StringPool.UNDERLINE) +
+								1),
+						"Id", ""))) {
 
-		for (String nestedFieldKey : nestedFieldKeys) {
-			if (nestedFieldsList.contains(nestedFieldKey)) {
-				if (nestedFieldKey.equals(objectFieldName)) {
-					nestedFieldKey = StringUtil.replaceLast(
-						objectFieldName, "Id", "");
-				}
+				map.put(
+					StringUtil.replaceLast(objectFieldName, "Id", ""), object);
+			}
 
-				if (GetterUtil.getBoolean(
-						PropsUtil.get("feature.flag.LPS-161364"))) {
-
-					map.put(nestedFieldKey, object);
-				}
-				else {
-					map.put(
-						StringUtil.replaceLast(objectFieldName, "Id", ""),
-						object);
-				}
+			if (nestedField.equals(objectRelationship.getName())) {
+				map.put(nestedField, object);
 			}
 		}
 	}
@@ -476,13 +468,7 @@ public class ObjectEntryDTOConverter
 					}
 				}
 
-				if (GetterUtil.getBoolean(
-						PropsUtil.get("feature.flag.LPS-161364"))) {
-
-					map.putIfAbsent(
-						objectRelationship.getName(), objectEntryId);
-				}
-
+				map.putIfAbsent(objectRelationship.getName(), objectEntryId);
 				map.put(objectFieldName, objectEntryId);
 			}
 			else {
