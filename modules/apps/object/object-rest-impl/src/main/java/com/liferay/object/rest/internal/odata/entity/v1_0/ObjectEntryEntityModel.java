@@ -21,12 +21,9 @@ import com.liferay.object.field.setting.util.ObjectFieldSettingUtil;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectRelationship;
-import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectDefinitionLocalServiceUtil;
-import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.service.ObjectFieldLocalServiceUtil;
 import com.liferay.object.service.ObjectRelationshipLocalServiceUtil;
-import com.liferay.object.service.ObjectRelationshipService;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.search.Field;
@@ -43,10 +40,10 @@ import com.liferay.portal.odata.entity.IdEntityField;
 import com.liferay.portal.odata.entity.IntegerEntityField;
 import com.liferay.portal.odata.entity.StringEntityField;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author Javier de Arcos
@@ -54,14 +51,14 @@ import java.util.stream.Collectors;
 public class ObjectEntryEntityModel implements EntityModel {
 
 	public ObjectEntryEntityModel(List<ObjectField> objectFields) {
-		_entityFieldsMap = getStringEntityFieldMap(objectFields);
+		_entityFieldsMap = _getStringEntityFieldMap(objectFields);
 	}
 
 	public ObjectEntryEntityModel(
 			List<ObjectField> objectFields, ObjectDefinition objectDefinition)
 		throws Exception {
 
-		_entityFieldsMap = getStringEntityFieldMap(objectFields);
+		_entityFieldsMap = _getStringEntityFieldMap(objectFields);
 
 		List<ObjectRelationship> objectRelationships =
 			ObjectRelationshipLocalServiceUtil.getObjectRelationships(
@@ -74,19 +71,15 @@ public class ObjectEntryEntityModel implements EntityModel {
 					objectDefinition, objectRelationship);
 
 			Map<String, EntityField> relatedEntityFieldsMap =
-				getStringEntityFieldMap(
+				_getStringEntityFieldMap(
 					ObjectFieldLocalServiceUtil.getObjectFields(
 						relatedObjectDefinition.getObjectDefinitionId()));
 
-			List<EntityField> values = relatedEntityFieldsMap.values(
-			).stream(
-			).collect(
-				Collectors.toList()
-			);
-
 			_entityFieldsMap.put(
 				objectRelationship.getName(),
-				new ComplexEntityField(objectRelationship.getName(), values));
+				new ComplexEntityField(
+					objectRelationship.getName(),
+					new ArrayList<>(relatedEntityFieldsMap.values())));
 		}
 	}
 
@@ -183,44 +176,46 @@ public class ObjectEntryEntityModel implements EntityModel {
 			objectRelationship.getObjectDefinitionId2());
 	}
 
-	private Map<String, EntityField> getStringEntityFieldMap(
+	private Map<String, EntityField> _getStringEntityFieldMap(
 		List<ObjectField> objectFields) {
 
-		Map<String, EntityField> _entityFieldsMap;
-		_entityFieldsMap = HashMapBuilder.<String, EntityField>put(
-			"creator", new StringEntityField("creator", locale -> "creator")
-		).put(
-			"creatorId",
-			new IntegerEntityField("creatorId", locale -> Field.USER_ID)
-		).put(
-			"dateCreated",
-			new DateTimeEntityField(
-				"dateCreated", locale -> Field.CREATE_DATE,
-				locale -> Field.CREATE_DATE)
-		).put(
-			"dateModified",
-			new DateTimeEntityField(
-				"dateModified", locale -> "modifiedDate",
-				locale -> "modifiedDate")
-		).put(
-			"externalReferenceCode",
-			() -> new StringEntityField(
-				"externalReferenceCode", locale -> "externalReferenceCode")
-		).put(
-			"id", new IdEntityField("id", locale -> "id", String::valueOf)
-		).put(
-			"objectDefinitionId",
-			new IntegerEntityField(
-				"objectDefinitionId", locale -> "objectDefinitionId")
-		).put(
-			"siteId", new IntegerEntityField("siteId", locale -> Field.GROUP_ID)
-		).put(
-			"status",
-			new CollectionEntityField(
-				new IntegerEntityField("status", locale -> Field.STATUS))
-		).put(
-			"userId", new IntegerEntityField("userId", locale -> Field.USER_ID)
-		).build();
+		Map<String, EntityField> entityFieldsMap =
+			HashMapBuilder.<String, EntityField>put(
+				"creator", new StringEntityField("creator", locale -> "creator")
+			).put(
+				"creatorId",
+				new IntegerEntityField("creatorId", locale -> Field.USER_ID)
+			).put(
+				"dateCreated",
+				new DateTimeEntityField(
+					"dateCreated", locale -> Field.CREATE_DATE,
+					locale -> Field.CREATE_DATE)
+			).put(
+				"dateModified",
+				new DateTimeEntityField(
+					"dateModified", locale -> "modifiedDate",
+					locale -> "modifiedDate")
+			).put(
+				"externalReferenceCode",
+				() -> new StringEntityField(
+					"externalReferenceCode", locale -> "externalReferenceCode")
+			).put(
+				"id", new IdEntityField("id", locale -> "id", String::valueOf)
+			).put(
+				"objectDefinitionId",
+				new IntegerEntityField(
+					"objectDefinitionId", locale -> "objectDefinitionId")
+			).put(
+				"siteId",
+				new IntegerEntityField("siteId", locale -> Field.GROUP_ID)
+			).put(
+				"status",
+				new CollectionEntityField(
+					new IntegerEntityField("status", locale -> Field.STATUS))
+			).put(
+				"userId",
+				new IntegerEntityField("userId", locale -> Field.USER_ID)
+			).build();
 
 		for (ObjectField objectField : objectFields) {
 			if (objectField.isSystem()) {
@@ -234,7 +229,7 @@ public class ObjectEntryEntityModel implements EntityModel {
 				EntityField entityField = _getEntityField(objectField);
 
 				if (entityField != null) {
-					_entityFieldsMap.putIfAbsent(
+					entityFieldsMap.putIfAbsent(
 						objectField.getName(), entityField);
 				}
 
@@ -243,7 +238,7 @@ public class ObjectEntryEntityModel implements EntityModel {
 
 			String objectFieldName = objectField.getName();
 
-			_entityFieldsMap.put(
+			entityFieldsMap.put(
 				objectFieldName,
 				new IdEntityField(
 					objectFieldName, locale -> objectFieldName,
@@ -255,7 +250,7 @@ public class ObjectEntryEntityModel implements EntityModel {
 						NAME_OBJECT_RELATIONSHIP_ERC_FIELD_NAME,
 					objectField);
 
-			_entityFieldsMap.put(
+			entityFieldsMap.put(
 				objectRelationshipERCFieldName,
 				new StringEntityField(
 					objectRelationshipERCFieldName, locale -> objectFieldName));
@@ -263,14 +258,14 @@ public class ObjectEntryEntityModel implements EntityModel {
 			String relationshipIdName = objectFieldName.substring(
 				objectFieldName.lastIndexOf(StringPool.UNDERLINE) + 1);
 
-			_entityFieldsMap.put(
+			entityFieldsMap.put(
 				relationshipIdName,
 				new IdEntityField(
 					relationshipIdName, locale -> objectFieldName,
 					String::valueOf));
 		}
 
-		return _entityFieldsMap;
+		return entityFieldsMap;
 	}
 
 	private final Map<String, EntityField> _entityFieldsMap;

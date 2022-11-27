@@ -65,9 +65,11 @@ import com.liferay.portal.odata.filter.expression.PropertyExpression;
 import com.liferay.portal.odata.filter.expression.UnaryExpression;
 
 import java.sql.Types;
+
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
+
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -128,15 +130,18 @@ public class PredicateExpressionVisitorImpl
 			ComplexPropertyExpression complexPropertyExpression)
 		throws ExpressionVisitException {
 
+		EntityModel entityModel = _getObjectDefinitionEntityModel(
+			_objectDefinitionId);
+
 		Map<String, EntityField> entityFieldsMap =
-			_getObjectDefinitionEntityModel(
-				_objectDefinitionId).getEntityFieldsMap();
+			entityModel.getEntityFieldsMap();
 
 		ComplexEntityField complexEntityField =
 			(ComplexEntityField)entityFieldsMap.get(
 				complexPropertyExpression.getName());
 
-		_objectRelationship = _fetchObjectRelationship(complexPropertyExpression.getName());
+		_objectRelationship = _fetchObjectRelationship(
+			complexPropertyExpression.getName());
 
 		PropertyExpression propertyExpression =
 			complexPropertyExpression.getPropertyExpression();
@@ -150,16 +155,6 @@ public class PredicateExpressionVisitorImpl
 		_relatedFieldName = entityField.getName();
 
 		return entityField.getName();
-	}
-
-	private ObjectRelationship _fetchObjectRelationship(String relationshipName) {
-		try {
-			return ObjectRelationshipLocalServiceUtil.getObjectRelationshipByObjectDefinitionId(
-				_objectDefinitionId, GetterUtil.getString(relationshipName));
-		}
-		catch (Exception exception) {
-			return null;
-		}
 	}
 
 	@Override
@@ -186,13 +181,13 @@ public class PredicateExpressionVisitorImpl
 		throws ExpressionVisitException {
 
 		if (Objects.equals(ListExpression.Operation.IN, operation)) {
-			Column<?, Object> column =
-				_getColumn(_objectDefinitionId, left);
+			Column<?, Object> column = _getColumn(_objectDefinitionId, left);
 
-			return column.in(TransformUtil.transformToArray(
-				rights,
-				right -> _getValue(_objectDefinitionId, left, right),
-				Object.class));
+			return column.in(
+				TransformUtil.transformToArray(
+					rights,
+					right -> _getValue(_objectDefinitionId, left, right),
+					Object.class));
 		}
 
 		throw new UnsupportedOperationException(
@@ -328,13 +323,47 @@ public class PredicateExpressionVisitorImpl
 		Column<?, Object> column = _getColumn(_objectDefinitionId, fieldName);
 
 		return column.like(
-			StringPool.PERCENT + _getValue(_objectDefinitionId, fieldName, fieldValue) +
-			StringPool.PERCENT);
+			StringPool.PERCENT +
+				_getValue(_objectDefinitionId, fieldName, fieldValue) +
+					StringPool.PERCENT);
 	}
 
-	private Column<?, Object> _getColumn(long objectDefinitionId, Object fieldName) {
-		EntityField entityField =
-			_getEntityField(objectDefinitionId, fieldName);
+	private EntityModel _createEntityModel(long objectDefinitionId) {
+		try {
+			return new ObjectEntryEntityModel(
+				_objectFieldLocalService.getObjectFields(objectDefinitionId),
+				ObjectDefinitionLocalServiceUtil.getObjectDefinition(
+					objectDefinitionId));
+		}
+		catch (Exception exception) {
+			_logExceptionInDebug(exception);
+
+			return new ObjectEntryEntityModel(Collections.emptyList());
+		}
+	}
+
+	private ObjectRelationship _fetchObjectRelationship(
+		String relationshipName) {
+
+		try {
+			return ObjectRelationshipLocalServiceUtil.
+				getObjectRelationshipByObjectDefinitionId(
+					_objectDefinitionId,
+					GetterUtil.getString(relationshipName));
+		}
+		catch (Exception exception) {
+			_logExceptionInDebug(exception);
+
+			return null;
+		}
+	}
+
+	private Column<?, Object> _getColumn(
+		long objectDefinitionId, Object fieldName) {
+
+		EntityField entityField = _getEntityField(
+			objectDefinitionId, fieldName);
+
 		return (Column<?, Object>)_objectFieldLocalService.getColumn(
 			objectDefinitionId, entityField.getFilterableName(null));
 	}
@@ -342,33 +371,139 @@ public class PredicateExpressionVisitorImpl
 	private EntityField _getEntityField(
 		long objectDefinitionId, Object fieldName) {
 
-		Map<String, EntityField> entityFieldsMap =
-			_getEntityFieldsMap(objectDefinitionId);
+		Map<String, EntityField> entityFieldsMap = _getEntityFieldsMap(
+			objectDefinitionId);
 
 		return entityFieldsMap.get(GetterUtil.getString(fieldName));
 	}
 
-	private EntityModel _getObjectDefinitionEntityModel(long objectDefinitionId) {
-		EntityModel entityModel =
-			_objectDefinitionsEntityModelMap.get(objectDefinitionId);
+	private Map<String, EntityField> _getEntityFieldsMap(
+		long objectDefinitionId) {
 
-		if(entityModel == null) {
+		EntityModel entityModel = _getObjectDefinitionEntityModel(
+			objectDefinitionId);
+
+		return entityModel.getEntityFieldsMap();
+	}
+
+	private Predicate _getExpressionPredicate(
+		BinaryExpression.Operation operation, Object value,
+		Column<?, Object> column) {
+
+		if (Objects.equals(BinaryExpression.Operation.EQ, operation)) {
+			return column.eq(value);
+		}
+		else if (Objects.equals(BinaryExpression.Operation.GE, operation)) {
+			return column.gte(value);
+		}
+		else if (Objects.equals(BinaryExpression.Operation.GT, operation)) {
+			return column.gt(value);
+		}
+		else if (Objects.equals(BinaryExpression.Operation.LE, operation)) {
+			return column.lte(value);
+		}
+		else if (Objects.equals(BinaryExpression.Operation.LT, operation)) {
+			return column.lt(value);
+		}
+		else if (Objects.equals(BinaryExpression.Operation.NE, operation)) {
+			return column.neq(value);
+		}
+
+		return null;
+	}
+
+	private EntityModel _getObjectDefinitionEntityModel(
+		long objectDefinitionId) {
+
+		EntityModel entityModel = _objectDefinitionsEntityModelMap.get(
+			objectDefinitionId);
+
+		if (entityModel == null) {
 			entityModel = _createEntityModel(objectDefinitionId);
 		}
 
 		return entityModel;
 	}
 
-	private EntityModel _createEntityModel(long objectDefinitionId) {
-		try {
-			return new ObjectEntryEntityModel(
-				_objectFieldLocalService.getObjectFields(
-					objectDefinitionId),
-				ObjectDefinitionLocalServiceUtil.getObjectDefinition(
-					objectDefinitionId));
-		} catch (Exception exception) {
-			return new ObjectEntryEntityModel(Collections.emptyList());
-		}
+	private Predicate _getPredicateForRelationships(
+			BinaryExpression.Operation operation, Object left, Object right)
+		throws Exception {
+
+		long relatedObjectDefinitionId = _getRelatedObjectDefinitionId(
+			_objectDefinitionId, _objectRelationship);
+
+		ObjectDefinition relatedObjectDefinition =
+			ObjectDefinitionLocalServiceUtil.getObjectDefinition(
+				relatedObjectDefinitionId);
+
+		ObjectField relatedObjectDefinitionObjectField =
+			_objectFieldLocalService.getObjectField(
+				relatedObjectDefinition.getTitleObjectFieldId());
+
+		Table<?> relatedObjectTable = _objectFieldLocalService.getTable(
+			relatedObjectDefinition.getObjectDefinitionId(),
+			relatedObjectDefinitionObjectField.getName());
+
+		Column<?, ?> relatedObjectDefinitionTableColumn =
+			relatedObjectTable.getColumn(
+				relatedObjectDefinition.getPKObjectFieldName() + "_");
+
+		ObjectDefinition objectDefinition =
+			ObjectDefinitionLocalServiceUtil.getObjectDefinition(
+				_objectDefinitionId);
+
+		Map<String, String> pkObjectFieldDBColumnNames =
+			ObjectRelationshipUtil.getPKObjectFieldDBColumnNames(
+				objectDefinition, relatedObjectDefinition,
+				_objectRelationship.isReverse());
+
+		DynamicObjectRelationshipMappingTable
+			dynamicObjectRelationshipMappingTable =
+				new DynamicObjectRelationshipMappingTable(
+					pkObjectFieldDBColumnNames.get(
+						"pkObjectFieldDBColumnName1"),
+					pkObjectFieldDBColumnNames.get(
+						"pkObjectFieldDBColumnName2"),
+					_objectRelationship.getDBTableName());
+
+		ObjectField objectDefinitionField =
+			_objectFieldLocalService.getObjectField(
+				objectDefinition.getTitleObjectFieldId());
+
+		Table<?> objectTable = _objectFieldLocalService.getTable(
+			objectDefinition.getObjectDefinitionId(),
+			objectDefinitionField.getName());
+
+		Column<?, ?> objectTableColumn = objectTable.getColumn(
+			objectDefinition.getPKObjectFieldName() + "_");
+
+		Column<DynamicObjectRelationshipMappingTable, ?> relatedObjectColumn =
+			dynamicObjectRelationshipMappingTable.getColumn(
+				relatedObjectDefinition.getPKObjectFieldName() + "_");
+
+		Column<DynamicObjectRelationshipMappingTable, ?> objectColumn =
+			dynamicObjectRelationshipMappingTable.getColumn(
+				objectDefinition.getPKObjectFieldName() + "_");
+
+		return objectTableColumn.in(
+			DSLQueryFactoryUtil.select(
+				objectColumn
+			).from(
+				dynamicObjectRelationshipMappingTable
+			).where(
+				relatedObjectColumn.in(
+					DSLQueryFactoryUtil.select(
+						relatedObjectDefinitionTableColumn
+					).from(
+						relatedObjectTable
+					).where(
+						_getExpressionPredicate(
+							operation,
+							_getValue(relatedObjectDefinitionId, left, right),
+							_getColumn(
+								relatedObjectDefinitionId, _relatedFieldName))
+					))
+			));
 	}
 
 	private Optional<Predicate> _getPredicateOptional(
@@ -401,146 +536,35 @@ public class PredicateExpressionVisitorImpl
 
 		if (_objectRelationship != null) {
 			try {
-				return Optional.ofNullable(_getPredicateForRelationships(operation, left, right));
+				return Optional.ofNullable(
+					_getPredicateForRelationships(operation, left, right));
 			}
 			catch (Exception exception) {
+				_logExceptionInDebug(exception);
+
 				return Optional.empty();
 			}
 		}
 
-		return Optional.ofNullable(_getExpressionPredicate(operation,
-			_getValue(_objectDefinitionId, left, right),
-			_getColumn(_objectDefinitionId, left)));
-	}
-
-	private Predicate _getPredicateForRelationships(BinaryExpression.Operation operation, Object left, Object right) throws Exception {
-		long relatedObjectDefinitionId = _getRelatedObjectDefinitionId(_objectDefinitionId,
-			_objectRelationship);
-
-		ObjectDefinition relatedObjectDefinition =
-			ObjectDefinitionLocalServiceUtil.getObjectDefinition(
-				relatedObjectDefinitionId);
-
-		ObjectField relatedObjectDefinitionObjectField = _objectFieldLocalService.getObjectField(
-			relatedObjectDefinition.getTitleObjectFieldId());
-
-		Table<?> relatedObjectTable = _objectFieldLocalService.getTable(
-			relatedObjectDefinition.getObjectDefinitionId(), relatedObjectDefinitionObjectField.getName());
-
-		Column<?, ?> relatedObjectTableColumnId = relatedObjectTable.getColumn(
-			relatedObjectDefinition.getPKObjectFieldName() + "_");
-
-		ObjectDefinition objectDefinition =
-			ObjectDefinitionLocalServiceUtil.getObjectDefinition(
-				_objectDefinitionId);
-
-		Map<String, String> pkObjectFieldDBColumnNames =
-			ObjectRelationshipUtil.getPKObjectFieldDBColumnNames(
-				objectDefinition, relatedObjectDefinition,
-				_objectRelationship.getReverse());
-
-		DynamicObjectRelationshipMappingTable
-			dynamicObjectRelationshipMappingTable =
-			new DynamicObjectRelationshipMappingTable(
-				pkObjectFieldDBColumnNames.get(
-					"pkObjectFieldDBColumnName1"),
-				pkObjectFieldDBColumnNames.get(
-					"pkObjectFieldDBColumnName2"),
-				_objectRelationship.getDBTableName());
-
-		ObjectField objectDefinitionField = _objectFieldLocalService.getObjectField(
-			objectDefinition.getTitleObjectFieldId());
-
-		Table<?> objectTable = _objectFieldLocalService.getTable(
-			objectDefinition.getObjectDefinitionId(), objectDefinitionField.getName());
-
-		Column<?, ?> studentIdColumn = objectTable.getColumn(
-			objectDefinition.getPKObjectFieldName() + "_");
-
-		Column<DynamicObjectRelationshipMappingTable, ?> relatedObjectColumnFromRelationshipTable =
-			dynamicObjectRelationshipMappingTable.getColumn(
-				relatedObjectDefinition.getPKObjectFieldName() + "_");
-
-		Column<DynamicObjectRelationshipMappingTable, ?> objectColumnFromRelationshipTable =
-			dynamicObjectRelationshipMappingTable.getColumn(
-				objectDefinition.getPKObjectFieldName() + "_");
-
-		return studentIdColumn.in(DSLQueryFactoryUtil
-			.select(objectColumnFromRelationshipTable)
-			.from(dynamicObjectRelationshipMappingTable)
-			.where(relatedObjectColumnFromRelationshipTable.in(
-				DSLQueryFactoryUtil
-					.select(relatedObjectTableColumnId)
-					.from(relatedObjectTable)
-					.where(
-						_getExpressionPredicate(
-							operation,
-							_getValue(relatedObjectDefinitionId, left, right),
-							_getColumn(relatedObjectDefinitionId, _relatedFieldName))))));
-	}
-
-	private Map<String, EntityField> _getEntityFieldsMap(long objectDefinitionId) {
-
-		EntityModel entityModel =
-			_getObjectDefinitionEntityModel(objectDefinitionId);
-
-		return entityModel.getEntityFieldsMap();
-	}
-
-	private Predicate _getExpressionPredicate(
-		BinaryExpression.Operation operation, Object value,
-		Column<?, Object> column) {
-		if (Objects.equals(BinaryExpression.Operation.EQ, operation)) {
-			return column.eq(value);
-		}
-		else if (Objects.equals(BinaryExpression.Operation.GE, operation)) {
-			return column.gte(value);
-		}
-		else if (Objects.equals(BinaryExpression.Operation.GT, operation)) {
-			return column.gt(value);
-		}
-		else if (Objects.equals(BinaryExpression.Operation.LE, operation)) {
-			return column.lte(value);
-		}
-		else if (Objects.equals(BinaryExpression.Operation.LT, operation)) {
-			return column.lt(value);
-		}
-		else if (Objects.equals(BinaryExpression.Operation.NE, operation)) {
-			return column.neq(value);
-		}
-		return null;
-	}
-
-	private class DynamicObjectRelationshipMappingTable
-		extends BaseTable<DynamicObjectRelationshipMappingTable> {
-
-		public DynamicObjectRelationshipMappingTable(
-			String primaryKeyColumnName1, String primaryKeyColumnName2,
-			String tableName) {
-
-			super(tableName, () -> null);
-
-			createColumn(
-				primaryKeyColumnName1, Long.class, Types.BIGINT,
-				Column.FLAG_PRIMARY);
-			createColumn(
-				primaryKeyColumnName2, Long.class, Types.BIGINT,
-				Column.FLAG_PRIMARY);
-		}
+		return Optional.ofNullable(
+			_getExpressionPredicate(
+				operation, _getValue(_objectDefinitionId, left, right),
+				_getColumn(_objectDefinitionId, left)));
 	}
 
 	private long _getRelatedObjectDefinitionId(
-		long objectDefinitionId,
-		ObjectRelationship objectRelationship) {
+		long objectDefinitionId, ObjectRelationship objectRelationship) {
 
-		return
-			objectRelationship.getObjectDefinitionId1() != objectDefinitionId ?
-				objectRelationship.getObjectDefinitionId1() :
-				objectRelationship.getObjectDefinitionId2();
+		if (objectRelationship.getObjectDefinitionId1() != objectDefinitionId) {
+			return objectRelationship.getObjectDefinitionId1();
+		}
 
+		return objectRelationship.getObjectDefinitionId2();
 	}
 
-	private Object _getValue(long objectDefinitionId, Object left, Object right) {
+	private Object _getValue(
+		long objectDefinitionId, Object left, Object right) {
+
 		EntityField entityField = _getEntityField(objectDefinitionId, left);
 
 		EntityField.Type entityType = entityField.getType();
@@ -592,11 +616,15 @@ public class PredicateExpressionVisitorImpl
 			return value;
 		}
 		catch (PortalException portalException) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(portalException);
-			}
+			_logExceptionInDebug(portalException);
 
 			return right;
+		}
+	}
+
+	private void _logExceptionInDebug(Exception exception) {
+		if (_log.isDebugEnabled()) {
+			_log.debug(exception);
 		}
 	}
 
@@ -605,7 +633,7 @@ public class PredicateExpressionVisitorImpl
 
 		return column.like(
 			_getValue(_objectDefinitionId, fieldName, fieldValue) +
-			StringPool.PERCENT);
+				StringPool.PERCENT);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -613,14 +641,31 @@ public class PredicateExpressionVisitorImpl
 
 	private final Map<String, String> _lambdaVariableExpressionFieldNames;
 	private final long _objectDefinitionId;
+	private final Map<Long, EntityModel> _objectDefinitionsEntityModelMap =
+		new HashMap<>();
 	private final ObjectFieldBusinessTypeRegistry
 		_objectFieldBusinessTypeRegistry;
 	private final ObjectFieldLocalService _objectFieldLocalService;
-
 	private ObjectRelationship _objectRelationship;
 	private String _relatedFieldName;
 
-	private final Map<Long, EntityModel> _objectDefinitionsEntityModelMap =
-		Collections.emptyMap();
+	private class DynamicObjectRelationshipMappingTable
+		extends BaseTable<DynamicObjectRelationshipMappingTable> {
+
+		public DynamicObjectRelationshipMappingTable(
+			String primaryKeyColumnName1, String primaryKeyColumnName2,
+			String tableName) {
+
+			super(tableName, () -> null);
+
+			createColumn(
+				primaryKeyColumnName1, Long.class, Types.BIGINT,
+				Column.FLAG_PRIMARY);
+			createColumn(
+				primaryKeyColumnName2, Long.class, Types.BIGINT,
+				Column.FLAG_PRIMARY);
+		}
+
+	}
 
 }
