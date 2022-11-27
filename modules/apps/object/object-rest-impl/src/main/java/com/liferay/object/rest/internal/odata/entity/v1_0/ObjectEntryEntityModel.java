@@ -18,12 +18,22 @@ import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.constants.ObjectFieldSettingConstants;
 import com.liferay.object.constants.ObjectRelationshipConstants;
 import com.liferay.object.field.setting.util.ObjectFieldSettingUtil;
+import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectField;
+import com.liferay.object.model.ObjectRelationship;
+import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.object.service.ObjectDefinitionLocalServiceUtil;
+import com.liferay.object.service.ObjectFieldLocalService;
+import com.liferay.object.service.ObjectFieldLocalServiceUtil;
+import com.liferay.object.service.ObjectRelationshipLocalServiceUtil;
+import com.liferay.object.service.ObjectRelationshipService;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.odata.entity.BooleanEntityField;
 import com.liferay.portal.odata.entity.CollectionEntityField;
+import com.liferay.portal.odata.entity.ComplexEntityField;
 import com.liferay.portal.odata.entity.DateEntityField;
 import com.liferay.portal.odata.entity.DateTimeEntityField;
 import com.liferay.portal.odata.entity.DoubleEntityField;
@@ -36,6 +46,7 @@ import com.liferay.portal.odata.entity.StringEntityField;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author Javier de Arcos
@@ -43,6 +54,139 @@ import java.util.Objects;
 public class ObjectEntryEntityModel implements EntityModel {
 
 	public ObjectEntryEntityModel(List<ObjectField> objectFields) {
+		_entityFieldsMap = getStringEntityFieldMap(objectFields);
+	}
+
+	public ObjectEntryEntityModel(
+			List<ObjectField> objectFields, ObjectDefinition objectDefinition)
+		throws Exception {
+
+		_entityFieldsMap = getStringEntityFieldMap(objectFields);
+
+		List<ObjectRelationship> objectRelationships =
+			ObjectRelationshipLocalServiceUtil.getObjectRelationships(
+				objectDefinition.getObjectDefinitionId(), QueryUtil.ALL_POS,
+				QueryUtil.ALL_POS);
+
+		for (ObjectRelationship objectRelationship : objectRelationships) {
+			ObjectDefinition relatedObjectDefinition =
+				_getRelatedObjectDefinition(
+					objectDefinition, objectRelationship);
+
+			Map<String, EntityField> relatedEntityFieldsMap =
+				getStringEntityFieldMap(
+					ObjectFieldLocalServiceUtil.getObjectFields(
+						relatedObjectDefinition.getObjectDefinitionId()));
+
+			List<EntityField> values = relatedEntityFieldsMap.values(
+			).stream(
+			).collect(
+				Collectors.toList()
+			);
+
+			_entityFieldsMap.put(
+				objectRelationship.getName(),
+				new ComplexEntityField(objectRelationship.getName(), values));
+		}
+	}
+
+	@Override
+	public Map<String, EntityField> getEntityFieldsMap() {
+		return _entityFieldsMap;
+	}
+
+	private EntityField _getEntityField(ObjectField objectField) {
+		if (objectField.compareBusinessType(
+				ObjectFieldConstants.BUSINESS_TYPE_AGGREGATION) ||
+			objectField.compareBusinessType(
+				ObjectFieldConstants.BUSINESS_TYPE_FORMULA)) {
+
+			return null;
+		}
+		else if (Objects.equals(
+					objectField.getBusinessType(),
+					ObjectFieldConstants.BUSINESS_TYPE_ATTACHMENT)) {
+
+			return new StringEntityField(
+				objectField.getName(), locale -> objectField.getName());
+		}
+		else if (Objects.equals(
+					objectField.getBusinessType(),
+					ObjectFieldConstants.BUSINESS_TYPE_MULTISELECT_PICKLIST)) {
+
+			return new CollectionEntityField(
+				new StringEntityField(
+					objectField.getName(), locale -> objectField.getName()));
+		}
+
+		if (Objects.equals(
+				objectField.getDBType(),
+				ObjectFieldConstants.DB_TYPE_BIG_DECIMAL) ||
+			Objects.equals(
+				objectField.getDBType(), ObjectFieldConstants.DB_TYPE_DOUBLE)) {
+
+			return new DoubleEntityField(
+				objectField.getName(), locale -> objectField.getName());
+		}
+		else if (Objects.equals(
+					objectField.getDBType(),
+					ObjectFieldConstants.DB_TYPE_BOOLEAN)) {
+
+			return new BooleanEntityField(
+				objectField.getName(), locale -> objectField.getName());
+		}
+		else if (Objects.equals(
+					objectField.getDBType(),
+					ObjectFieldConstants.DB_TYPE_CLOB) ||
+				 Objects.equals(
+					 objectField.getDBType(),
+					 ObjectFieldConstants.DB_TYPE_STRING)) {
+
+			return new StringEntityField(
+				objectField.getName(), locale -> objectField.getName());
+		}
+		else if (Objects.equals(
+					objectField.getDBType(),
+					ObjectFieldConstants.DB_TYPE_DATE)) {
+
+			return new DateEntityField(
+				objectField.getName(), locale -> objectField.getName(),
+				locale -> objectField.getName());
+		}
+		else if (Objects.equals(
+					objectField.getDBType(),
+					ObjectFieldConstants.DB_TYPE_INTEGER) ||
+				 Objects.equals(
+					 objectField.getDBType(),
+					 ObjectFieldConstants.DB_TYPE_LONG)) {
+
+			return new IntegerEntityField(
+				objectField.getName(), locale -> objectField.getName());
+		}
+
+		return null;
+	}
+
+	private ObjectDefinition _getRelatedObjectDefinition(
+			ObjectDefinition objectDefinition,
+			ObjectRelationship objectRelationship)
+		throws Exception {
+
+		long objectDefinitionId1 = objectRelationship.getObjectDefinitionId1();
+
+		if (objectDefinitionId1 != objectDefinition.getObjectDefinitionId()) {
+			return ObjectDefinitionLocalServiceUtil.getObjectDefinition(
+				objectRelationship.getObjectDefinitionId1());
+		}
+
+		return ObjectDefinitionLocalServiceUtil.getObjectDefinition(
+			objectRelationship.getObjectDefinitionId2());
+	}
+
+	private Map<String, EntityField> getStringEntityFieldMap(
+		List<ObjectField> objectFields) {
+
+		Map<String, EntityField> _entityFieldsMap;
 		_entityFieldsMap = HashMapBuilder.<String, EntityField>put(
 			"creator", new StringEntityField("creator", locale -> "creator")
 		).put(
@@ -125,83 +269,8 @@ public class ObjectEntryEntityModel implements EntityModel {
 					relationshipIdName, locale -> objectFieldName,
 					String::valueOf));
 		}
-	}
 
-	@Override
-	public Map<String, EntityField> getEntityFieldsMap() {
 		return _entityFieldsMap;
-	}
-
-	private EntityField _getEntityField(ObjectField objectField) {
-		if (objectField.compareBusinessType(
-				ObjectFieldConstants.BUSINESS_TYPE_AGGREGATION) ||
-			objectField.compareBusinessType(
-				ObjectFieldConstants.BUSINESS_TYPE_FORMULA)) {
-
-			return null;
-		}
-		else if (Objects.equals(
-					objectField.getBusinessType(),
-					ObjectFieldConstants.BUSINESS_TYPE_ATTACHMENT)) {
-
-			return new StringEntityField(
-				objectField.getName(), locale -> objectField.getName());
-		}
-		else if (Objects.equals(
-					objectField.getBusinessType(),
-					ObjectFieldConstants.BUSINESS_TYPE_MULTISELECT_PICKLIST)) {
-
-			return new CollectionEntityField(
-				new StringEntityField(
-					objectField.getName(), locale -> objectField.getName()));
-		}
-
-		if (Objects.equals(
-				objectField.getDBType(),
-				ObjectFieldConstants.DB_TYPE_BIG_DECIMAL) ||
-			Objects.equals(
-				objectField.getDBType(), ObjectFieldConstants.DB_TYPE_DOUBLE)) {
-
-			return new DoubleEntityField(
-				objectField.getName(), locale -> objectField.getName());
-		}
-		else if (Objects.equals(
-					objectField.getDBType(),
-					ObjectFieldConstants.DB_TYPE_BOOLEAN)) {
-
-			return new BooleanEntityField(
-				objectField.getName(), locale -> objectField.getName());
-		}
-		else if (Objects.equals(
-					objectField.getDBType(),
-					ObjectFieldConstants.DB_TYPE_CLOB) ||
-				 Objects.equals(
-					 objectField.getDBType(),
-					 ObjectFieldConstants.DB_TYPE_STRING)) {
-
-			return new StringEntityField(
-				objectField.getName(), locale -> objectField.getName());
-		}
-		else if (Objects.equals(
-					objectField.getDBType(),
-					ObjectFieldConstants.DB_TYPE_DATE)) {
-
-			return new DateEntityField(
-				objectField.getName(), locale -> objectField.getName(),
-				locale -> objectField.getName());
-		}
-		else if (Objects.equals(
-					objectField.getDBType(),
-					ObjectFieldConstants.DB_TYPE_INTEGER) ||
-				 Objects.equals(
-					 objectField.getDBType(),
-					 ObjectFieldConstants.DB_TYPE_LONG)) {
-
-			return new IntegerEntityField(
-				objectField.getName(), locale -> objectField.getName());
-		}
-
-		return null;
 	}
 
 	private final Map<String, EntityField> _entityFieldsMap;

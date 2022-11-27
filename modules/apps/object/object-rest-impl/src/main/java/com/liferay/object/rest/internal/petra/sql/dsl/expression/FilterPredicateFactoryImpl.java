@@ -18,7 +18,10 @@ import com.liferay.object.field.business.type.ObjectFieldBusinessTypeRegistry;
 import com.liferay.object.rest.internal.odata.entity.v1_0.ObjectEntryEntityModel;
 import com.liferay.object.rest.internal.odata.filter.expression.PredicateExpressionVisitorImpl;
 import com.liferay.object.rest.petra.sql.dsl.expression.FilterPredicateFactory;
+import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectFieldLocalService;
+import com.liferay.object.service.ObjectRelationshipLocalService;
+import com.liferay.object.service.ObjectRelationshipService;
 import com.liferay.petra.sql.dsl.expression.Predicate;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -41,14 +44,27 @@ public class FilterPredicateFactoryImpl implements FilterPredicateFactory {
 
 	@Override
 	public Predicate create(String filterString, long objectDefinitionId) {
+		//			EntityModel entityModel = new ObjectEntryEntityModel(
+		//				_objectFieldLocalService.getObjectFields(objectDefinitionId),
+		//				_objectDefinitionLocalService.getObjectDefinition(
+		//					objectDefinitionId), _objectRelationshipService,
+		//				_objectDefinitionLocalService, _objectFieldLocalService);
+
+		ObjectEntryEntityModel entityModel = new ObjectEntryEntityModel(
+			_objectFieldLocalService.getObjectFields(objectDefinitionId));
+
+		return create(filterString, objectDefinitionId, entityModel);
+	}
+
+	@Override
+	public Predicate create(
+		String filterString, long objectDefinitionId, EntityModel entityModel) {
+
 		if (Validator.isNull(filterString)) {
 			return null;
 		}
 
 		try {
-			EntityModel entityModel = new ObjectEntryEntityModel(
-				_objectFieldLocalService.getObjectFields(objectDefinitionId));
-
 			FilterParser filterParser = _filterParserProvider.provide(
 				entityModel);
 
@@ -80,5 +96,13 @@ public class FilterPredicateFactoryImpl implements FilterPredicateFactory {
 
 	@Reference
 	private ObjectFieldLocalService _objectFieldLocalService;
+
+	// 	@Reference
+
+	//	private ObjectDefinitionLocalService _objectDefinitionLocalService;
+
+	// 	@Reference
+
+	//	private ObjectRelationshipService _objectRelationshipService;
 
 }

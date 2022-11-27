@@ -59,6 +59,7 @@ import java.util.Map;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.NotSupportedException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
 /**
@@ -197,10 +198,13 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 	}
 
 	@Override
-	public EntityModel getEntityModel(MultivaluedMap multivaluedMap) {
+	public EntityModel getEntityModel(MultivaluedMap multivaluedMap)
+		throws Exception {
+
 		return new ObjectEntryEntityModel(
 			_objectFieldLocalService.getObjectFields(
-				_objectDefinition.getObjectDefinitionId()));
+				_objectDefinition.getObjectDefinitionId()),
+			_objectDefinition);
 	}
 
 	@Override
@@ -218,7 +222,8 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 		if (contextHttpServletRequest != null) {
 			predicate = _filterPredicateFactory.create(
 				ParamUtil.getString(contextHttpServletRequest, "filter"),
-				_objectDefinition.getObjectDefinitionId());
+				_objectDefinition.getObjectDefinitionId(),
+				getEntityModel(new MultivaluedHashMap<String, Object>()));
 		}
 
 		return objectEntryManager.getObjectEntries(
