@@ -103,8 +103,10 @@ public class AuthVerifierPipeline {
 			new AuthVerifierConfigurationConsumer(
 				accessControlContext, _excludeURLPatternMapper, requestURI);
 
-		_includeURLPatternMapper.consumeValues(
-			authVerifierConfigurationConsumer, requestURI);
+		synchronized (this) {
+			_includeURLPatternMapper.consumeValues(
+				authVerifierConfigurationConsumer, requestURI);
+		}
 
 		if (authVerifierConfigurationConsumer.getAuthVerifierResult() != null) {
 			return authVerifierConfigurationConsumer.getAuthVerifierResult();
