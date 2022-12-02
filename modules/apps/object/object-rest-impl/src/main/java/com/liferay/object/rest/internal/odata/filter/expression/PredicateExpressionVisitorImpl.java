@@ -20,16 +20,14 @@ import com.liferay.object.field.business.type.ObjectFieldBusinessTypeRegistry;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectRelationship;
-import com.liferay.object.relationship.util.ObjectRelationshipUtil;
+import com.liferay.object.related.models.ObjectRelatedModelsPredicateProvider;
+import com.liferay.object.related.models.ObjectRelatedModelsPredicateProviderRegistry;
 import com.liferay.object.rest.internal.odata.entity.v1_0.ObjectEntryEntityModel;
 import com.liferay.object.service.ObjectDefinitionLocalServiceUtil;
 import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalServiceUtil;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.sql.dsl.Column;
-import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
-import com.liferay.petra.sql.dsl.Table;
-import com.liferay.petra.sql.dsl.base.BaseTable;
 import com.liferay.petra.sql.dsl.expression.Predicate;
 import com.liferay.petra.sql.dsl.spi.expression.DefaultPredicate;
 import com.liferay.petra.sql.dsl.spi.expression.Operand;
@@ -64,8 +62,6 @@ import com.liferay.portal.odata.filter.expression.PrimitivePropertyExpression;
 import com.liferay.portal.odata.filter.expression.PropertyExpression;
 import com.liferay.portal.odata.filter.expression.UnaryExpression;
 
-import java.sql.Types;
-
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
@@ -87,11 +83,14 @@ public class PredicateExpressionVisitorImpl
 	public PredicateExpressionVisitorImpl(
 		EntityModel entityModel, long objectDefinitionId,
 		ObjectFieldBusinessTypeRegistry objectFieldBusinessTypeRegistry,
-		ObjectFieldLocalService objectFieldLocalService) {
+		ObjectFieldLocalService objectFieldLocalService,
+		ObjectRelatedModelsPredicateProviderRegistry
+			objectRelatedModelsPredicateProviderRegistry) {
 
 		this(
 			entityModel, new HashMap<>(), objectDefinitionId,
-			objectFieldBusinessTypeRegistry, objectFieldLocalService);
+			objectFieldBusinessTypeRegistry, objectFieldLocalService,
+			objectRelatedModelsPredicateProviderRegistry);
 	}
 
 	@Override
@@ -122,7 +121,8 @@ public class PredicateExpressionVisitorImpl
 					lambdaFunctionExpression.getVariableName(),
 					collectionPropertyExpression.getName()),
 				_objectDefinitionId, _objectFieldBusinessTypeRegistry,
-				_objectFieldLocalService));
+				_objectFieldLocalService,
+				_objectRelatedModelsPredicateProviderRegistry));
 	}
 
 	@Override
@@ -309,7 +309,9 @@ public class PredicateExpressionVisitorImpl
 		Map<String, String> lambdaVariableExpressionFieldNames,
 		long objectDefinitionId,
 		ObjectFieldBusinessTypeRegistry objectFieldBusinessTypeRegistry,
-		ObjectFieldLocalService objectFieldLocalService) {
+		ObjectFieldLocalService objectFieldLocalService,
+		ObjectRelatedModelsPredicateProviderRegistry
+			objectRelatedModelsPredicateProviderRegistry) {
 
 		_objectDefinitionsEntityModelMap.put(objectDefinitionId, entityModel);
 		_lambdaVariableExpressionFieldNames =
@@ -317,6 +319,8 @@ public class PredicateExpressionVisitorImpl
 		_objectDefinitionId = objectDefinitionId;
 		_objectFieldBusinessTypeRegistry = objectFieldBusinessTypeRegistry;
 		_objectFieldLocalService = objectFieldLocalService;
+		_objectRelatedModelsPredicateProviderRegistry =
+			objectRelatedModelsPredicateProviderRegistry;
 	}
 
 	private Predicate _contains(Object fieldName, Object fieldValue) {
@@ -429,81 +433,25 @@ public class PredicateExpressionVisitorImpl
 			BinaryExpression.Operation operation, Object left, Object right)
 		throws Exception {
 
-		long relatedObjectDefinitionId = _getRelatedObjectDefinitionId(
-			_objectDefinitionId, _objectRelationship);
-
-		ObjectDefinition relatedObjectDefinition =
-			ObjectDefinitionLocalServiceUtil.getObjectDefinition(
-				relatedObjectDefinitionId);
-
-		ObjectField relatedObjectDefinitionObjectField =
-			_objectFieldLocalService.getObjectField(
-				relatedObjectDefinition.getTitleObjectFieldId());
-
-		Table<?> relatedObjectTable = _objectFieldLocalService.getTable(
-			relatedObjectDefinition.getObjectDefinitionId(),
-			relatedObjectDefinitionObjectField.getName());
-
-		Column<?, ?> relatedObjectDefinitionTableColumn =
-			relatedObjectTable.getColumn(
-				relatedObjectDefinition.getPKObjectFieldName() + "_");
-
-		ObjectDefinition objectDefinition =
+		ObjectDefinition objectDefinition1 =
 			ObjectDefinitionLocalServiceUtil.getObjectDefinition(
 				_objectDefinitionId);
 
-		Map<String, String> pkObjectFieldDBColumnNames =
-			ObjectRelationshipUtil.getPKObjectFieldDBColumnNames(
-				objectDefinition, relatedObjectDefinition,
-				_objectRelationship.isReverse());
+		ObjectRelatedModelsPredicateProvider
+			objectRelatedModelsPredicateProvider =
+				_objectRelatedModelsPredicateProviderRegistry.
+					getObjectRelatedModelsPredicateProvider(
+						objectDefinition1.getClassName(),
+						_objectRelationship.getType());
 
-		DynamicObjectRelationshipMappingTable
-			dynamicObjectRelationshipMappingTable =
-				new DynamicObjectRelationshipMappingTable(
-					pkObjectFieldDBColumnNames.get(
-						"pkObjectFieldDBColumnName1"),
-					pkObjectFieldDBColumnNames.get(
-						"pkObjectFieldDBColumnName2"),
-					_objectRelationship.getDBTableName());
+		long relatedObjectDefinitionId = _getRelatedObjectDefinitionId(
+			_objectDefinitionId, _objectRelationship);
 
-		ObjectField objectDefinitionField =
-			_objectFieldLocalService.getObjectField(
-				objectDefinition.getTitleObjectFieldId());
-
-		Table<?> objectTable = _objectFieldLocalService.getTable(
-			objectDefinition.getObjectDefinitionId(),
-			objectDefinitionField.getName());
-
-		Column<?, ?> objectTableColumn = objectTable.getColumn(
-			objectDefinition.getPKObjectFieldName() + "_");
-
-		Column<DynamicObjectRelationshipMappingTable, ?> relatedObjectColumn =
-			dynamicObjectRelationshipMappingTable.getColumn(
-				relatedObjectDefinition.getPKObjectFieldName() + "_");
-
-		Column<DynamicObjectRelationshipMappingTable, ?> objectColumn =
-			dynamicObjectRelationshipMappingTable.getColumn(
-				objectDefinition.getPKObjectFieldName() + "_");
-
-		return objectTableColumn.in(
-			DSLQueryFactoryUtil.select(
-				objectColumn
-			).from(
-				dynamicObjectRelationshipMappingTable
-			).where(
-				relatedObjectColumn.in(
-					DSLQueryFactoryUtil.select(
-						relatedObjectDefinitionTableColumn
-					).from(
-						relatedObjectTable
-					).where(
-						_getExpressionPredicate(
-							operation,
-							_getValue(relatedObjectDefinitionId, left, right),
-							_getColumn(
-								relatedObjectDefinitionId, _relatedFieldName))
-					))
-			));
+		return objectRelatedModelsPredicateProvider.getPredicate(
+			_objectDefinitionId, _objectRelationship,
+			_getExpressionPredicate(
+				operation, _getValue(relatedObjectDefinitionId, left, right),
+				_getColumn(relatedObjectDefinitionId, _relatedFieldName)));
 	}
 
 	private Optional<Predicate> _getPredicateOptional(
@@ -646,26 +594,9 @@ public class PredicateExpressionVisitorImpl
 	private final ObjectFieldBusinessTypeRegistry
 		_objectFieldBusinessTypeRegistry;
 	private final ObjectFieldLocalService _objectFieldLocalService;
+	private final ObjectRelatedModelsPredicateProviderRegistry
+		_objectRelatedModelsPredicateProviderRegistry;
 	private ObjectRelationship _objectRelationship;
 	private String _relatedFieldName;
-
-	private class DynamicObjectRelationshipMappingTable
-		extends BaseTable<DynamicObjectRelationshipMappingTable> {
-
-		public DynamicObjectRelationshipMappingTable(
-			String primaryKeyColumnName1, String primaryKeyColumnName2,
-			String tableName) {
-
-			super(tableName, () -> null);
-
-			createColumn(
-				primaryKeyColumnName1, Long.class, Types.BIGINT,
-				Column.FLAG_PRIMARY);
-			createColumn(
-				primaryKeyColumnName2, Long.class, Types.BIGINT,
-				Column.FLAG_PRIMARY);
-		}
-
-	}
 
 }
