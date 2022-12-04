@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.object.rest.petra.sql.dsl.expression;
+package com.liferay.object.petra.sql.dsl.expression;
 
 import com.liferay.petra.sql.dsl.expression.Predicate;
 

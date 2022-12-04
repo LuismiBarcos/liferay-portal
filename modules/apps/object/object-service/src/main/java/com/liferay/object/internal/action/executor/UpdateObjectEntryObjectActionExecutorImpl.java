@@ -20,22 +20,22 @@ import com.liferay.object.constants.ObjectActionExecutorConstants;
 import com.liferay.object.internal.action.util.ObjectEntryVariablesUtil;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectField;
-import com.liferay.object.rest.dto.v1_0.ObjectEntry;
-import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
-import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.object.service.ObjectEntryService;
 import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.system.SystemObjectDefinitionMetadataRegistry;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
-import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 
-import java.util.Collections;
+import java.io.Serializable;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -59,30 +59,21 @@ public class UpdateObjectEntryObjectActionExecutorImpl
 			_objectDefinitionLocalService.fetchObjectDefinition(
 				payloadJSONObject.getLong("objectDefinitionId"));
 
-		ObjectEntryManager objectEntryManager =
-			_objectEntryManagerRegistry.getObjectEntryManager(
-				objectDefinition.getStorageType());
+		Map<String, Object> values = _getValues(
+			objectDefinition, parametersUnicodeProperties,
+			ObjectEntryVariablesUtil.getActionVariables(
+				_dtoConverterRegistry, objectDefinition, payloadJSONObject,
+				_systemObjectDefinitionMetadataRegistry));
 
-		User user = _userLocalService.getUser(userId);
+		HashMap<String, Serializable> objectValues = new HashMap<>();
+
+		values.forEach((s, o) -> objectValues.put(s, (Serializable)o));
 
 		TransactionCommitCallbackUtil.registerCallback(
 			() -> {
-				objectEntryManager.updateObjectEntry(
-					new DefaultDTOConverterContext(
-						false, Collections.emptyMap(), _dtoConverterRegistry,
-						null, user.getLocale(), null, user),
-					objectDefinition,
+				_objectEntryService.updateObjectEntry(
 					GetterUtil.getLong(payloadJSONObject.getLong("classPK")),
-					new ObjectEntry() {
-						{
-							properties = _getValues(
-								objectDefinition, parametersUnicodeProperties,
-								ObjectEntryVariablesUtil.getActionVariables(
-									_dtoConverterRegistry, objectDefinition,
-									payloadJSONObject,
-									_systemObjectDefinitionMetadataRegistry));
-						}
-					});
+					objectValues, _createServiceContext(values, userId));
 
 				return null;
 			});
@@ -91,6 +82,32 @@ public class UpdateObjectEntryObjectActionExecutorImpl
 	@Override
 	public String getKey() {
 		return ObjectActionExecutorConstants.KEY_UPDATE_OBJECT_ENTRY;
+	}
+
+	private ServiceContext _createServiceContext(
+		Map<String, Object> properties, long userId) {
+
+		ServiceContext serviceContext = new ServiceContext();
+
+		serviceContext.setAddGroupPermissions(true);
+		serviceContext.setAddGuestPermissions(true);
+
+		if (properties.get("categoryIds") != null) {
+			serviceContext.setAssetCategoryIds(
+				ListUtil.toLongArray(
+					(List<String>)properties.get("categoryIds"),
+					Long::parseLong));
+		}
+
+		if (properties.get("tagNames") != null) {
+			serviceContext.setAssetTagNames(
+				ArrayUtil.toStringArray(
+					(List<String>)properties.get("tagNames")));
+		}
+
+		serviceContext.setUserId(userId);
+
+		return serviceContext;
 	}
 
 	private Map<String, Object> _getValues(
@@ -128,7 +145,7 @@ public class UpdateObjectEntryObjectActionExecutorImpl
 	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 	@Reference
-	private ObjectEntryManagerRegistry _objectEntryManagerRegistry;
+	private ObjectEntryService _objectEntryService;
 
 	@Reference
 	private ObjectFieldLocalService _objectFieldLocalService;
@@ -136,8 +153,5 @@ public class UpdateObjectEntryObjectActionExecutorImpl
 	@Reference
 	private SystemObjectDefinitionMetadataRegistry
 		_systemObjectDefinitionMetadataRegistry;
-
-	@Reference
-	private UserLocalService _userLocalService;
 
 }

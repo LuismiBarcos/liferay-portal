@@ -27,7 +27,6 @@ import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectFieldSetting;
 import com.liferay.object.model.ObjectState;
 import com.liferay.object.model.ObjectStateFlow;
-import com.liferay.object.rest.dto.v1_0.ListEntry;
 import com.liferay.object.service.ObjectStateFlowLocalService;
 import com.liferay.object.service.ObjectStateLocalService;
 import com.liferay.petra.function.transform.TransformUtil;
@@ -198,8 +197,8 @@ public class PicklistObjectFieldBusinessType
 		String listEntryKey = objectField.getDefaultValue();
 
 		if (MapUtil.isNotEmpty(objectFieldRenderingContext.getProperties())) {
-			ListEntry listEntry =
-				(ListEntry)objectFieldRenderingContext.getProperty(
+			ListTypeEntry listEntry =
+				(ListTypeEntry)objectFieldRenderingContext.getProperty(
 					objectField.getName());
 
 			if (listEntry == null) {

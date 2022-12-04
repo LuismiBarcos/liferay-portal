@@ -17,6 +17,7 @@ package com.liferay.object.rest.internal.deployer;
 import com.liferay.object.action.engine.ObjectActionEngine;
 import com.liferay.object.deployer.ObjectDefinitionDeployer;
 import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.petra.sql.dsl.expression.FilterPredicateFactory;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.internal.graphql.dto.v1_0.ObjectDefinitionGraphQLDTOContributor;
 import com.liferay.object.rest.internal.jaxrs.application.ObjectEntryApplication;
@@ -31,7 +32,6 @@ import com.liferay.object.rest.internal.resource.v1_0.ObjectEntryResourceFactory
 import com.liferay.object.rest.internal.resource.v1_0.ObjectEntryResourceImpl;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
 import com.liferay.object.rest.openapi.v1_0.ObjectEntryOpenAPIResource;
-import com.liferay.object.rest.petra.sql.dsl.expression.FilterPredicateFactory;
 import com.liferay.object.rest.resource.v1_0.ObjectEntryResource;
 import com.liferay.object.scope.ObjectScopeProvider;
 import com.liferay.object.scope.ObjectScopeProviderRegistry;

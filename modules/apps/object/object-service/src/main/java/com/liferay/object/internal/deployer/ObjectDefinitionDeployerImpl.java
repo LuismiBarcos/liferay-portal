@@ -43,7 +43,6 @@ import com.liferay.object.internal.workflow.ObjectEntryWorkflowHandler;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.related.models.ObjectRelatedModelsProvider;
 import com.liferay.object.rest.context.path.RESTContextPathResolver;
-import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
 import com.liferay.object.scope.ObjectScopeProviderRegistry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
@@ -106,7 +105,6 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 		ModelSearchRegistrarHelper modelSearchRegistrarHelper,
 		ObjectDefinitionLocalService objectDefinitionLocalService,
 		ObjectEntryLocalService objectEntryLocalService,
-		ObjectEntryManagerRegistry objectEntryManagerRegistry,
 		ObjectEntryService objectEntryService,
 		ObjectFieldLocalService objectFieldLocalService,
 		ObjectLayoutLocalService objectLayoutLocalService,
@@ -129,7 +127,6 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 		_modelSearchRegistrarHelper = modelSearchRegistrarHelper;
 		_objectDefinitionLocalService = objectDefinitionLocalService;
 		_objectEntryLocalService = objectEntryLocalService;
-		_objectEntryManagerRegistry = objectEntryManagerRegistry;
 		_objectEntryService = objectEntryService;
 		_objectFieldLocalService = objectFieldLocalService;
 		_objectLayoutLocalService = objectLayoutLocalService;
@@ -303,9 +300,8 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 				_assetCategoryLocalService, _assetTagLocalService,
 				_assetVocabularyLocalService, _groupLocalService,
 				_listTypeEntryLocalService, objectDefinition,
-				_objectEntryLocalService, _objectEntryManagerRegistry,
-				_objectFieldLocalService, _objectLayoutLocalService,
-				_objectScopeProviderRegistry),
+				_objectEntryLocalService, _objectFieldLocalService,
+				_objectLayoutLocalService, _objectScopeProviderRegistry),
 			HashMapDictionaryBuilder.<String, Object>put(
 				"company.id", objectDefinition.getCompanyId()
 			).put(
@@ -394,7 +390,6 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 	private final ModelSearchRegistrarHelper _modelSearchRegistrarHelper;
 	private final ObjectDefinitionLocalService _objectDefinitionLocalService;
 	private final ObjectEntryLocalService _objectEntryLocalService;
-	private final ObjectEntryManagerRegistry _objectEntryManagerRegistry;
 	private final ObjectEntryService _objectEntryService;
 	private final ObjectFieldLocalService _objectFieldLocalService;
 	private final ObjectLayoutLocalService _objectLayoutLocalService;

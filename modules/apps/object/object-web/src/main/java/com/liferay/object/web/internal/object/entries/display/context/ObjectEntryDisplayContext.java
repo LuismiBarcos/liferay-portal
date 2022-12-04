@@ -14,6 +14,7 @@
 
 package com.liferay.object.web.internal.object.entries.display.context;
 
+import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.dynamic.data.mapping.form.field.type.constants.DDMFormFieldTypeConstants;
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderer;
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderingContext;
@@ -39,6 +40,7 @@ import com.liferay.item.selector.ItemSelector;
 import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.criteria.InfoItemItemSelectorReturnType;
 import com.liferay.item.selector.criteria.info.item.criterion.InfoItemItemSelectorCriterion;
+import com.liferay.list.type.model.ListTypeEntry;
 import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.exception.NoSuchObjectLayoutException;
@@ -46,6 +48,7 @@ import com.liferay.object.field.business.type.ObjectFieldBusinessType;
 import com.liferay.object.field.business.type.ObjectFieldBusinessTypeRegistry;
 import com.liferay.object.field.render.ObjectFieldRenderingContext;
 import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectLayout;
 import com.liferay.object.model.ObjectLayoutBox;
@@ -53,11 +56,6 @@ import com.liferay.object.model.ObjectLayoutColumn;
 import com.liferay.object.model.ObjectLayoutRow;
 import com.liferay.object.model.ObjectLayoutTab;
 import com.liferay.object.model.ObjectRelationship;
-import com.liferay.object.rest.dto.v1_0.FileEntry;
-import com.liferay.object.rest.dto.v1_0.ListEntry;
-import com.liferay.object.rest.dto.v1_0.ObjectEntry;
-import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
-import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
 import com.liferay.object.scope.ObjectScopeProvider;
 import com.liferay.object.scope.ObjectScopeProviderRegistry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
@@ -95,8 +93,6 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
-import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.taglib.servlet.PipingServletResponseFactory;
 
 import java.text.DecimalFormat;
@@ -124,7 +120,6 @@ public class ObjectEntryDisplayContext {
 		DDMFormRenderer ddmFormRenderer, HttpServletRequest httpServletRequest,
 		ItemSelector itemSelector,
 		ObjectDefinitionLocalService objectDefinitionLocalService,
-		ObjectEntryManagerRegistry objectEntryManagerRegistry,
 		ObjectEntryService objectEntryService,
 		ObjectFieldBusinessTypeRegistry objectFieldBusinessTypeRegistry,
 		ObjectFieldLocalService objectFieldLocalService,
@@ -136,7 +131,6 @@ public class ObjectEntryDisplayContext {
 		_ddmFormRenderer = ddmFormRenderer;
 		_itemSelector = itemSelector;
 		_objectDefinitionLocalService = objectDefinitionLocalService;
-		_objectEntryManagerRegistry = objectEntryManagerRegistry;
 		_objectEntryService = objectEntryService;
 		_objectFieldBusinessTypeRegistry = objectFieldBusinessTypeRegistry;
 		_objectFieldLocalService = objectFieldLocalService;
@@ -236,17 +230,10 @@ public class ObjectEntryDisplayContext {
 				ObjectWebKeys.EXTERNAL_REFERENCE_CODE);
 		}
 
-		ObjectDefinition objectDefinition = getObjectDefinition();
-
-		ObjectEntryManager objectEntryManager =
-			_objectEntryManagerRegistry.getObjectEntryManager(
-				objectDefinition.getStorageType());
-
 		try {
-			_objectEntry = objectEntryManager.getObjectEntry(
-				_getDTOConverterContext(), externalReferenceCode,
-				_objectRequestHelper.getCompanyId(), objectDefinition,
-				String.valueOf(_getGroupId()));
+			_objectEntry = _objectEntryService.getObjectEntry(
+				externalReferenceCode, _objectRequestHelper.getCompanyId(),
+				_getGroupId());
 		}
 		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
@@ -401,7 +388,7 @@ public class ObjectEntryDisplayContext {
 			() -> {
 				ObjectEntry objectEntry = getObjectEntry();
 
-				return GetterUtil.getLong(objectEntry.getId());
+				return GetterUtil.getLong(objectEntry.getObjectEntryId());
 			}
 		).setParameter(
 			"objectRelationshipId", objectRelationship.getObjectRelationshipId()
@@ -414,7 +401,7 @@ public class ObjectEntryDisplayContext {
 		throws PortalException {
 
 		return HashMapBuilder.put(
-			"objectEntryId", String.valueOf(_objectEntry.getId())
+			"objectEntryId", String.valueOf(_objectEntry.getObjectEntryId())
 		).put(
 			"objectRelationshipId",
 			() -> {
@@ -482,7 +469,7 @@ public class ObjectEntryDisplayContext {
 
 		if (objectEntry != null) {
 			ddmFormRenderingContext.addProperty(
-				"objectEntryId", objectEntry.getId());
+				"objectEntryId", objectEntry.getObjectEntryId());
 
 			DDMFormValues ddmFormValues = _getDDMFormValues(
 				ddmForm, objectEntry);
@@ -578,8 +565,7 @@ public class ObjectEntryDisplayContext {
 		if (objectEntry != null) {
 			objectFieldRenderingContext.setExternalReferenceCode(
 				objectEntry.getExternalReferenceCode());
-			objectFieldRenderingContext.setProperties(
-				objectEntry.getProperties());
+			objectFieldRenderingContext.setProperties(objectEntry.getValues());
 		}
 
 		objectFieldRenderingContext.setPortletId(
@@ -812,7 +798,7 @@ public class ObjectEntryDisplayContext {
 	private DDMFormValues _getDDMFormValues(
 		DDMForm ddmForm, ObjectEntry objectEntry) {
 
-		Map<String, Object> values = objectEntry.getProperties();
+		Map<String, Object> values = new HashMap<>(objectEntry.getValues());
 
 		if (values.isEmpty()) {
 			return null;
@@ -853,12 +839,6 @@ public class ObjectEntryDisplayContext {
 		ddmFormValues.setDefaultLocale(_objectRequestHelper.getLocale());
 
 		return ddmFormValues;
-	}
-
-	private DTOConverterContext _getDTOConverterContext() {
-		return new DefaultDTOConverterContext(
-			false, null, null, _objectRequestHelper.getRequest(), null,
-			_themeDisplay.getLocale(), null, _themeDisplay.getUser());
 	}
 
 	private long _getGroupId() {
@@ -1094,18 +1074,20 @@ public class ObjectEntryDisplayContext {
 						StringPool.OPEN_BRACKET,
 						StringUtil.merge(
 							ListUtil.toList(
-								(List<ListEntry>)value, ListEntry::getKey),
+								(List<ListTypeEntry>)value,
+								ListTypeEntry::getKey),
 							StringPool.COMMA_AND_SPACE),
 						StringPool.CLOSE_BRACKET)));
 		}
-		else if (value instanceof FileEntry) {
-			FileEntry fileEntry = (FileEntry)value;
+		else if (value instanceof DLFileEntry) {
+			DLFileEntry fileEntry = (DLFileEntry)value;
 
 			ddmFormFieldValue.setValue(
-				new UnlocalizedValue(String.valueOf(fileEntry.getId())));
+				new UnlocalizedValue(
+					String.valueOf(fileEntry.getFileEntryId())));
 		}
-		else if (value instanceof ListEntry) {
-			ListEntry listEntry = (ListEntry)value;
+		else if (value instanceof ListTypeEntry) {
+			ListTypeEntry listEntry = (ListTypeEntry)value;
 
 			ddmFormFieldValue.setValue(
 				new UnlocalizedValue(listEntry.getKey()));
@@ -1131,7 +1113,6 @@ public class ObjectEntryDisplayContext {
 	private final ItemSelector _itemSelector;
 	private final ObjectDefinitionLocalService _objectDefinitionLocalService;
 	private ObjectEntry _objectEntry;
-	private final ObjectEntryManagerRegistry _objectEntryManagerRegistry;
 	private final ObjectEntryService _objectEntryService;
 	private final ObjectFieldBusinessTypeRegistry
 		_objectFieldBusinessTypeRegistry;

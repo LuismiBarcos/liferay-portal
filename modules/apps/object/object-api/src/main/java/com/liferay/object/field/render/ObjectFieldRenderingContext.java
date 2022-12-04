@@ -14,6 +14,8 @@
 
 package com.liferay.object.field.render;
 
+import java.io.Serializable;
+
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -88,7 +90,7 @@ public class ObjectFieldRenderingContext {
 		_portletId = portletId;
 	}
 
-	public void setProperties(Map<String, Object> properties) {
+	public void setProperties(Map<String, Serializable> properties) {
 		_properties.putAll(properties);
 	}
 

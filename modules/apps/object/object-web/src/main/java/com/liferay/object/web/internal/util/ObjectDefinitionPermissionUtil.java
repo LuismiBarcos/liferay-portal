@@ -15,7 +15,7 @@
 package com.liferay.object.web.internal.util;
 
 import com.liferay.object.model.ObjectDefinition;
-import com.liferay.object.rest.dto.v1_0.ObjectEntry;
+import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.service.ObjectEntryService;
 import com.liferay.portal.kernel.exception.PortalException;
 
@@ -43,8 +43,8 @@ public class ObjectDefinitionPermissionUtil {
 		throws PortalException {
 
 		return hasModelResourcePermission(
-			objectDefinition, objectEntry.getId(), objectEntryService,
-			actionId);
+			objectDefinition, objectEntry.getObjectEntryId(),
+			objectEntryService, actionId);
 	}
 
 }
