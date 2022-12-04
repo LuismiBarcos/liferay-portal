@@ -8,7 +8,6 @@ Export-Package:\
 	com.liferay.object.configuration,\
 	com.liferay.object.constants,\
 	com.liferay.object.definition.notification.term.util,\
-    com.liferay.object.petra.sql.dsl.expression,\
 	com.liferay.object.deployer,\
 	com.liferay.object.entry.permission.util,\
 	com.liferay.object.entry.util,\
@@ -22,6 +21,7 @@ Export-Package:\
 	com.liferay.object.field.util,\
 	com.liferay.object.filter.util,\
 	com.liferay.object.model,\
+	com.liferay.object.petra.sql.dsl.expression,\
 	com.liferay.object.related.models,\
 	com.liferay.object.relationship.util,\
 	com.liferay.object.rest.context.path,\
