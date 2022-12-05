@@ -27,13 +27,12 @@ import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.related.models.ObjectRelatedModelsProvider;
 import com.liferay.object.related.models.ObjectRelatedModelsProviderRegistry;
-import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.scope.ObjectScopeProviderRegistry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
-import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -47,9 +46,6 @@ import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
-import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
-import com.liferay.portal.vulcan.pagination.Page;
 
 import java.io.IOException;
 
@@ -81,7 +77,6 @@ public class ObjectEntryItemSelectorView
 		ObjectDefinition objectDefinition,
 		ObjectDefinitionLocalService objectDefinitionLocalService,
 		ObjectEntryLocalService objectEntryLocalService,
-		ObjectEntryManager objectEntryManager,
 		ObjectRelatedModelsProviderRegistry objectRelatedModelsProviderRegistry,
 		ObjectScopeProviderRegistry objectScopeProviderRegistry,
 		Portal portal) {
@@ -92,7 +87,6 @@ public class ObjectEntryItemSelectorView
 		_objectDefinition = objectDefinition;
 		_objectDefinitionLocalService = objectDefinitionLocalService;
 		_objectEntryLocalService = objectEntryLocalService;
-		_objectEntryManager = objectEntryManager;
 		_objectRelatedModelsProviderRegistry =
 			objectRelatedModelsProviderRegistry;
 		_objectScopeProviderRegistry = objectScopeProviderRegistry;
@@ -151,8 +145,7 @@ public class ObjectEntryItemSelectorView
 			portletURL, itemSelectedEventName, search,
 			new ObjectItemSelectorViewDescriptor(
 				(HttpServletRequest)servletRequest, _objectDefinition,
-				_objectEntryManager, _objectRelatedModelsProviderRegistry,
-				portletURL));
+				_objectRelatedModelsProviderRegistry, portletURL));
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -169,7 +162,6 @@ public class ObjectEntryItemSelectorView
 	private final ObjectDefinition _objectDefinition;
 	private final ObjectDefinitionLocalService _objectDefinitionLocalService;
 	private final ObjectEntryLocalService _objectEntryLocalService;
-	private final ObjectEntryManager _objectEntryManager;
 	private final ObjectRelatedModelsProviderRegistry
 		_objectRelatedModelsProviderRegistry;
 	private final ObjectScopeProviderRegistry _objectScopeProviderRegistry;
@@ -267,14 +259,12 @@ public class ObjectEntryItemSelectorView
 		public ObjectItemSelectorViewDescriptor(
 			HttpServletRequest httpServletRequest,
 			ObjectDefinition objectDefinition,
-			ObjectEntryManager objectEntryManager,
 			ObjectRelatedModelsProviderRegistry
 				objectRelatedModelsProviderRegistry,
 			PortletURL portletURL) {
 
 			_httpServletRequest = httpServletRequest;
 			_objectDefinition = objectDefinition;
-			_objectEntryManager = objectEntryManager;
 			_objectRelatedModelsProviderRegistry =
 				objectRelatedModelsProviderRegistry;
 			_portletURL = portletURL;
@@ -325,30 +315,16 @@ public class ObjectEntryItemSelectorView
 			return searchContainer;
 		}
 
-		private DTOConverterContext _getDTOConverterContext() {
-			return new DefaultDTOConverterContext(
-				false, null, null, _httpServletRequest, null,
-				_themeDisplay.getLocale(), null, _themeDisplay.getUser());
-		}
-
 		private List<ObjectEntry> _getObjectEntries(long objectDefinitionId)
 			throws Exception {
 
 			if (objectDefinitionId == 0) {
 				Group scopeGroup = _themeDisplay.getScopeGroup();
 
-				Page<com.liferay.object.rest.dto.v1_0.ObjectEntry> page =
-					_objectEntryManager.getObjectEntries(
-						_themeDisplay.getCompanyId(), _objectDefinition,
-						scopeGroup.getGroupKey(), null,
-						_getDTOConverterContext(), StringPool.BLANK, null, null,
-						null);
-
-				return TransformUtil.transform(
-					page.getItems(),
-					objectEntry -> _toObjectEntry(
-						_objectDefinition.getObjectDefinitionId(),
-						objectEntry));
+				return _objectEntryLocalService.getObjectEntries(
+					scopeGroup.getGroupId(),
+					_objectDefinition.getObjectDefinitionId(),
+					QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 			}
 
 			ObjectRelatedModelsProvider objectRelatedModelsProvider =
@@ -366,21 +342,8 @@ public class ObjectEntryItemSelectorView
 				ParamUtil.getLong(_portletRequest, "objectRelationshipId"));
 		}
 
-		private ObjectEntry _toObjectEntry(
-			long objectDefinitionId,
-			com.liferay.object.rest.dto.v1_0.ObjectEntry objectEntry) {
-
-			ObjectEntry serviceBuilderObjectEntry =
-				_objectEntryLocalService.createObjectEntry(objectEntry.getId());
-
-			serviceBuilderObjectEntry.setObjectDefinitionId(objectDefinitionId);
-
-			return serviceBuilderObjectEntry;
-		}
-
 		private final HttpServletRequest _httpServletRequest;
 		private final ObjectDefinition _objectDefinition;
-		private final ObjectEntryManager _objectEntryManager;
 		private final ObjectRelatedModelsProviderRegistry
 			_objectRelatedModelsProviderRegistry;
 		private final PortletRequest _portletRequest;

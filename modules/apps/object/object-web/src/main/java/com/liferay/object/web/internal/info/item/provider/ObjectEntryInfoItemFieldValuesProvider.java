@@ -30,8 +30,6 @@ import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.model.ObjectField;
-import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
-import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
 import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.web.internal.info.item.ObjectEntryInfoItemFields;
@@ -51,7 +49,6 @@ import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.template.info.item.provider.TemplateInfoItemFieldSetProvider;
 
 import java.io.Serializable;
@@ -78,7 +75,6 @@ public class ObjectEntryInfoItemFieldValuesProvider
 		ListTypeEntryLocalService listTypeEntryLocalService,
 		ObjectDefinition objectDefinition,
 		ObjectEntryLocalService objectEntryLocalService,
-		ObjectEntryManagerRegistry objectEntryManagerRegistry,
 		ObjectFieldLocalService objectFieldLocalService,
 		TemplateInfoItemFieldSetProvider templateInfoItemFieldSetProvider,
 		UserLocalService userLocalService) {
@@ -91,7 +87,6 @@ public class ObjectEntryInfoItemFieldValuesProvider
 		_listTypeEntryLocalService = listTypeEntryLocalService;
 		_objectDefinition = objectDefinition;
 		_objectEntryLocalService = objectEntryLocalService;
-		_objectEntryManagerRegistry = objectEntryManagerRegistry;
 		_objectFieldLocalService = objectFieldLocalService;
 		_templateInfoItemFieldSetProvider = templateInfoItemFieldSetProvider;
 		_userLocalService = userLocalService;
@@ -136,6 +131,36 @@ public class ObjectEntryInfoItemFieldValuesProvider
 		catch (Exception exception) {
 			return ReflectionUtil.throwException(exception);
 		}
+	}
+
+	private List<InfoFieldValue<Object>> _getInfoFieldValues(
+		ObjectEntry serviceBuilderObjectEntry,
+		List<InfoFieldValue<Object>> objectEntryFieldValues,
+		ObjectEntry objectEntry) {
+
+		Map<String, Serializable> properties = objectEntry.getValues();
+
+		objectEntryFieldValues.addAll(
+			TransformUtil.transform(
+				_objectFieldLocalService.getObjectFields(
+					serviceBuilderObjectEntry.getObjectDefinitionId()),
+				objectField -> new InfoFieldValue<>(
+					InfoField.builder(
+					).infoFieldType(
+						ObjectFieldDBTypeUtil.getInfoFieldType(objectField)
+					).namespace(
+						ObjectField.class.getSimpleName()
+					).name(
+						objectField.getName()
+					).labelInfoLocalizedValue(
+						InfoLocalizedValue.<String>builder(
+						).values(
+							objectField.getLabelMap()
+						).build()
+					).build(),
+					_getValue(objectField, properties))));
+
+		return objectEntryFieldValues;
 	}
 
 	private List<InfoFieldValue<Object>>
@@ -186,29 +211,8 @@ public class ObjectEntryInfoItemFieldValuesProvider
 					_getDisplayPageURL(objectEntry, themeDisplay)));
 		}
 
-		Map<String, Serializable> values = objectEntry.getValues();
-
-		objectEntryFieldValues.addAll(
-			TransformUtil.transform(
-				_objectFieldLocalService.getObjectFields(
-					objectEntry.getObjectDefinitionId()),
-				objectField -> new InfoFieldValue<>(
-					InfoField.builder(
-					).infoFieldType(
-						ObjectFieldDBTypeUtil.getInfoFieldType(objectField)
-					).namespace(
-						ObjectField.class.getSimpleName()
-					).name(
-						objectField.getName()
-					).labelInfoLocalizedValue(
-						InfoLocalizedValue.<String>builder(
-						).values(
-							objectField.getLabelMap()
-						).build()
-					).build(),
-					_getValue(objectField, values))));
-
-		return objectEntryFieldValues;
+		return _getInfoFieldValues(
+			objectEntry, objectEntryFieldValues, objectEntry);
 	}
 
 	private List<InfoFieldValue<Object>>
@@ -224,59 +228,30 @@ public class ObjectEntryInfoItemFieldValuesProvider
 
 		List<InfoFieldValue<Object>> objectEntryFieldValues = new ArrayList<>();
 
-		ObjectEntryManager objectEntryManager =
-			_objectEntryManagerRegistry.getObjectEntryManager(
-				_objectDefinition.getStorageType());
-
-		com.liferay.object.rest.dto.v1_0.ObjectEntry objectEntry =
-			objectEntryManager.getObjectEntry(
-				new DefaultDTOConverterContext(
-					false, null, null, null, null, themeDisplay.getLocale(),
-					null, themeDisplay.getUser()),
-				serviceBuilderObjectEntry.getExternalReferenceCode(),
-				themeDisplay.getCompanyId(), _objectDefinition, null);
+		ObjectEntry objectEntry = _objectEntryLocalService.getObjectEntry(
+			serviceBuilderObjectEntry.getExternalReferenceCode(),
+			themeDisplay.getCompanyId(), 0);
 
 		objectEntryFieldValues.add(
 			new InfoFieldValue<>(
 				ObjectEntryInfoItemFields.createDateInfoField,
-				objectEntry.getDateCreated()));
+				objectEntry.getCreateDate()));
 		objectEntryFieldValues.add(
 			new InfoFieldValue<>(
 				ObjectEntryInfoItemFields.modifiedDateInfoField,
-				objectEntry.getDateModified()));
+				objectEntry.getModifiedDate()));
 		objectEntryFieldValues.add(
 			new InfoFieldValue<>(
 				ObjectEntryInfoItemFields.publishDateInfoField,
-				objectEntry.getDateModified()));
+				objectEntry.getModifiedDate()));
 
 		objectEntryFieldValues.add(
 			new InfoFieldValue<>(
 				ObjectEntryInfoItemFields.displayPageURLInfoField,
 				_getDisplayPageURL(serviceBuilderObjectEntry, themeDisplay)));
 
-		Map<String, Object> properties = objectEntry.getProperties();
-
-		objectEntryFieldValues.addAll(
-			TransformUtil.transform(
-				_objectFieldLocalService.getObjectFields(
-					serviceBuilderObjectEntry.getObjectDefinitionId()),
-				objectField -> new InfoFieldValue<>(
-					InfoField.builder(
-					).infoFieldType(
-						ObjectFieldDBTypeUtil.getInfoFieldType(objectField)
-					).namespace(
-						ObjectField.class.getSimpleName()
-					).name(
-						objectField.getName()
-					).labelInfoLocalizedValue(
-						InfoLocalizedValue.<String>builder(
-						).values(
-							objectField.getLabelMap()
-						).build()
-					).build(),
-					_getValue(objectField, properties))));
-
-		return objectEntryFieldValues;
+		return _getInfoFieldValues(
+			serviceBuilderObjectEntry, objectEntryFieldValues, objectEntry);
 	}
 
 	private ThemeDisplay _getThemeDisplay() {
@@ -387,7 +362,6 @@ public class ObjectEntryInfoItemFieldValuesProvider
 	private final ListTypeEntryLocalService _listTypeEntryLocalService;
 	private final ObjectDefinition _objectDefinition;
 	private final ObjectEntryLocalService _objectEntryLocalService;
-	private final ObjectEntryManagerRegistry _objectEntryManagerRegistry;
 	private final ObjectFieldLocalService _objectFieldLocalService;
 	private final TemplateInfoItemFieldSetProvider
 		_templateInfoItemFieldSetProvider;

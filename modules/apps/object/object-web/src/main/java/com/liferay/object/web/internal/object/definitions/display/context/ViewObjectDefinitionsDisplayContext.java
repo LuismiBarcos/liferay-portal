@@ -17,10 +17,9 @@ package com.liferay.object.web.internal.object.definitions.display.context;
 import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.object.constants.ObjectActionKeys;
+import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.model.ObjectDefinition;
-import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
 import com.liferay.object.web.internal.display.context.helper.ObjectRequestHelper;
-import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
@@ -51,12 +50,10 @@ public class ViewObjectDefinitionsDisplayContext {
 	public ViewObjectDefinitionsDisplayContext(
 		HttpServletRequest httpServletRequest,
 		ModelResourcePermission<ObjectDefinition>
-			objectDefinitionModelResourcePermission,
-		ObjectEntryManagerRegistry objectEntryManagerRegistry) {
+			objectDefinitionModelResourcePermission) {
 
 		_objectDefinitionModelResourcePermission =
 			objectDefinitionModelResourcePermission;
-		_objectEntryManagerRegistry = objectEntryManagerRegistry;
 
 		_objectRequestHelper = new ObjectRequestHelper(httpServletRequest);
 	}
@@ -131,11 +128,13 @@ public class ViewObjectDefinitionsDisplayContext {
 	}
 
 	public List<String> getStorageTypes() {
-		List<String> storageTypes = TransformUtil.transform(
-			_objectEntryManagerRegistry.getStorageTypes(),
-			objectEntryManagerStorageType -> LanguageUtil.get(
-				_objectRequestHelper.getLocale(),
-				objectEntryManagerStorageType));
+
+		// TODO: Should we have an enum or
+		//  something to represent the storage types?
+
+		List<String> storageTypes = Arrays.asList(
+			ObjectDefinitionConstants.STORAGE_TYPE_DEFAULT,
+			ObjectDefinitionConstants.STORAGE_TYPE_SALESFORCE);
 
 		Collections.sort(storageTypes);
 
@@ -183,7 +182,6 @@ public class ViewObjectDefinitionsDisplayContext {
 
 	private final ModelResourcePermission<ObjectDefinition>
 		_objectDefinitionModelResourcePermission;
-	private final ObjectEntryManagerRegistry _objectEntryManagerRegistry;
 	private final ObjectRequestHelper _objectRequestHelper;
 
 }
