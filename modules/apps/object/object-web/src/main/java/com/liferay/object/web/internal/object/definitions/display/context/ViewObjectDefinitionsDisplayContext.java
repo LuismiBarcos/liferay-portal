@@ -17,9 +17,10 @@ package com.liferay.object.web.internal.object.definitions.display.context;
 import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.object.constants.ObjectActionKeys;
-import com.liferay.object.constants.ObjectDefinitionConstants;
+import com.liferay.object.constants.ObjectStorageType;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.web.internal.display.context.helper.ObjectRequestHelper;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
@@ -128,17 +129,14 @@ public class ViewObjectDefinitionsDisplayContext {
 	}
 
 	public List<String> getStorageTypes() {
+		List<String> objectStorageList =
+			TransformUtil.<ObjectStorageType, String, Exception>transform(
+				Arrays.asList(ObjectStorageType.values()),
+				ObjectStorageType::getType);
 
-		// TODO: Should we have an enum or
-		//  something to represent the storage types?
+		Collections.sort(objectStorageList);
 
-		List<String> storageTypes = Arrays.asList(
-			ObjectDefinitionConstants.STORAGE_TYPE_DEFAULT,
-			ObjectDefinitionConstants.STORAGE_TYPE_SALESFORCE);
-
-		Collections.sort(storageTypes);
-
-		return storageTypes;
+		return objectStorageList;
 	}
 
 	private String _getPermissionsURL() throws Exception {
