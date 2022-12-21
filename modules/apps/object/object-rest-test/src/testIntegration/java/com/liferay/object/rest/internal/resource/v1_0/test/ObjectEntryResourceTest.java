@@ -206,7 +206,7 @@ public class ObjectEntryResourceTest {
 	}
 
 	@Test
-	public void testGetFilteredObjectEntriesByRelatedObjectEntries()
+	public void testGetFilteredObjectEntriesByManyToManyRelatedObjectEntries()
 		throws Exception {
 
 		PropsUtil.addProperties(
@@ -217,47 +217,27 @@ public class ObjectEntryResourceTest {
 		_objectRelationship = _addObjectRelationshipAndRelateObjectsEntries(
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
-		_testGetFilteredObjectEntriesByRelatedObjectEntries(
-			StringBundler.concat(
-				_objectDefinition1.getRESTContextPath(), "?filter=",
-				_objectRelationship.getName(), StringPool.SLASH,
-				_OBJECT_FIELD_NAME_2, "%20eq%20",
-				String.valueOf(_OBJECT_FIELD_VALUE_2)));
+		_testFiltersGetFilteredObjectEntriesByRelatedObjectEntries();
 
-		_testGetFilteredObjectEntriesByRelatedObjectEntries(
-			StringBundler.concat(
-				_objectDefinition1.getRESTContextPath(), "?filter=",
-				_objectRelationship.getName(), StringPool.SLASH,
-				_OBJECT_FIELD_NAME_2, "%20gt%20",
-				String.valueOf(_OBJECT_FIELD_VALUE_2 - 1)));
+		PropsUtil.addProperties(
+			UnicodePropertiesBuilder.setProperty(
+				"feature.flag.LPS-154672", "false"
+			).build());
+	}
 
-		_testGetFilteredObjectEntriesByRelatedObjectEntries(
-			StringBundler.concat(
-				_objectDefinition1.getRESTContextPath(), "?filter=",
-				_objectRelationship.getName(), StringPool.SLASH,
-				_OBJECT_FIELD_NAME_2, "%20ge%20",
-				String.valueOf(_OBJECT_FIELD_VALUE_2 - 1)));
+	@Test
+	public void testGetFilteredObjectEntriesByOneToManyRelatedObjectEntries()
+		throws Exception {
 
-		_testGetFilteredObjectEntriesByRelatedObjectEntries(
-			StringBundler.concat(
-				_objectDefinition1.getRESTContextPath(), "?filter=",
-				_objectRelationship.getName(), StringPool.SLASH,
-				_OBJECT_FIELD_NAME_2, "%20le%20",
-				String.valueOf(_OBJECT_FIELD_VALUE_2 + 1)));
+		PropsUtil.addProperties(
+			UnicodePropertiesBuilder.setProperty(
+				"feature.flag.LPS-154672", "true"
+			).build());
 
-		_testGetFilteredObjectEntriesByRelatedObjectEntries(
-			StringBundler.concat(
-				_objectDefinition1.getRESTContextPath(), "?filter=",
-				_objectRelationship.getName(), StringPool.SLASH,
-				_OBJECT_FIELD_NAME_2, "%20lt%20",
-				String.valueOf(_OBJECT_FIELD_VALUE_2 + 1)));
+		_objectRelationship = _addObjectRelationshipAndRelateObjectsEntries(
+			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
-		_testGetFilteredObjectEntriesByRelatedObjectEntries(
-			StringBundler.concat(
-				_objectDefinition1.getRESTContextPath(), "?filter=",
-				_objectRelationship.getName(), StringPool.SLASH,
-				_OBJECT_FIELD_NAME_2, "%20ne%20",
-				String.valueOf(_OBJECT_FIELD_VALUE_2 - 1)));
+		_testFiltersGetFilteredObjectEntriesByRelatedObjectEntries();
 
 		PropsUtil.addProperties(
 			UnicodePropertiesBuilder.setProperty(
@@ -442,6 +422,52 @@ public class ObjectEntryResourceTest {
 		JSONArray itemsJSONArray = jsonObject.getJSONArray("items");
 
 		Assert.assertEquals(1, itemsJSONArray.length());
+	}
+
+	private void _testFiltersGetFilteredObjectEntriesByRelatedObjectEntries()
+		throws Exception {
+
+		_testGetFilteredObjectEntriesByRelatedObjectEntries(
+			StringBundler.concat(
+				_objectDefinition1.getRESTContextPath(), "?filter=",
+				_objectRelationship.getName(), StringPool.SLASH,
+				_OBJECT_FIELD_NAME_2, "%20eq%20",
+				String.valueOf(_OBJECT_FIELD_VALUE_2)));
+
+		_testGetFilteredObjectEntriesByRelatedObjectEntries(
+			StringBundler.concat(
+				_objectDefinition1.getRESTContextPath(), "?filter=",
+				_objectRelationship.getName(), StringPool.SLASH,
+				_OBJECT_FIELD_NAME_2, "%20gt%20",
+				String.valueOf(_OBJECT_FIELD_VALUE_2 - 1)));
+
+		_testGetFilteredObjectEntriesByRelatedObjectEntries(
+			StringBundler.concat(
+				_objectDefinition1.getRESTContextPath(), "?filter=",
+				_objectRelationship.getName(), StringPool.SLASH,
+				_OBJECT_FIELD_NAME_2, "%20ge%20",
+				String.valueOf(_OBJECT_FIELD_VALUE_2 - 1)));
+
+		_testGetFilteredObjectEntriesByRelatedObjectEntries(
+			StringBundler.concat(
+				_objectDefinition1.getRESTContextPath(), "?filter=",
+				_objectRelationship.getName(), StringPool.SLASH,
+				_OBJECT_FIELD_NAME_2, "%20le%20",
+				String.valueOf(_OBJECT_FIELD_VALUE_2 + 1)));
+
+		_testGetFilteredObjectEntriesByRelatedObjectEntries(
+			StringBundler.concat(
+				_objectDefinition1.getRESTContextPath(), "?filter=",
+				_objectRelationship.getName(), StringPool.SLASH,
+				_OBJECT_FIELD_NAME_2, "%20lt%20",
+				String.valueOf(_OBJECT_FIELD_VALUE_2 + 1)));
+
+		_testGetFilteredObjectEntriesByRelatedObjectEntries(
+			StringBundler.concat(
+				_objectDefinition1.getRESTContextPath(), "?filter=",
+				_objectRelationship.getName(), StringPool.SLASH,
+				_OBJECT_FIELD_NAME_2, "%20ne%20",
+				String.valueOf(_OBJECT_FIELD_VALUE_2 - 1)));
 	}
 
 	private void _testGetFilteredObjectEntriesByRelatedObjectEntries(
