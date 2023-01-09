@@ -15,16 +15,16 @@
 package com.liferay.object.rest.internal.resource.v1_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.constants.ObjectRelationshipConstants;
-import com.liferay.object.field.util.ObjectFieldUtil;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.model.ObjectRelationship;
 import com.liferay.object.rest.internal.util.HTTPTestUtil;
 import com.liferay.object.rest.internal.util.ObjectDefinitionTestUtil;
 import com.liferay.object.rest.internal.util.ObjectEntryTestUtil;
+import com.liferay.object.rest.internal.util.ObjectFieldTestUtil;
 import com.liferay.object.rest.internal.util.ObjectRelationshipTestUtil;
+import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -42,10 +42,12 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portal.util.PropsUtil;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hamcrest.CoreMatchers;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -68,8 +70,10 @@ public class ObjectEntryResourceTest {
 
 	@Before
 	public void setUp() throws Exception {
-		_objectDefinition1 = _publishObjectDefinition(_OBJECT_FIELD_NAME_1);
-		_objectDefinition2 = _publishObjectDefinition(_OBJECT_FIELD_NAME_2);
+		_objectDefinition1 = ObjectDefinitionTestUtil.publishObjectDefinition(
+			ObjectFieldTestUtil.getDefaultObjectFields(_OBJECT_FIELD_NAME_1));
+		_objectDefinition2 = ObjectDefinitionTestUtil.publishObjectDefinition(
+			ObjectFieldTestUtil.getDefaultObjectFields(_OBJECT_FIELD_NAME_2));
 
 		_objectEntry1 = ObjectEntryTestUtil.addObjectEntry(
 			_objectDefinition1, _OBJECT_FIELD_NAME_1,
@@ -78,6 +82,17 @@ public class ObjectEntryResourceTest {
 		_objectEntry2 = ObjectEntryTestUtil.addObjectEntry(
 			_objectDefinition2, _OBJECT_FIELD_NAME_2,
 			String.valueOf(_OBJECT_FIELD_VALUE_2));
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		_objectRelationshipLocalService.deleteObjectRelationship(
+			_objectRelationship);
+
+		for (ObjectDefinition objectDefinition : _objectDefinitions) {
+			_objectDefinitionLocalService.deleteObjectDefinition(
+				objectDefinition);
+		}
 	}
 
 	@Test
@@ -206,43 +221,254 @@ public class ObjectEntryResourceTest {
 	}
 
 	@Test
-	public void testGetFilteredObjectEntriesByManyToManyRelatedObjectEntries()
+	public void testFilterInObjectsWithFieldsAndRelationshipCreatedAfterPublish()
 		throws Exception {
 
-		PropsUtil.addProperties(
-			UnicodePropertiesBuilder.setProperty(
-				"feature.flag.LPS-154672", "true"
-			).build());
+		ObjectDefinition objectDefinition1 =
+			ObjectDefinitionTestUtil.publishObjectDefinition(
+				ObjectFieldTestUtil.getDefaultObjectFields());
 
-		_objectRelationship = _addObjectRelationshipAndRelateObjectsEntries(
+		ObjectDefinitionTestUtil.addObjectFields(
+			objectDefinition1,
+			ObjectFieldTestUtil.createDefaultObjectFields(
+				objectDefinition1, _OBJECT_FIELD_NAME_1));
+
+		ObjectDefinition objectDefinition2 =
+			ObjectDefinitionTestUtil.publishObjectDefinition(
+				ObjectFieldTestUtil.getDefaultObjectFields());
+
+		ObjectDefinitionTestUtil.addObjectFields(
+			objectDefinition2,
+			ObjectFieldTestUtil.createDefaultObjectFields(
+				objectDefinition2, _OBJECT_FIELD_NAME_2));
+
+		_objectRelationship = ObjectRelationshipTestUtil.addObjectRelationship(
+			objectDefinition1, objectDefinition2,
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
 		_testFiltersGetFilteredObjectEntriesByRelatedObjectEntries();
+	}
 
-		PropsUtil.addProperties(
-			UnicodePropertiesBuilder.setProperty(
-				"feature.flag.LPS-154672", "false"
-			).build());
+	@Test
+	public void testFilterInObjectsWithFieldsCreatedAfterPublish()
+		throws Exception {
+
+		ObjectDefinition objectDefinition1 = _createDefaultObjectDefinition();
+
+		ObjectDefinition objectDefinition2 = _createDefaultObjectDefinition();
+
+		_objectRelationship = ObjectRelationshipTestUtil.addObjectRelationship(
+			objectDefinition1, objectDefinition2,
+			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+
+		_publishObjectsDefinitions(objectDefinition1, objectDefinition2);
+
+		ObjectDefinitionTestUtil.addObjectFields(
+			objectDefinition1,
+			ObjectFieldTestUtil.createDefaultObjectFields(
+				objectDefinition1, _OBJECT_FIELD_NAME_1));
+		ObjectDefinitionTestUtil.addObjectFields(
+			objectDefinition2,
+			ObjectFieldTestUtil.createDefaultObjectFields(
+				objectDefinition2, _OBJECT_FIELD_NAME_2));
+
+		_testFiltersGetFilteredObjectEntriesByRelatedObjectEntries();
+	}
+
+	@Test
+	public void testFilterInObjectWithFieldsAndRelationshipCreatedAfterPublishAndObjectWithFieldsCreatedAfterPublish()
+		throws Exception {
+
+		ObjectDefinition objectDefinition1 =
+			ObjectDefinitionTestUtil.publishObjectDefinition(
+				ObjectFieldTestUtil.getDefaultObjectFields());
+
+		ObjectDefinitionTestUtil.addObjectFields(
+			objectDefinition1,
+			ObjectFieldTestUtil.createDefaultObjectFields(
+				objectDefinition1, _OBJECT_FIELD_NAME_1));
+
+		ObjectDefinition objectDefinition2 = _createDefaultObjectDefinition();
+
+		_objectRelationship = ObjectRelationshipTestUtil.addObjectRelationship(
+			objectDefinition1, objectDefinition2,
+			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+
+		ObjectDefinitionTestUtil.publishObjectDefinition(objectDefinition2);
+		ObjectDefinitionTestUtil.addObjectFields(
+			objectDefinition2,
+			ObjectFieldTestUtil.createDefaultObjectFields(
+				objectDefinition2, _OBJECT_FIELD_NAME_2));
+
+		_testFiltersGetFilteredObjectEntriesByRelatedObjectEntries();
+	}
+
+	@Test
+	public void testFilterInObjectWithFieldsAndRelationshipCreatedAfterPublishAndObjectWithFieldsCreatedBeforePublish()
+		throws Exception {
+
+		ObjectDefinition objectDefinition1 =
+			ObjectDefinitionTestUtil.publishObjectDefinition(
+				ObjectFieldTestUtil.getDefaultObjectFields());
+
+		ObjectDefinitionTestUtil.addObjectFields(
+			objectDefinition1,
+			ObjectFieldTestUtil.createDefaultObjectFields(
+				objectDefinition1, _OBJECT_FIELD_NAME_1));
+
+		ObjectDefinition objectDefinition2 = _createDefaultObjectDefinition();
+
+		_objectRelationship = ObjectRelationshipTestUtil.addObjectRelationship(
+			objectDefinition1, objectDefinition2,
+			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+
+		ObjectDefinitionTestUtil.publishObjectDefinition(objectDefinition2);
+
+		ObjectDefinitionTestUtil.addObjectFields(
+			objectDefinition2,
+			ObjectFieldTestUtil.createDefaultObjectFields(
+				objectDefinition2, _OBJECT_FIELD_NAME_2));
+
+		_testFiltersGetFilteredObjectEntriesByRelatedObjectEntries();
+	}
+
+	@Test
+	public void testFilterInObjectWithFieldsAndRelationshipCreatedBeforePublish()
+		throws Exception {
+
+		ObjectDefinition objectDefinition1 =
+			_createObjectDefinitionWithObjectField(_OBJECT_FIELD_NAME_1);
+
+		ObjectDefinition objectDefinition2 =
+			_createObjectDefinitionWithObjectField(_OBJECT_FIELD_NAME_2);
+
+		_objectRelationship = ObjectRelationshipTestUtil.addObjectRelationship(
+			objectDefinition1, objectDefinition2,
+			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+
+		_publishObjectsDefinitions(objectDefinition1, objectDefinition2);
+
+		_testFiltersGetFilteredObjectEntriesByRelatedObjectEntries();
+	}
+
+	@Test
+	public void testFilterInObjectWithFieldsAndRelationshipCreatedBeforePublishAndObjectWithFieldsAndRelationshipCreatedAfterPublish()
+		throws Exception {
+
+		ObjectDefinition objectDefinition1 = _createDefaultObjectDefinition();
+
+		ObjectDefinition objectDefinition2 =
+			ObjectDefinitionTestUtil.publishObjectDefinition(
+				ObjectFieldTestUtil.getDefaultObjectFields(
+					_OBJECT_FIELD_NAME_2));
+
+		ObjectDefinitionTestUtil.addObjectFields(
+			objectDefinition1,
+			ObjectFieldTestUtil.createDefaultObjectFields(
+				objectDefinition1, _OBJECT_FIELD_NAME_1));
+
+		_objectRelationship = ObjectRelationshipTestUtil.addObjectRelationship(
+			objectDefinition1, objectDefinition2,
+			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+
+		_publishObjectsDefinitions(objectDefinition1);
+
+		_testFiltersGetFilteredObjectEntriesByRelatedObjectEntries();
+	}
+
+	@Test
+	public void testFilterInObjectWithFieldsAndRelationshipCreatedBeforePublishAndObjectWithFieldsCreatedAfterPublish()
+		throws Exception {
+
+		ObjectDefinition objectDefinition1 =
+			_createObjectDefinitionWithObjectField(_OBJECT_FIELD_NAME_1);
+
+		ObjectDefinition objectDefinition2 = _createDefaultObjectDefinition();
+
+		_objectRelationship = ObjectRelationshipTestUtil.addObjectRelationship(
+			objectDefinition1, objectDefinition2,
+			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+
+		_publishObjectsDefinitions(objectDefinition1, objectDefinition2);
+
+		ObjectDefinitionTestUtil.addObjectFields(
+			objectDefinition2,
+			ObjectFieldTestUtil.createDefaultObjectFields(
+				objectDefinition2, _OBJECT_FIELD_NAME_2));
+
+		_testFiltersGetFilteredObjectEntriesByRelatedObjectEntries();
+	}
+
+	@Test
+	public void testFilterInObjectWithFieldsCreatedAfterPublishAndObjectWithFieldsAndRelationshipCreatedAfterPublish()
+		throws Exception {
+
+		ObjectDefinition objectDefinition1 =
+			ObjectDefinitionTestUtil.createObjectDefinition(
+				ObjectFieldTestUtil.getDefaultObjectFields());
+
+		ObjectDefinition objectDefinition2 =
+			ObjectDefinitionTestUtil.publishObjectDefinition(
+				ObjectFieldTestUtil.getDefaultObjectFields(
+					_OBJECT_FIELD_NAME_2));
+
+		_objectRelationship = ObjectRelationshipTestUtil.addObjectRelationship(
+			objectDefinition1, objectDefinition2,
+			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+
+		ObjectDefinitionTestUtil.publishObjectDefinition(objectDefinition1);
+
+		ObjectDefinitionTestUtil.addObjectFields(
+			objectDefinition1,
+			ObjectFieldTestUtil.createDefaultObjectFields(
+				objectDefinition1, _OBJECT_FIELD_NAME_1));
+
+		_testFiltersGetFilteredObjectEntriesByRelatedObjectEntries();
+	}
+
+	@Test
+	public void testFilterInObjectWithFieldsCreatedAfterPublishAndObjectWithFieldsAndRelationshipCreatedBeforePublish()
+		throws Exception {
+
+		ObjectDefinition objectDefinition1 = _createDefaultObjectDefinition();
+
+		ObjectDefinition objectDefinition2 =
+			_createObjectDefinitionWithObjectField(_OBJECT_FIELD_NAME_2);
+
+		_objectRelationship = ObjectRelationshipTestUtil.addObjectRelationship(
+			objectDefinition1, objectDefinition2,
+			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+
+		_publishObjectsDefinitions(objectDefinition1, objectDefinition2);
+
+		ObjectDefinitionTestUtil.addObjectFields(
+			objectDefinition1,
+			ObjectFieldTestUtil.createDefaultObjectFields(
+				objectDefinition1, _OBJECT_FIELD_NAME_1));
+
+		_testFiltersGetFilteredObjectEntriesByRelatedObjectEntries();
+	}
+
+	@Test
+	public void testGetFilteredObjectEntriesByManyToManyRelatedObjectEntries()
+		throws Exception {
+
+		_objectRelationship = ObjectRelationshipTestUtil.addObjectRelationship(
+			_objectDefinition1, _objectDefinition2, TestPropsValues.getUserId(),
+			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+
+		_testFiltersGetFilteredObjectEntriesByRelatedObjectEntries();
 	}
 
 	@Test
 	public void testGetFilteredObjectEntriesByOneToManyRelatedObjectEntries()
 		throws Exception {
 
-		PropsUtil.addProperties(
-			UnicodePropertiesBuilder.setProperty(
-				"feature.flag.LPS-154672", "true"
-			).build());
-
-		_objectRelationship = _addObjectRelationshipAndRelateObjectsEntries(
+		_objectRelationship = ObjectRelationshipTestUtil.addObjectRelationship(
+			_objectDefinition1, _objectDefinition2, TestPropsValues.getUserId(),
 			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
 		_testFiltersGetFilteredObjectEntriesByRelatedObjectEntries();
-
-		PropsUtil.addProperties(
-			UnicodePropertiesBuilder.setProperty(
-				"feature.flag.LPS-154672", "false"
-			).build());
 	}
 
 	@Test
@@ -381,6 +607,55 @@ public class ObjectEntryResourceTest {
 		return objectRelationship;
 	}
 
+	private void _createAndRelateObjectsEntries(
+			ObjectDefinition objectDefinition1,
+			ObjectDefinition objectDefinition2)
+		throws Exception {
+
+		_objectEntry1 = ObjectEntryTestUtil.addObjectEntry(
+			objectDefinition1, _OBJECT_FIELD_NAME_1,
+			String.valueOf(_OBJECT_FIELD_VALUE_1));
+
+		_objectEntry2 = ObjectEntryTestUtil.addObjectEntry(
+			objectDefinition2, _OBJECT_FIELD_NAME_2,
+			String.valueOf(_OBJECT_FIELD_VALUE_2));
+
+		ObjectRelationshipTestUtil.relateObjectEntries(
+			_objectEntry1.getPrimaryKey(), _objectEntry2.getPrimaryKey(),
+			_objectRelationship, TestPropsValues.getUserId());
+	}
+
+	private ObjectDefinition _createDefaultObjectDefinition() throws Exception {
+		ObjectDefinition objectDefinition =
+			ObjectDefinitionTestUtil.createDefaultObjectDefinition();
+
+		_objectDefinitions.add(objectDefinition);
+
+		return objectDefinition;
+	}
+
+	private ObjectDefinition _createObjectDefinitionWithObjectField(
+			String objectFieldName)
+		throws Exception {
+
+		ObjectDefinition objectDefinition =
+			ObjectDefinitionTestUtil.createDefaultObjectDefinition(
+				objectFieldName);
+
+		_objectDefinitions.add(objectDefinition);
+
+		return objectDefinition;
+	}
+
+	private void _publishObjectsDefinitions(
+			ObjectDefinition... objectDefinitions)
+		throws Exception {
+
+		for (ObjectDefinition objectDefinition : objectDefinitions) {
+			ObjectDefinitionTestUtil.publishObjectDefinition(objectDefinition);
+		}
+	}
+
 	private void _testDeleteCustomObjectDefinition1WithCustomObjectDefinition2(
 			String deleteEndpoint, String getEndpoint)
 		throws Exception {
@@ -427,52 +702,77 @@ public class ObjectEntryResourceTest {
 	private void _testFiltersGetFilteredObjectEntriesByRelatedObjectEntries()
 		throws Exception {
 
-		_testGetFilteredObjectEntriesByRelatedObjectEntries(
-			StringBundler.concat(
-				_objectDefinition1.getRESTContextPath(), "?filter=",
-				_objectRelationship.getName(), StringPool.SLASH,
-				_OBJECT_FIELD_NAME_2, "%20eq%20",
-				String.valueOf(_OBJECT_FIELD_VALUE_2)));
+		PropsUtil.addProperties(
+			UnicodePropertiesBuilder.setProperty(
+				"feature.flag.LPS-154672", "true"
+			).build());
 
-		_testGetFilteredObjectEntriesByRelatedObjectEntries(
-			StringBundler.concat(
-				_objectDefinition1.getRESTContextPath(), "?filter=",
-				_objectRelationship.getName(), StringPool.SLASH,
-				_OBJECT_FIELD_NAME_2, "%20gt%20",
-				String.valueOf(_OBJECT_FIELD_VALUE_2 - 1)));
+		ObjectDefinition objectDefinition1 =
+			_objectDefinitionLocalService.getObjectDefinition(
+				_objectRelationship.getObjectDefinitionId1());
 
-		_testGetFilteredObjectEntriesByRelatedObjectEntries(
-			StringBundler.concat(
-				_objectDefinition1.getRESTContextPath(), "?filter=",
-				_objectRelationship.getName(), StringPool.SLASH,
-				_OBJECT_FIELD_NAME_2, "%20ge%20",
-				String.valueOf(_OBJECT_FIELD_VALUE_2 - 1)));
+		ObjectDefinition objectDefinition2 =
+			_objectDefinitionLocalService.getObjectDefinition(
+				_objectRelationship.getObjectDefinitionId2());
 
-		_testGetFilteredObjectEntriesByRelatedObjectEntries(
-			StringBundler.concat(
-				_objectDefinition1.getRESTContextPath(), "?filter=",
-				_objectRelationship.getName(), StringPool.SLASH,
-				_OBJECT_FIELD_NAME_2, "%20le%20",
-				String.valueOf(_OBJECT_FIELD_VALUE_2 + 1)));
+		_createAndRelateObjectsEntries(objectDefinition1, objectDefinition2);
 
-		_testGetFilteredObjectEntriesByRelatedObjectEntries(
-			StringBundler.concat(
-				_objectDefinition1.getRESTContextPath(), "?filter=",
-				_objectRelationship.getName(), StringPool.SLASH,
-				_OBJECT_FIELD_NAME_2, "%20lt%20",
-				String.valueOf(_OBJECT_FIELD_VALUE_2 + 1)));
+		for (Operation operation : Operation.values()) {
+			if ((operation == Operation.eq) || (operation == Operation.ge) ||
+				(operation == Operation.le)) {
 
-		_testGetFilteredObjectEntriesByRelatedObjectEntries(
-			StringBundler.concat(
-				_objectDefinition1.getRESTContextPath(), "?filter=",
-				_objectRelationship.getName(), StringPool.SLASH,
-				_OBJECT_FIELD_NAME_2, "%20ne%20",
-				String.valueOf(_OBJECT_FIELD_VALUE_2 - 1)));
+				_testGetFilteredObjectEntriesByRelatedObjectEntries(
+					objectDefinition1, objectDefinition2, operation, 0);
+			}
+			else if ((operation == Operation.gt) ||
+					 (operation == Operation.ne)) {
+
+				_testGetFilteredObjectEntriesByRelatedObjectEntries(
+					objectDefinition1, objectDefinition2, operation, -1);
+			}
+			else if (operation == Operation.lt) {
+				_testGetFilteredObjectEntriesByRelatedObjectEntries(
+					objectDefinition1, objectDefinition2, operation, 1);
+			}
+			else {
+				throw new Exception(
+					"Operation " + operation.name() + " not supported");
+			}
+		}
+
+		PropsUtil.addProperties(
+			UnicodePropertiesBuilder.setProperty(
+				"feature.flag.LPS-154672", "false"
+			).build());
 	}
 
 	private void _testGetFilteredObjectEntriesByRelatedObjectEntries(
-			String endpoint)
+			ObjectDefinition objectDefinition1,
+			ObjectDefinition objectDefinition2, Operation operation,
+			int addToValue)
 		throws Exception {
+
+		_testGetFilteredObjectEntriesByRelatedObjectEntries(
+			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1, objectDefinition1,
+			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2 + addToValue,
+			operation);
+
+		_testGetFilteredObjectEntriesByRelatedObjectEntries(
+			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, objectDefinition2,
+			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1 + addToValue,
+			operation);
+	}
+
+	private void _testGetFilteredObjectEntriesByRelatedObjectEntries(
+			String expectedObjectFieldName, int expectedObjectFieldValue,
+			ObjectDefinition objectDefinition, String objectFieldName,
+			int objectFieldValue, Operation operation)
+		throws Exception {
+
+		String endpoint = StringBundler.concat(
+			objectDefinition.getRESTContextPath(), "?filter=",
+			_objectRelationship.getName(), StringPool.SLASH, objectFieldName,
+			"%20", operation.name(), "%20", String.valueOf(objectFieldValue));
 
 		JSONObject jsonObject = HTTPTestUtil.invoke(
 			null, endpoint, Http.Method.GET);
@@ -484,7 +784,8 @@ public class ObjectEntryResourceTest {
 		JSONObject itemJSONObject = itemsJSONArray.getJSONObject(0);
 
 		Assert.assertEquals(
-			_OBJECT_FIELD_VALUE_1, itemJSONObject.getInt(_OBJECT_FIELD_NAME_1));
+			expectedObjectFieldValue,
+			itemJSONObject.getInt(expectedObjectFieldName));
 	}
 
 	private void _testGetNestedFieldDetailsInOneToManyRelationships(
@@ -511,18 +812,6 @@ public class ObjectEntryResourceTest {
 			relatedObjectJSONObject.getInt(_OBJECT_FIELD_NAME_1));
 	}
 
-	private ObjectDefinition _publishObjectDefinition(String objectFieldName)
-		throws Exception {
-
-		return ObjectDefinitionTestUtil.publishObjectDefinition(
-			Collections.singletonList(
-				ObjectFieldUtil.createObjectField(
-					ObjectFieldConstants.BUSINESS_TYPE_INTEGER,
-					ObjectFieldConstants.DB_TYPE_INTEGER, true, true, null,
-					RandomTestUtil.randomString(), objectFieldName,
-					false)));
-	}
-
 	private static final String _OBJECT_FIELD_NAME_1 =
 		"x" + RandomTestUtil.randomString();
 
@@ -539,12 +828,26 @@ public class ObjectEntryResourceTest {
 	@DeleteAfterTestRun
 	private ObjectDefinition _objectDefinition2;
 
+	@Inject
+	private ObjectDefinitionLocalService _objectDefinitionLocalService;
+
+	private final List<ObjectDefinition> _objectDefinitions = new ArrayList<>();
+
 	@DeleteAfterTestRun
 	private ObjectEntry _objectEntry1;
 
 	@DeleteAfterTestRun
 	private ObjectEntry _objectEntry2;
 
-	@DeleteAfterTestRun
 	private ObjectRelationship _objectRelationship;
+
+	@Inject
+	private ObjectRelationshipLocalService _objectRelationshipLocalService;
+
+	private enum Operation {
+
+		eq, ge, gt, le, lt, ne
+
+	}
+
 }

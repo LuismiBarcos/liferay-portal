@@ -29,6 +29,50 @@ import java.util.List;
  */
 public class ObjectDefinitionTestUtil {
 
+	public static void addObjectFields(
+		ObjectDefinition objectDefinition, List<ObjectField> objectFields) {
+
+		objectFields.forEach(
+			objectField -> objectField.setObjectDefinitionId(
+				objectDefinition.getObjectDefinitionId()));
+	}
+
+	public static ObjectDefinition createDefaultObjectDefinition()
+		throws Exception {
+
+		return createDefaultObjectDefinition(
+			"x" + RandomTestUtil.randomString());
+	}
+
+	public static ObjectDefinition createDefaultObjectDefinition(
+			String objectFieldName)
+		throws Exception {
+
+		return createObjectDefinition(
+			ObjectFieldTestUtil.getDefaultObjectFields(objectFieldName));
+	}
+
+	public static ObjectDefinition createObjectDefinition(
+			List<ObjectField> objectFields)
+		throws Exception {
+
+		return createObjectDefinition(
+			objectFields, TestPropsValues.getUserId());
+	}
+
+	public static ObjectDefinition createObjectDefinition(
+			List<ObjectField> objectFields, long userId)
+		throws Exception {
+
+		return ObjectDefinitionLocalServiceUtil.addCustomObjectDefinition(
+			userId, false,
+			LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
+			"A" + RandomTestUtil.randomString(), null, null,
+			LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
+			ObjectDefinitionConstants.SCOPE_COMPANY,
+			ObjectDefinitionConstants.STORAGE_TYPE_DEFAULT, objectFields);
+	}
+
 	public static ObjectDefinition publishObjectDefinition(
 			List<ObjectField> objectFields)
 		throws Exception {
@@ -41,14 +85,21 @@ public class ObjectDefinitionTestUtil {
 			List<ObjectField> objectFields, long userId)
 		throws Exception {
 
-		ObjectDefinition objectDefinition =
-			ObjectDefinitionLocalServiceUtil.addCustomObjectDefinition(
-				userId, false,
-				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
-				"A" + RandomTestUtil.randomString(), null, null,
-				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
-				ObjectDefinitionConstants.SCOPE_COMPANY,
-				ObjectDefinitionConstants.STORAGE_TYPE_DEFAULT, objectFields);
+		return publishObjectDefinition(
+			createObjectDefinition(objectFields, userId), userId);
+	}
+
+	public static ObjectDefinition publishObjectDefinition(
+			ObjectDefinition objectDefinition)
+		throws Exception {
+
+		return publishObjectDefinition(
+			objectDefinition, TestPropsValues.getUserId());
+	}
+
+	public static ObjectDefinition publishObjectDefinition(
+			ObjectDefinition objectDefinition, long userId)
+		throws Exception {
 
 		return ObjectDefinitionLocalServiceUtil.publishCustomObjectDefinition(
 			userId, objectDefinition.getObjectDefinitionId());
