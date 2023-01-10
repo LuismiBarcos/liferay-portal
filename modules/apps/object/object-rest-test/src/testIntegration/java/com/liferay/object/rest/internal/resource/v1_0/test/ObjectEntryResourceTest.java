@@ -26,6 +26,7 @@ import com.liferay.object.rest.internal.util.ObjectFieldTestUtil;
 import com.liferay.object.rest.internal.util.ObjectRelationshipTestUtil;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -34,7 +35,6 @@ import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.Http;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.test.rule.Inject;
@@ -105,12 +105,12 @@ public class ObjectEntryResourceTest {
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
 		_testDeleteCustomObjectDefinition1WithCustomObjectDefinition2(
-			com.liferay.petra.string.StringBundler.concat(
+			StringBundler.concat(
 				_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
 				_objectEntry1.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName(), StringPool.SLASH,
 				_objectEntry2.getPrimaryKey()),
-			com.liferay.petra.string.StringBundler.concat(
+			StringBundler.concat(
 				_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
 				_objectEntry1.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName()));
@@ -119,12 +119,12 @@ public class ObjectEntryResourceTest {
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
 		_testDeleteCustomObjectDefinition1WithCustomObjectDefinition2(
-			com.liferay.petra.string.StringBundler.concat(
+			StringBundler.concat(
 				_objectDefinition2.getRESTContextPath(), StringPool.SLASH,
 				_objectEntry2.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName(), StringPool.SLASH,
 				_objectEntry1.getPrimaryKey()),
-			com.liferay.petra.string.StringBundler.concat(
+			StringBundler.concat(
 				_objectDefinition2.getRESTContextPath(), StringPool.SLASH,
 				_objectEntry2.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName()));
@@ -133,17 +133,17 @@ public class ObjectEntryResourceTest {
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
 		_testDeleteCustomObjectDefinition1WithCustomObjectDefinition2NotFound(
-			com.liferay.petra.string.StringBundler.concat(
+			StringBundler.concat(
 				_objectDefinition2.getRESTContextPath(), StringPool.SLASH,
 				irrelevantCurrentObjectId, StringPool.SLASH,
 				_objectRelationship.getName(), StringPool.SLASH,
 				_objectEntry1.getPrimaryKey()),
-			com.liferay.petra.string.StringBundler.concat(
+			StringBundler.concat(
 				_objectDefinition2.getRESTContextPath(), StringPool.SLASH,
 				_objectEntry2.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName(), StringPool.SLASH,
 				irrelevantCurrentObjectId),
-			com.liferay.petra.string.StringBundler.concat(
+			StringBundler.concat(
 				_objectDefinition2.getRESTContextPath(), StringPool.SLASH,
 				_objectEntry2.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName()));
@@ -152,17 +152,17 @@ public class ObjectEntryResourceTest {
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
 		_testDeleteCustomObjectDefinition1WithCustomObjectDefinition2NotFound(
-			com.liferay.petra.string.StringBundler.concat(
+			StringBundler.concat(
 				_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
 				irrelevantCurrentObjectId, StringPool.SLASH,
 				_objectRelationship.getName(), StringPool.SLASH,
 				_objectEntry2.getPrimaryKey()),
-			com.liferay.petra.string.StringBundler.concat(
+			StringBundler.concat(
 				_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
 				_objectEntry1.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName(), StringPool.SLASH,
 				irrelevantCurrentObjectId),
-			com.liferay.petra.string.StringBundler.concat(
+			StringBundler.concat(
 				_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
 				_objectEntry1.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName()));
@@ -171,12 +171,12 @@ public class ObjectEntryResourceTest {
 			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
 		_testDeleteCustomObjectDefinition1WithCustomObjectDefinition2(
-			com.liferay.petra.string.StringBundler.concat(
+			StringBundler.concat(
 				_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
 				_objectEntry1.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName(), StringPool.SLASH,
 				_objectEntry2.getPrimaryKey()),
-			com.liferay.petra.string.StringBundler.concat(
+			StringBundler.concat(
 				_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
 				_objectEntry1.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName()));
@@ -185,17 +185,17 @@ public class ObjectEntryResourceTest {
 			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
 		_testDeleteCustomObjectDefinition1WithCustomObjectDefinition2NotFound(
-			com.liferay.petra.string.StringBundler.concat(
+			StringBundler.concat(
 				_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
 				irrelevantCurrentObjectId, StringPool.SLASH,
 				_objectRelationship.getName(), StringPool.SLASH,
 				_objectEntry2.getPrimaryKey()),
-			com.liferay.petra.string.StringBundler.concat(
+			StringBundler.concat(
 				_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
 				_objectEntry1.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName(), StringPool.SLASH,
 				irrelevantCurrentObjectId),
-			com.liferay.petra.string.StringBundler.concat(
+			StringBundler.concat(
 				_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
 				_objectEntry1.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName()));
@@ -204,17 +204,17 @@ public class ObjectEntryResourceTest {
 			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
 		_testDeleteCustomObjectDefinition1WithCustomObjectDefinition2NotFound(
-			com.liferay.petra.string.StringBundler.concat(
+			StringBundler.concat(
 				_objectDefinition2.getRESTContextPath(), StringPool.SLASH,
 				irrelevantCurrentObjectId, StringPool.SLASH,
 				_objectRelationship.getName(), StringPool.SLASH,
 				_objectEntry1.getPrimaryKey()),
-			com.liferay.petra.string.StringBundler.concat(
+			StringBundler.concat(
 				_objectDefinition2.getRESTContextPath(), StringPool.SLASH,
 				_objectEntry2.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName(), StringPool.SLASH,
 				irrelevantCurrentObjectId),
-			com.liferay.petra.string.StringBundler.concat(
+			StringBundler.concat(
 				_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
 				_objectEntry1.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName()));
@@ -761,7 +761,7 @@ public class ObjectEntryResourceTest {
 		String endpoint = StringBundler.concat(
 			objectDefinition.getRESTContextPath(), "?filter=",
 			_objectRelationship.getName(), StringPool.SLASH, objectFieldName,
-			"%20", operation.name(), "%20", String.valueOf(objectFieldValue));
+			"%20", operation.name(), "%20", objectFieldValue);
 
 		JSONObject jsonObject = HTTPTestUtil.invoke(
 			null, endpoint, Http.Method.GET);
