@@ -32,14 +32,6 @@ import java.util.List;
 public class ObjectFieldTestUtil {
 
 	public static List<ObjectField> createDefaultObjectFields(
-			ObjectDefinition objectDefinition)
-		throws Exception {
-
-		return createDefaultObjectFields(
-			objectDefinition, "x" + RandomTestUtil.randomString());
-	}
-
-	public static List<ObjectField> createDefaultObjectFields(
 			ObjectDefinition objectDefinition, String objectFieldName)
 		throws Exception {
 

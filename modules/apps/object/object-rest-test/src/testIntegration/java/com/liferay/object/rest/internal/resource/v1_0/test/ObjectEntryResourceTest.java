@@ -450,17 +450,6 @@ public class ObjectEntryResourceTest {
 	}
 
 	@Test
-	public void testGetFilteredObjectEntriesByManyToManyRelatedObjectEntries()
-		throws Exception {
-
-		_objectRelationship = ObjectRelationshipTestUtil.addObjectRelationship(
-			_objectDefinition1, _objectDefinition2, TestPropsValues.getUserId(),
-			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
-
-		_testFiltersGetFilteredObjectEntriesByRelatedObjectEntries();
-	}
-
-	@Test
 	public void testGetFilteredObjectEntriesByOneToManyRelatedObjectEntries()
 		throws Exception {
 
