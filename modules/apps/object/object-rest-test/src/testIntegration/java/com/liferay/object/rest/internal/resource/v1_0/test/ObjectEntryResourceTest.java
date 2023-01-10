@@ -25,14 +25,12 @@ import com.liferay.object.rest.internal.util.ObjectDefinitionTestUtil;
 import com.liferay.object.rest.internal.util.ObjectEntryTestUtil;
 import com.liferay.object.rest.internal.util.ObjectRelationshipTestUtil;
 import com.liferay.object.service.ObjectRelationshipLocalService;
-import com.liferay.object.util.LocalizedMapUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
-import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.StringBundler;
@@ -103,9 +101,7 @@ public class ObjectEntryResourceTest {
 
 		Long irrelevantCurrentObjectId = RandomTestUtil.randomLong();
 
-		_objectRelationship = _addObjectRelationship(
-			StringUtil.randomId(), _objectEntry1.getPrimaryKey(),
-			_objectEntry2.getPrimaryKey(),
+		_objectRelationship = _addObjectRelationshipAndRelateObjectsEntries(
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
 		_testDeleteCustomObjectDefinition1WithCustomObjectDefinition2(
@@ -119,9 +115,7 @@ public class ObjectEntryResourceTest {
 				_objectEntry1.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName()));
 
-		_objectRelationship = _addObjectRelationship(
-			StringUtil.randomId(), _objectEntry1.getPrimaryKey(),
-			_objectEntry2.getPrimaryKey(),
+		_objectRelationship = _addObjectRelationshipAndRelateObjectsEntries(
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
 		_testDeleteCustomObjectDefinition1WithCustomObjectDefinition2(
@@ -135,9 +129,7 @@ public class ObjectEntryResourceTest {
 				_objectEntry2.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName()));
 
-		_objectRelationship = _addObjectRelationship(
-			StringUtil.randomId(), _objectEntry1.getPrimaryKey(),
-			_objectEntry2.getPrimaryKey(),
+		_objectRelationship = _addObjectRelationshipAndRelateObjectsEntries(
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
 		_testDeleteCustomObjectDefinition1WithCustomObjectDefinition2NotFound(
@@ -156,9 +148,7 @@ public class ObjectEntryResourceTest {
 				_objectEntry2.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName()));
 
-		_objectRelationship = _addObjectRelationship(
-			StringUtil.randomId(), _objectEntry1.getPrimaryKey(),
-			_objectEntry2.getPrimaryKey(),
+		_objectRelationship = _addObjectRelationshipAndRelateObjectsEntries(
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
 		_testDeleteCustomObjectDefinition1WithCustomObjectDefinition2NotFound(
@@ -177,9 +167,7 @@ public class ObjectEntryResourceTest {
 				_objectEntry1.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName()));
 
-		_objectRelationship = _addObjectRelationship(
-			StringUtil.randomId(), _objectEntry1.getPrimaryKey(),
-			_objectEntry2.getPrimaryKey(),
+		_objectRelationship = _addObjectRelationshipAndRelateObjectsEntries(
 			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
 		_testDeleteCustomObjectDefinition1WithCustomObjectDefinition2(
@@ -193,9 +181,7 @@ public class ObjectEntryResourceTest {
 				_objectEntry1.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName()));
 
-		_objectRelationship = _addObjectRelationship(
-			StringUtil.randomId(), _objectEntry1.getPrimaryKey(),
-			_objectEntry2.getPrimaryKey(),
+		_objectRelationship = _addObjectRelationshipAndRelateObjectsEntries(
 			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
 		_testDeleteCustomObjectDefinition1WithCustomObjectDefinition2NotFound(
@@ -214,9 +200,7 @@ public class ObjectEntryResourceTest {
 				_objectEntry1.getPrimaryKey(), StringPool.SLASH,
 				_objectRelationship.getName()));
 
-		_objectRelationship = _addObjectRelationship(
-			StringUtil.randomId(), _objectEntry1.getPrimaryKey(),
-			_objectEntry2.getPrimaryKey(),
+		_objectRelationship = _addObjectRelationshipAndRelateObjectsEntries(
 			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
 		_testDeleteCustomObjectDefinition1WithCustomObjectDefinition2NotFound(
@@ -354,27 +338,6 @@ public class ObjectEntryResourceTest {
 		Assert.assertThat(
 			jsonObject.getString("title"),
 			CoreMatchers.containsString("No ObjectEntry exists with the key"));
-	}
-
-	private ObjectRelationship _addObjectRelationship(
-			String name, long primaryKey1, long primaryKey2, String type)
-		throws Exception {
-
-		ObjectRelationship objectRelationship =
-			_objectRelationshipLocalService.addObjectRelationship(
-				TestPropsValues.getUserId(),
-				_objectDefinition1.getObjectDefinitionId(),
-				_objectDefinition2.getObjectDefinitionId(), 0,
-				ObjectRelationshipConstants.DELETION_TYPE_PREVENT,
-				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
-				name, type);
-
-		_objectRelationshipLocalService.addObjectRelationshipMappingTableValues(
-			TestPropsValues.getUserId(),
-			objectRelationship.getObjectRelationshipId(), primaryKey1,
-			primaryKey2, ServiceContextTestUtil.getServiceContext());
-
-		return objectRelationship;
 	}
 
 	private ObjectRelationship _addObjectRelationshipAndRelateObjectsEntries(
