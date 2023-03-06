@@ -23,6 +23,7 @@ import com.liferay.object.model.ObjectRelationship;
 import com.liferay.object.rest.internal.util.HTTPTestUtil;
 import com.liferay.object.rest.internal.util.ObjectDefinitionTestUtil;
 import com.liferay.object.rest.internal.util.ObjectEntryTestUtil;
+import com.liferay.object.rest.internal.util.ObjectRelationshipTestUtil;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.object.system.JaxRsApplicationDescriptor;
@@ -36,15 +37,12 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
-import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.Http;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.util.PropsUtil;
-import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 
 import java.util.Collections;
 
@@ -121,11 +119,8 @@ public class RelatedObjectEntryResourceTest {
 			_userSystemObjectDefinitionMetadata.getJaxRsApplicationDescriptor();
 		Long irrelevantUserId = RandomTestUtil.randomLong();
 
-		String name = StringUtil.randomId();
-
 		_objectRelationship = _addObjectRelationship(
-			name, _objectDefinition.getObjectDefinitionId(),
-			_userSystemObjectDefinition.getObjectDefinitionId(),
+			_objectDefinition, _userSystemObjectDefinition,
 			_objectEntry.getPrimaryKey(), _user.getUserId(),
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
@@ -160,11 +155,8 @@ public class RelatedObjectEntryResourceTest {
 		JaxRsApplicationDescriptor jaxRsApplicationDescriptor =
 			_userSystemObjectDefinitionMetadata.getJaxRsApplicationDescriptor();
 
-		String name = StringUtil.randomId();
-
 		_objectRelationship = _addObjectRelationship(
-			name, _objectDefinition.getObjectDefinitionId(),
-			_userSystemObjectDefinition.getObjectDefinitionId(),
+			_objectDefinition, _userSystemObjectDefinition,
 			_objectEntry.getPrimaryKey(), _user.getUserId(),
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
@@ -209,11 +201,8 @@ public class RelatedObjectEntryResourceTest {
 		JaxRsApplicationDescriptor jaxRsApplicationDescriptor =
 			_userSystemObjectDefinitionMetadata.getJaxRsApplicationDescriptor();
 
-		String name = StringUtil.randomId();
-
 		_objectRelationship = _addObjectRelationship(
-			name, _objectDefinition.getObjectDefinitionId(),
-			_userSystemObjectDefinition.getObjectDefinitionId(),
+			_objectDefinition, _userSystemObjectDefinition,
 			_objectEntry.getPrimaryKey(), _user.getUserId(),
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
@@ -269,11 +258,8 @@ public class RelatedObjectEntryResourceTest {
 
 		Long irrelevantUserId = RandomTestUtil.randomLong();
 
-		String name = StringUtil.randomId();
-
 		_objectRelationship = _addObjectRelationship(
-			name, _userSystemObjectDefinition.getObjectDefinitionId(),
-			_objectDefinition.getObjectDefinitionId(), _user.getUserId(),
+			_userSystemObjectDefinition, _objectDefinition, _user.getUserId(),
 			_objectEntry.getPrimaryKey(),
 			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
@@ -325,11 +311,8 @@ public class RelatedObjectEntryResourceTest {
 		JaxRsApplicationDescriptor jaxRsApplicationDescriptor =
 			_userSystemObjectDefinitionMetadata.getJaxRsApplicationDescriptor();
 
-		String name = StringUtil.randomId();
-
 		_objectRelationship = _addObjectRelationship(
-			name, _userSystemObjectDefinition.getObjectDefinitionId(),
-			_objectDefinition.getObjectDefinitionId(), _user.getUserId(),
+			_userSystemObjectDefinition, _objectDefinition, _user.getUserId(),
 			_objectEntry.getPrimaryKey(),
 			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
@@ -374,11 +357,8 @@ public class RelatedObjectEntryResourceTest {
 		JaxRsApplicationDescriptor jaxRsApplicationDescriptor =
 			_userSystemObjectDefinitionMetadata.getJaxRsApplicationDescriptor();
 
-		String name = StringUtil.randomId();
-
 		_objectRelationship = _addObjectRelationship(
-			name, _userSystemObjectDefinition.getObjectDefinitionId(),
-			_objectDefinition.getObjectDefinitionId(), _user.getUserId(),
+			_userSystemObjectDefinition, _objectDefinition, _user.getUserId(),
 			_objectEntry.getPrimaryKey(),
 			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
@@ -410,8 +390,7 @@ public class RelatedObjectEntryResourceTest {
 		// Inactive object definition
 
 		_objectRelationship = _addObjectRelationship(
-			StringUtil.randomId(), _objectDefinition.getObjectDefinitionId(),
-			_userSystemObjectDefinition.getObjectDefinitionId(),
+			_objectDefinition, _userSystemObjectDefinition,
 			_objectEntry.getPrimaryKey(), _user.getUserId(),
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
@@ -436,11 +415,8 @@ public class RelatedObjectEntryResourceTest {
 			_userSystemObjectDefinitionMetadata.getJaxRsApplicationDescriptor();
 		Long irrelevantUserId = RandomTestUtil.randomLong();
 
-		String name = StringUtil.randomId();
-
 		_objectRelationship = _addObjectRelationship(
-			name, _objectDefinition.getObjectDefinitionId(),
-			_userSystemObjectDefinition.getObjectDefinitionId(),
+			_objectDefinition, _userSystemObjectDefinition,
 			_objectEntry.getPrimaryKey(), _user.getUserId(),
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
@@ -460,11 +436,8 @@ public class RelatedObjectEntryResourceTest {
 		JaxRsApplicationDescriptor jaxRsApplicationDescriptor =
 			_userSystemObjectDefinitionMetadata.getJaxRsApplicationDescriptor();
 
-		String name = StringUtil.randomId();
-
 		_objectRelationship = _addObjectRelationship(
-			name, _objectDefinition.getObjectDefinitionId(),
-			_userSystemObjectDefinition.getObjectDefinitionId(),
+			_objectDefinition, _userSystemObjectDefinition,
 			_objectEntry.getPrimaryKey(), _user.getUserId(),
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
@@ -489,8 +462,7 @@ public class RelatedObjectEntryResourceTest {
 	@Test
 	public void testPutSystemObjectRelatedObjectEntry() throws Exception {
 		_objectRelationship = _addObjectRelationship(
-			StringUtil.randomId(), _objectDefinition.getObjectDefinitionId(),
-			_userSystemObjectDefinition.getObjectDefinitionId(),
+			_objectDefinition, _userSystemObjectDefinition,
 			_objectEntry.getPrimaryKey(), _user.getUserId(),
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
@@ -500,9 +472,7 @@ public class RelatedObjectEntryResourceTest {
 			_objectRelationship);
 
 		_objectRelationship = _addObjectRelationship(
-			StringUtil.randomId(),
-			_userSystemObjectDefinition.getObjectDefinitionId(),
-			_objectDefinition.getObjectDefinitionId(), _user.getUserId(),
+			_userSystemObjectDefinition, _objectDefinition, _user.getUserId(),
 			_objectEntry.getPrimaryKey(),
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
@@ -514,11 +484,8 @@ public class RelatedObjectEntryResourceTest {
 		JaxRsApplicationDescriptor jaxRsApplicationDescriptor =
 			_userSystemObjectDefinitionMetadata.getJaxRsApplicationDescriptor();
 
-		String name = StringUtil.randomId();
-
 		_objectRelationship = _addObjectRelationship(
-			name, _objectDefinition.getObjectDefinitionId(),
-			_userSystemObjectDefinition.getObjectDefinitionId(),
+			_objectDefinition, _userSystemObjectDefinition,
 			_objectEntry.getPrimaryKey(), _user.getUserId(),
 			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
@@ -571,21 +538,17 @@ public class RelatedObjectEntryResourceTest {
 	}
 
 	private ObjectRelationship _addObjectRelationship(
-			String name, long objectDefinitionId1, long objectDefinitionId2,
-			long primaryKey1, long primaryKey2, String type)
+			ObjectDefinition objectDefinition1,
+			ObjectDefinition objectDefinition2, long primaryKey1,
+			long primaryKey2, String type)
 		throws Exception {
 
 		ObjectRelationship objectRelationship =
-			_objectRelationshipLocalService.addObjectRelationship(
-				_user.getUserId(), objectDefinitionId1, objectDefinitionId2, 0,
-				ObjectRelationshipConstants.DELETION_TYPE_PREVENT,
-				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
-				name, type);
+			ObjectRelationshipTestUtil.addObjectRelationship(
+				objectDefinition1, objectDefinition2, _user.getUserId(), type);
 
-		_objectRelationshipLocalService.addObjectRelationshipMappingTableValues(
-			_user.getUserId(), objectRelationship.getObjectRelationshipId(),
-			primaryKey1, primaryKey2,
-			ServiceContextTestUtil.getServiceContext());
+		ObjectRelationshipTestUtil.relateObjectEntries(
+			primaryKey1, primaryKey2, objectRelationship, _user.getUserId());
 
 		return objectRelationship;
 	}
