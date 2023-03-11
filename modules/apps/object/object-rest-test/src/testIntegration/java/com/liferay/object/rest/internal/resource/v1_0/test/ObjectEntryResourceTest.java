@@ -50,6 +50,8 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portal.util.PropsUtil;
 
+import java.io.Serializable;
+
 import javax.ws.rs.NotSupportedException;
 
 import org.hamcrest.CoreMatchers;
@@ -159,6 +161,48 @@ public class ObjectEntryResourceTest {
 			).build());
 
 		_testFilterObjectEntriesByRelatedObjectEntries();
+
+		PropsUtil.addProperties(
+			UnicodePropertiesBuilder.setProperty(
+				"feature.flag.LPS-154672", "false"
+			).build());
+	}
+
+	@Test
+	public void testFilterWithComparisonOperatorObjectEntriesByRelatedObjectEntries()
+		throws Exception {
+
+		PropsUtil.addProperties(
+			UnicodePropertiesBuilder.setProperty(
+				"feature.flag.LPS-154672", "true"
+			).build());
+
+		_objectRelationship = _addObjectRelationshipAndRelateObjectsEntries(
+			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+
+		for (FilterURLCreatorUtil.FilterOperator.ComparisonOperator
+				comparisonOperator :
+					FilterURLCreatorUtil.FilterOperator.ComparisonOperator.
+						values()) {
+
+			_testFilterWithComparisonOperator(
+				comparisonOperator, _objectRelationship);
+		}
+
+		_objectRelationshipLocalService.deleteObjectRelationship(
+			_objectRelationship);
+
+		_objectRelationship = _addObjectRelationshipAndRelateObjectsEntries(
+			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+
+		for (FilterURLCreatorUtil.FilterOperator.ComparisonOperator
+				comparisonOperator :
+					FilterURLCreatorUtil.FilterOperator.ComparisonOperator.
+						values()) {
+
+			_testFilterWithComparisonOperator(
+				comparisonOperator, _objectRelationship);
+		}
 
 		PropsUtil.addProperties(
 			UnicodePropertiesBuilder.setProperty(
@@ -654,7 +698,7 @@ public class ObjectEntryResourceTest {
 			_objectEntry2.getExternalReferenceCode(),
 			jsonObject.getString("externalReferenceCode"));
 		Assert.assertEquals(
-			_OBJECT_FIELD_VALUE_2, jsonObject.getString(_OBJECT_FIELD_NAME_2));
+			_OBJECT_FIELD_VALUE_2, jsonObject.getInt(_OBJECT_FIELD_NAME_2));
 
 		jsonObject = HTTPTestUtil.invoke(
 			null,
@@ -670,7 +714,7 @@ public class ObjectEntryResourceTest {
 			_objectEntry1.getExternalReferenceCode(),
 			jsonObject.getString("externalReferenceCode"));
 		Assert.assertEquals(
-			_OBJECT_FIELD_VALUE_1, jsonObject.getString(_OBJECT_FIELD_NAME_1));
+			_OBJECT_FIELD_VALUE_1, jsonObject.getInt(_OBJECT_FIELD_NAME_1));
 
 		jsonObject = HTTPTestUtil.invoke(
 			null,
@@ -967,25 +1011,25 @@ public class ObjectEntryResourceTest {
 			_objectDefinition1.getRESTContextPath(), Http.Method.POST);
 	}
 
-	private void _testFilterByRelatedObjectDefinitionSystemObjectField(
+	private <T> void _testFilterByRelatedObjectDefinitionSystemObjectField(
 			FilterURLCreatorUtil.FilterOperator.ComparisonOperator
 				filterOperator,
-			ObjectRelationship objectRelationship)
+			ObjectRelationship objectRelationship, int addToValue)
 		throws Exception {
 
 		_testFilterByRelatedObjectDefinitionSystemObjectField(
 			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1, filterOperator,
 			_objectDefinition1, objectRelationship,
-			_objectEntry2.getObjectEntryId());
+			_objectEntry2.getObjectEntryId() + addToValue);
 
 		_testFilterByRelatedObjectDefinitionSystemObjectField(
 			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, filterOperator,
 			_objectDefinition2, objectRelationship,
-			_objectEntry1.getObjectEntryId());
+			_objectEntry1.getObjectEntryId() + addToValue);
 	}
 
-	private void _testFilterByRelatedObjectDefinitionSystemObjectField(
-			String expectedObjectFieldName, String expectedObjectFieldValue,
+	private <T> void _testFilterByRelatedObjectDefinitionSystemObjectField(
+			String expectedObjectFieldName, T expectedObjectFieldValue,
 			FilterURLCreatorUtil.FilterOperator.ComparisonOperator
 				filterOperator,
 			ObjectDefinition objectDefinition,
@@ -994,8 +1038,9 @@ public class ObjectEntryResourceTest {
 
 		String filterWithComparisonOperator =
 			FilterURLCreatorUtil.createFilterWithComparisonOperator(
-				objectRelationship.getName() + "/id", relatedObjectEntryId,
-				filterOperator);
+				filterOperator,
+				_buildRelationshipsPropertyNameSyntax(objectRelationship, "id"),
+				relatedObjectEntryId);
 
 		String endpoint = StringBundler.concat(
 			objectDefinition.getRESTContextPath(), "?filter=",
@@ -1015,7 +1060,7 @@ public class ObjectEntryResourceTest {
 				FilterURLCreatorUtil.getFilterOperators()) {
 
 			_testFilterObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
-				_objectRelationship, filterOperator);
+				_objectRelationship, filterOperator, 0);
 		}
 
 		_objectRelationshipLocalService.deleteObjectRelationship(
@@ -1028,104 +1073,31 @@ public class ObjectEntryResourceTest {
 				FilterURLCreatorUtil.getFilterOperators()) {
 
 			_testFilterObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
-				_objectRelationship, filterOperator);
+				_objectRelationship, filterOperator, 0);
 		}
 	}
 
 	private void
 			_testFilterObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
 				ObjectRelationship objectRelationship,
-				FilterURLCreatorUtil.FilterOperator filterOperator)
+				FilterURLCreatorUtil.FilterOperator filterOperator,
+				int addToValue)
 		throws Exception {
 
 		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
 			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1, filterOperator,
 			_objectDefinition1, objectRelationship, _OBJECT_FIELD_NAME_2,
-			_OBJECT_FIELD_VALUE_2);
+			_OBJECT_FIELD_VALUE_2 + addToValue);
 		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
 			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, filterOperator,
 			_objectDefinition2, objectRelationship, _OBJECT_FIELD_NAME_1,
-			_OBJECT_FIELD_VALUE_1);
+			_OBJECT_FIELD_VALUE_1 + addToValue);
 	}
 
-	private void
-			_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
-				String expectedObjectFieldName, String expectedObjectFieldValue,
-				FilterURLCreatorUtil.FilterOperator filterOperator,
-				ObjectDefinition objectDefinition,
-				ObjectRelationship objectRelationship,
-				String relatedObjectFieldName, String relatedObjectFieldValue)
-		throws Exception {
-
-		String endpoint = objectDefinition.getRESTContextPath() + "?filter=";
-
-		if (filterOperator ==
-				FilterURLCreatorUtil.FilterOperator.StringOperator.CONTAINS) {
-
-			FilterURLCreatorUtil.FilterOperator.StringOperator stringOperator =
-				(FilterURLCreatorUtil.FilterOperator.StringOperator)
-					filterOperator;
-
-			endpoint += FilterURLCreatorUtil.createFilterWithStringOperator(
-				_buildRelationshipsPropertyNameSyntax(
-					objectRelationship, relatedObjectFieldName),
-				relatedObjectFieldValue.substring(1, 2), stringOperator);
-		}
-		else if (filterOperator ==
-					FilterURLCreatorUtil.FilterOperator.ComparisonOperator.EQ) {
-
-			FilterURLCreatorUtil.FilterOperator.ComparisonOperator
-				comparisonOperator =
-					(FilterURLCreatorUtil.FilterOperator.ComparisonOperator)
-						filterOperator;
-
-			_testFilterByRelatedObjectDefinitionSystemObjectField(
-				comparisonOperator, objectRelationship);
-
-			endpoint += FilterURLCreatorUtil.createFilterWithComparisonOperator(
-				_buildRelationshipsPropertyNameSyntax(
-					objectRelationship, relatedObjectFieldName),
-				relatedObjectFieldValue, comparisonOperator);
-		}
-		else if (filterOperator ==
-					FilterURLCreatorUtil.FilterOperator.ListOperator.IN) {
-
-			FilterURLCreatorUtil.FilterOperator.ListOperator listOperator =
-				(FilterURLCreatorUtil.FilterOperator.ListOperator)
-					filterOperator;
-
-			endpoint += FilterURLCreatorUtil.createFilterWithListOperator(
-				listOperator,
-				_buildRelationshipsPropertyNameSyntax(
-					objectRelationship, relatedObjectFieldName),
-				RandomTestUtil.randomString(), relatedObjectFieldValue);
-		}
-		else if (filterOperator ==
-					FilterURLCreatorUtil.FilterOperator.StringOperator.
-						STARTSWITH) {
-
-			FilterURLCreatorUtil.FilterOperator.StringOperator stringOperator =
-				(FilterURLCreatorUtil.FilterOperator.StringOperator)
-					filterOperator;
-
-			endpoint += FilterURLCreatorUtil.createFilterWithStringOperator(
-				_buildRelationshipsPropertyNameSyntax(
-					objectRelationship, relatedObjectFieldName),
-				relatedObjectFieldValue.substring(0, 1), stringOperator);
-		}
-		else {
-			throw new NotSupportedException(
-				"Filter " + filterOperator.toString() + " is not supported");
-		}
-
-		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
-			endpoint, expectedObjectFieldName, expectedObjectFieldValue);
-	}
-
-	private void
+	private <T> void
 			_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
 				String endpoint, String expectedObjectFieldName,
-				String expectedObjectFieldValue)
+				T expectedObjectFieldValue)
 		throws Exception {
 
 		JSONObject jsonObject = HTTPTestUtil.invoke(
@@ -1139,7 +1111,122 @@ public class ObjectEntryResourceTest {
 
 		Assert.assertEquals(
 			expectedObjectFieldValue,
-			itemJSONObject.getString(expectedObjectFieldName));
+			itemJSONObject.getInt(expectedObjectFieldName));
+	}
+
+	private <T extends Serializable> void
+			_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
+				String expectedObjectFieldName, T expectedObjectFieldValue,
+				FilterURLCreatorUtil.FilterOperator filterOperator,
+				ObjectDefinition objectDefinition,
+				ObjectRelationship objectRelationship,
+				String relatedObjectFieldName, T relatedObjectFieldValue)
+		throws Exception {
+
+		String endpoint = objectDefinition.getRESTContextPath() + "?filter=";
+
+		if (filterOperator instanceof
+				FilterURLCreatorUtil.FilterOperator.ComparisonOperator) {
+
+			FilterURLCreatorUtil.FilterOperator.ComparisonOperator
+				comparisonOperator =
+					(FilterURLCreatorUtil.FilterOperator.ComparisonOperator)
+						filterOperator;
+
+			endpoint += FilterURLCreatorUtil.createFilterWithComparisonOperator(
+				comparisonOperator,
+				_buildRelationshipsPropertyNameSyntax(
+					objectRelationship, relatedObjectFieldName),
+				relatedObjectFieldValue);
+		}
+		else if (filterOperator instanceof
+					FilterURLCreatorUtil.FilterOperator.LambdaOperator) {
+		}
+		else if (filterOperator instanceof
+					FilterURLCreatorUtil.FilterOperator.ListOperator) {
+
+			FilterURLCreatorUtil.FilterOperator.ListOperator listOperator =
+				(FilterURLCreatorUtil.FilterOperator.ListOperator)
+					filterOperator;
+
+			endpoint += FilterURLCreatorUtil.createFilterWithListOperator(
+				listOperator,
+				_buildRelationshipsPropertyNameSyntax(
+					objectRelationship, relatedObjectFieldName),
+				RandomTestUtil.randomString(), relatedObjectFieldValue);
+		}
+		else if (filterOperator instanceof
+					FilterURLCreatorUtil.FilterOperator.LogicalOperator) {
+		}
+		else if (filterOperator instanceof
+					FilterURLCreatorUtil.FilterOperator.StringOperator) {
+
+			FilterURLCreatorUtil.FilterOperator.StringOperator stringOperator =
+				(FilterURLCreatorUtil.FilterOperator.StringOperator)
+					filterOperator;
+
+			String relatedObjectFieldStringValue =
+				(String)relatedObjectFieldValue;
+
+			endpoint += FilterURLCreatorUtil.createFilterWithStringOperator(
+				_buildRelationshipsPropertyNameSyntax(
+					objectRelationship, relatedObjectFieldName),
+				relatedObjectFieldStringValue.substring(0, 1), stringOperator);
+		}
+		else {
+			throw new NotSupportedException(
+				"Filter " + filterOperator.toString() + " is not supported");
+		}
+
+		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
+			endpoint, expectedObjectFieldName, expectedObjectFieldValue);
+	}
+
+	private void _testFilterWithComparisonOperator(
+			FilterURLCreatorUtil.FilterOperator.ComparisonOperator
+				comparisonOperator,
+			ObjectRelationship objectRelationship)
+		throws Exception {
+
+		if ((comparisonOperator ==
+				FilterURLCreatorUtil.FilterOperator.ComparisonOperator.EQ) ||
+			(comparisonOperator ==
+				FilterURLCreatorUtil.FilterOperator.ComparisonOperator.GE) ||
+			(comparisonOperator ==
+				FilterURLCreatorUtil.FilterOperator.ComparisonOperator.LE)) {
+
+			_testFilterObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
+				objectRelationship, comparisonOperator, 0);
+
+			_testFilterByRelatedObjectDefinitionSystemObjectField(
+				comparisonOperator, objectRelationship, 0);
+		}
+		else if ((comparisonOperator ==
+					FilterURLCreatorUtil.FilterOperator.ComparisonOperator.
+						GT) ||
+				 (comparisonOperator ==
+					 FilterURLCreatorUtil.FilterOperator.ComparisonOperator.
+						 NE)) {
+
+			_testFilterObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
+				objectRelationship, comparisonOperator, -1);
+
+			_testFilterByRelatedObjectDefinitionSystemObjectField(
+				comparisonOperator, objectRelationship, -1);
+		}
+		else if (comparisonOperator ==
+					FilterURLCreatorUtil.FilterOperator.ComparisonOperator.LT) {
+
+			_testFilterObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
+				objectRelationship, comparisonOperator, 1);
+
+			_testFilterByRelatedObjectDefinitionSystemObjectField(
+				comparisonOperator, objectRelationship, 1);
+		}
+		else {
+			throw new IllegalStateException(
+				"Unexpected value: " + comparisonOperator);
+		}
 	}
 
 	private void _testGetNestedFieldDetailsInOneToManyRelationships(
@@ -1156,15 +1243,14 @@ public class ObjectEntryResourceTest {
 		JSONObject itemJSONObject = itemsJSONArray.getJSONObject(0);
 
 		Assert.assertEquals(
-			_OBJECT_FIELD_VALUE_2,
-			itemJSONObject.getString(_OBJECT_FIELD_NAME_2));
+			_OBJECT_FIELD_VALUE_2, itemJSONObject.getInt(_OBJECT_FIELD_NAME_2));
 
 		JSONObject relatedObjectJSONObject = itemJSONObject.getJSONObject(
 			expectedFieldName);
 
 		Assert.assertEquals(
 			_OBJECT_FIELD_VALUE_1,
-			relatedObjectJSONObject.getString(_OBJECT_FIELD_NAME_1));
+			relatedObjectJSONObject.getInt(_OBJECT_FIELD_NAME_1));
 	}
 
 	private void
@@ -1248,11 +1334,9 @@ public class ObjectEntryResourceTest {
 	private static final String _OBJECT_FIELD_NAME_2 =
 		"x" + RandomTestUtil.randomString();
 
-	private static final String _OBJECT_FIELD_VALUE_1 =
-		RandomTestUtil.randomString();
+	private static final int _OBJECT_FIELD_VALUE_1 = RandomTestUtil.randomInt();
 
-	private static final String _OBJECT_FIELD_VALUE_2 =
-		RandomTestUtil.randomString();
+	private static final int _OBJECT_FIELD_VALUE_2 = RandomTestUtil.randomInt();
 
 	private ObjectDefinition _objectDefinition1;
 	private ObjectDefinition _objectDefinition2;
