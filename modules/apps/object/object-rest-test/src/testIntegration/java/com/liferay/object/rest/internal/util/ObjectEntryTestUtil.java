@@ -30,9 +30,9 @@ import java.io.Serializable;
  */
 public class ObjectEntryTestUtil {
 
-	public static ObjectEntry addObjectEntry(
+	public static <T extends Serializable> ObjectEntry addObjectEntry(
 			ObjectDefinition objectDefinition, String objectFieldName,
-			String objectFieldValue)
+			T objectFieldValue)
 		throws Exception {
 
 		long groupId = 0;
