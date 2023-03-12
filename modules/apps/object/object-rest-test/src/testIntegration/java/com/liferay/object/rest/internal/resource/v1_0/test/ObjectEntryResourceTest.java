@@ -211,6 +211,50 @@ public class ObjectEntryResourceTest {
 	}
 
 	@Test
+	public void testFilterWithListOperatorObjectEntriesByRelatedObjectEntries()
+		throws Exception {
+
+		PropsUtil.addProperties(
+			UnicodePropertiesBuilder.setProperty(
+				"feature.flag.LPS-154672", "true"
+			).build());
+
+		_objectRelationship = _addObjectRelationshipAndRelateObjectsEntries(
+			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+
+		for (FilterURLCreatorUtil.FilterOperator.ListOperator listOperator :
+				FilterURLCreatorUtil.FilterOperator.ListOperator.values()) {
+
+			_testFilterWithListOperatorObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
+				listOperator, _objectRelationship);
+
+			_testFilterWithListOperatorObjectEntriesByRelatedSystemFieldsInBothSidesOfRelationship(
+				listOperator, _objectRelationship);
+		}
+
+		_objectRelationshipLocalService.deleteObjectRelationship(
+			_objectRelationship);
+
+		_objectRelationship = _addObjectRelationshipAndRelateObjectsEntries(
+			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+
+		for (FilterURLCreatorUtil.FilterOperator.ListOperator listOperator :
+				FilterURLCreatorUtil.FilterOperator.ListOperator.values()) {
+
+			_testFilterWithListOperatorObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
+				listOperator, _objectRelationship);
+
+			_testFilterWithListOperatorObjectEntriesByRelatedSystemFieldsInBothSidesOfRelationship(
+				listOperator, _objectRelationship);
+		}
+
+		PropsUtil.addProperties(
+			UnicodePropertiesBuilder.setProperty(
+				"feature.flag.LPS-154672", "false"
+			).build());
+	}
+
+	@Test
 	public void testFilterWithLogicalOperatorObjectEntriesByRelatedObjectEntries()
 		throws Exception {
 
@@ -1363,6 +1407,38 @@ public class ObjectEntryResourceTest {
 			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, filterOperator,
 			_objectDefinition2, objectRelationship,
 			_objectEntry1.getObjectEntryId() + addToValue, "id");
+	}
+
+	private void
+			_testFilterWithListOperatorObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
+				FilterURLCreatorUtil.FilterOperator.ListOperator filterOperator,
+				ObjectRelationship objectRelationship)
+		throws Exception {
+
+		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
+			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1, filterOperator,
+			_objectDefinition1, objectRelationship, _OBJECT_FIELD_NAME_2,
+			_OBJECT_FIELD_VALUE_2);
+		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
+			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, filterOperator,
+			_objectDefinition2, objectRelationship, _OBJECT_FIELD_NAME_1,
+			_OBJECT_FIELD_VALUE_1);
+	}
+
+	private void
+			_testFilterWithListOperatorObjectEntriesByRelatedSystemFieldsInBothSidesOfRelationship(
+				FilterURLCreatorUtil.FilterOperator.ListOperator filterOperator,
+				ObjectRelationship objectRelationship)
+		throws Exception {
+
+		_testFilterByRelatedObjectDefinitionSystemObjectField(
+			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1, filterOperator,
+			_objectDefinition1, objectRelationship,
+			_objectEntry2.getObjectEntryId(), "id");
+		_testFilterByRelatedObjectDefinitionSystemObjectField(
+			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, filterOperator,
+			_objectDefinition2, objectRelationship,
+			_objectEntry1.getObjectEntryId(), "id");
 	}
 
 	private void
