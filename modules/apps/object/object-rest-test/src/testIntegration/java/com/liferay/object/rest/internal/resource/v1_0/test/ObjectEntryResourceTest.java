@@ -1426,11 +1426,11 @@ public class ObjectEntryResourceTest {
 		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
 			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1, filterOperator,
 			_objectDefinition1, objectRelationship, _OBJECT_FIELD_NAME_2,
-			_OBJECT_FIELD_VALUE_2 + addToValue);
+			String.valueOf(_OBJECT_FIELD_VALUE_2 + addToValue));
 		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
 			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, filterOperator,
 			_objectDefinition2, objectRelationship, _OBJECT_FIELD_NAME_1,
-			_OBJECT_FIELD_VALUE_1 + addToValue);
+			String.valueOf(_OBJECT_FIELD_VALUE_1 + addToValue));
 	}
 
 	private void
@@ -1443,12 +1443,14 @@ public class ObjectEntryResourceTest {
 		_testFilterByRelatedObjectDefinitionSystemObjectField(
 			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1, filterOperator,
 			_objectDefinition1, objectRelationship,
-			_objectEntry2.getObjectEntryId() + addToValue, "id");
+			String.valueOf(_objectEntry2.getObjectEntryId() + addToValue),
+			"id");
 
 		_testFilterByRelatedObjectDefinitionSystemObjectField(
 			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, filterOperator,
 			_objectDefinition2, objectRelationship,
-			_objectEntry1.getObjectEntryId() + addToValue, "id");
+			String.valueOf(_objectEntry1.getObjectEntryId() + addToValue),
+			"id");
 	}
 
 	private void
@@ -1522,14 +1524,14 @@ public class ObjectEntryResourceTest {
 				FilterURLCreatorUtil.FilterOperator.ComparisonOperator.EQ,
 				_buildRelationshipsPropertyNameSyntax(
 					objectRelationship, _OBJECT_FIELD_NAME_2),
-				_OBJECT_FIELD_VALUE_2);
+				String.valueOf(_OBJECT_FIELD_VALUE_2));
 
 		String rightFilter =
 			FilterURLCreatorUtil.createFilterWithComparisonOperator(
 				FilterURLCreatorUtil.FilterOperator.ComparisonOperator.LE,
 				_buildRelationshipsPropertyNameSyntax(
 					objectRelationship, _OBJECT_FIELD_NAME_2),
-				_OBJECT_FIELD_VALUE_2);
+				String.valueOf(_OBJECT_FIELD_VALUE_2));
 
 		if (logicalOperator ==
 				FilterURLCreatorUtil.FilterOperator.LogicalOperator.NOT) {
@@ -1539,7 +1541,7 @@ public class ObjectEntryResourceTest {
 					FilterURLCreatorUtil.FilterOperator.ComparisonOperator.LT,
 					_buildRelationshipsPropertyNameSyntax(
 						objectRelationship, _OBJECT_FIELD_NAME_2),
-					_OBJECT_FIELD_VALUE_2);
+					String.valueOf(_OBJECT_FIELD_VALUE_2));
 		}
 
 		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
@@ -1551,13 +1553,13 @@ public class ObjectEntryResourceTest {
 			FilterURLCreatorUtil.FilterOperator.ComparisonOperator.EQ,
 			_buildRelationshipsPropertyNameSyntax(
 				objectRelationship, _OBJECT_FIELD_NAME_1),
-			_OBJECT_FIELD_VALUE_1);
+			String.valueOf(_OBJECT_FIELD_VALUE_1));
 
 		rightFilter = FilterURLCreatorUtil.createFilterWithComparisonOperator(
 			FilterURLCreatorUtil.FilterOperator.ComparisonOperator.LE,
 			_buildRelationshipsPropertyNameSyntax(
 				objectRelationship, _OBJECT_FIELD_NAME_1),
-			_OBJECT_FIELD_VALUE_1);
+			String.valueOf(_OBJECT_FIELD_VALUE_1));
 
 		if (logicalOperator ==
 				FilterURLCreatorUtil.FilterOperator.LogicalOperator.NOT) {
@@ -1567,7 +1569,7 @@ public class ObjectEntryResourceTest {
 					FilterURLCreatorUtil.FilterOperator.ComparisonOperator.LT,
 					_buildRelationshipsPropertyNameSyntax(
 						objectRelationship, _OBJECT_FIELD_NAME_1),
-					_OBJECT_FIELD_VALUE_1);
+					String.valueOf(_OBJECT_FIELD_VALUE_1));
 		}
 
 		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
@@ -1588,14 +1590,14 @@ public class ObjectEntryResourceTest {
 				FilterURLCreatorUtil.FilterOperator.ComparisonOperator.EQ,
 				_buildRelationshipsPropertyNameSyntax(
 					objectRelationship, _OBJECT_FIELD_NAME_2),
-				_OBJECT_FIELD_VALUE_2);
+				String.valueOf(_OBJECT_FIELD_VALUE_2));
 
 		String rightFilter =
 			FilterURLCreatorUtil.createFilterWithComparisonOperator(
 				FilterURLCreatorUtil.FilterOperator.ComparisonOperator.LE,
 				_buildRelationshipsPropertyNameSyntax(
 					objectRelationship, _OBJECT_FIELD_NAME_2),
-				_OBJECT_FIELD_VALUE_2);
+				String.valueOf(_OBJECT_FIELD_VALUE_2));
 
 		if (logicalOperator ==
 				FilterURLCreatorUtil.FilterOperator.LogicalOperator.NOT) {
@@ -1605,7 +1607,7 @@ public class ObjectEntryResourceTest {
 					FilterURLCreatorUtil.FilterOperator.ComparisonOperator.LT,
 					_buildRelationshipsPropertyNameSyntax(
 						objectRelationship, _OBJECT_FIELD_NAME_2),
-					_OBJECT_FIELD_VALUE_2);
+					String.valueOf(_OBJECT_FIELD_VALUE_2));
 		}
 
 		_testFilterByRelatedObjectDefinitionSystemObjectField(
@@ -1617,13 +1619,13 @@ public class ObjectEntryResourceTest {
 			FilterURLCreatorUtil.FilterOperator.ComparisonOperator.EQ,
 			_buildRelationshipsPropertyNameSyntax(
 				objectRelationship, _OBJECT_FIELD_NAME_1),
-			_OBJECT_FIELD_VALUE_1);
+			String.valueOf(_OBJECT_FIELD_VALUE_1));
 
 		rightFilter = FilterURLCreatorUtil.createFilterWithComparisonOperator(
 			FilterURLCreatorUtil.FilterOperator.ComparisonOperator.LE,
 			_buildRelationshipsPropertyNameSyntax(
 				objectRelationship, _OBJECT_FIELD_NAME_1),
-			_OBJECT_FIELD_VALUE_1);
+			String.valueOf(_OBJECT_FIELD_VALUE_1));
 
 		if (logicalOperator ==
 				FilterURLCreatorUtil.FilterOperator.LogicalOperator.NOT) {
@@ -1633,7 +1635,7 @@ public class ObjectEntryResourceTest {
 					FilterURLCreatorUtil.FilterOperator.ComparisonOperator.LT,
 					_buildRelationshipsPropertyNameSyntax(
 						objectRelationship, _OBJECT_FIELD_NAME_1),
-					_OBJECT_FIELD_VALUE_1);
+					String.valueOf(_OBJECT_FIELD_VALUE_1));
 		}
 
 		_testFilterByRelatedObjectDefinitionSystemObjectField(
