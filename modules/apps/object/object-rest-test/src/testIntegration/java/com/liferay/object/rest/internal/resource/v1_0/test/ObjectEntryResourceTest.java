@@ -1192,7 +1192,7 @@ public class ObjectEntryResourceTest {
 		for (FilterURLCreatorUtil.FilterOperator filterOperator :
 				FilterURLCreatorUtil.getFilterOperators()) {
 
-			_testFilterObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
+			_testFilterWithComparisonOperatorObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
 				_objectRelationship, filterOperator, 0);
 		}
 
@@ -1205,26 +1205,9 @@ public class ObjectEntryResourceTest {
 		for (FilterURLCreatorUtil.FilterOperator filterOperator :
 				FilterURLCreatorUtil.getFilterOperators()) {
 
-			_testFilterObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
+			_testFilterWithComparisonOperatorObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
 				_objectRelationship, filterOperator, 0);
 		}
-	}
-
-	private void
-			_testFilterObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
-				ObjectRelationship objectRelationship,
-				FilterURLCreatorUtil.FilterOperator filterOperator,
-				int addToValue)
-		throws Exception {
-
-		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
-			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1, filterOperator,
-			_objectDefinition1, objectRelationship, _OBJECT_FIELD_NAME_2,
-			_OBJECT_FIELD_VALUE_2 + addToValue);
-		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
-			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, filterOperator,
-			_objectDefinition2, objectRelationship, _OBJECT_FIELD_NAME_1,
-			_OBJECT_FIELD_VALUE_1 + addToValue);
 	}
 
 	private <T> void
@@ -1313,10 +1296,10 @@ public class ObjectEntryResourceTest {
 			(comparisonOperator ==
 				FilterURLCreatorUtil.FilterOperator.ComparisonOperator.LE)) {
 
-			_testFilterObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
+			_testFilterWithComparisonOperatorObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
 				objectRelationship, comparisonOperator, 0);
 
-			_testFilterWithComparisonOperatorByRelatedObjectDefinitionSystemObjectFieldInBothSidesOfRelationship(
+			_testFilterWithComparisonOperatorObjectsEntriesByRelatedObjectEntriesSystemObjectFieldInBothSidesOfRelationship(
 				comparisonOperator, objectRelationship, 0);
 		}
 		else if ((comparisonOperator ==
@@ -1326,19 +1309,19 @@ public class ObjectEntryResourceTest {
 					 FilterURLCreatorUtil.FilterOperator.ComparisonOperator.
 						 NE)) {
 
-			_testFilterObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
+			_testFilterWithComparisonOperatorObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
 				objectRelationship, comparisonOperator, -1);
 
-			_testFilterWithComparisonOperatorByRelatedObjectDefinitionSystemObjectFieldInBothSidesOfRelationship(
+			_testFilterWithComparisonOperatorObjectsEntriesByRelatedObjectEntriesSystemObjectFieldInBothSidesOfRelationship(
 				comparisonOperator, objectRelationship, -1);
 		}
 		else if (comparisonOperator ==
 					FilterURLCreatorUtil.FilterOperator.ComparisonOperator.LT) {
 
-			_testFilterObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
+			_testFilterWithComparisonOperatorObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
 				objectRelationship, comparisonOperator, 1);
 
-			_testFilterWithComparisonOperatorByRelatedObjectDefinitionSystemObjectFieldInBothSidesOfRelationship(
+			_testFilterWithComparisonOperatorObjectsEntriesByRelatedObjectEntriesSystemObjectFieldInBothSidesOfRelationship(
 				comparisonOperator, objectRelationship, 1);
 		}
 		else {
@@ -1347,8 +1330,25 @@ public class ObjectEntryResourceTest {
 		}
 	}
 
-	private <T> void
-			_testFilterWithComparisonOperatorByRelatedObjectDefinitionSystemObjectFieldInBothSidesOfRelationship(
+	private void
+			_testFilterWithComparisonOperatorObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
+				ObjectRelationship objectRelationship,
+				FilterURLCreatorUtil.FilterOperator filterOperator,
+				int addToValue)
+		throws Exception {
+
+		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
+			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1, filterOperator,
+			_objectDefinition1, objectRelationship, _OBJECT_FIELD_NAME_2,
+			_OBJECT_FIELD_VALUE_2 + addToValue);
+		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
+			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, filterOperator,
+			_objectDefinition2, objectRelationship, _OBJECT_FIELD_NAME_1,
+			_OBJECT_FIELD_VALUE_1 + addToValue);
+	}
+
+	private void
+			_testFilterWithComparisonOperatorObjectsEntriesByRelatedObjectEntriesSystemObjectFieldInBothSidesOfRelationship(
 				FilterURLCreatorUtil.FilterOperator.ComparisonOperator
 					filterOperator,
 				ObjectRelationship objectRelationship, int addToValue)
@@ -1508,7 +1508,7 @@ public class ObjectEntryResourceTest {
 			_testFilterWithStringOperatorObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
 				1, 2, stringOperator, objectRelationship);
 
-			_testFilterWithStringOperatorByRelatedObjectDefinitionSystemObjectFieldInBothSidesOfRelationship(
+			_testFilterWithStringOperatorObjectsEntriesByRelatedObjectEntriesSystemObjectFieldInBothSidesOfRelationship(
 				1, 2, stringOperator, objectRelationship);
 		}
 		else if (stringOperator ==
@@ -1518,40 +1518,13 @@ public class ObjectEntryResourceTest {
 			_testFilterWithStringOperatorObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
 				0, 1, stringOperator, objectRelationship);
 
-			_testFilterWithStringOperatorByRelatedObjectDefinitionSystemObjectFieldInBothSidesOfRelationship(
+			_testFilterWithStringOperatorObjectsEntriesByRelatedObjectEntriesSystemObjectFieldInBothSidesOfRelationship(
 				0, 1, stringOperator, objectRelationship);
 		}
 		else {
 			throw new IllegalStateException(
 				"Unexpected value: " + stringOperator);
 		}
-	}
-
-	private void
-			_testFilterWithStringOperatorByRelatedObjectDefinitionSystemObjectFieldInBothSidesOfRelationship(
-				int beginIndex, int endIndex,
-				FilterURLCreatorUtil.FilterOperator.StringOperator
-					filterOperator,
-				ObjectRelationship objectRelationship)
-		throws Exception {
-
-		String relatedObjectFieldStringValue =
-			_objectEntry2.getExternalReferenceCode();
-
-		_testFilterByRelatedObjectDefinitionSystemObjectField(
-			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1, filterOperator,
-			_objectDefinition1, objectRelationship,
-			relatedObjectFieldStringValue.substring(beginIndex, endIndex),
-			"externalReferenceCode");
-
-		relatedObjectFieldStringValue =
-			_objectEntry1.getExternalReferenceCode();
-
-		_testFilterByRelatedObjectDefinitionSystemObjectField(
-			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, filterOperator,
-			_objectDefinition2, objectRelationship,
-			relatedObjectFieldStringValue.substring(beginIndex, endIndex),
-			"externalReferenceCode");
 	}
 
 	private void
@@ -1575,6 +1548,33 @@ public class ObjectEntryResourceTest {
 			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, filterOperator,
 			_objectDefinition2, objectRelationship, _OBJECT_FIELD_NAME_1,
 			relatedObjectFieldStringValue.substring(beginIndex, endIndex));
+	}
+
+	private void
+			_testFilterWithStringOperatorObjectsEntriesByRelatedObjectEntriesSystemObjectFieldInBothSidesOfRelationship(
+				int beginIndex, int endIndex,
+				FilterURLCreatorUtil.FilterOperator.StringOperator
+					filterOperator,
+				ObjectRelationship objectRelationship)
+		throws Exception {
+
+		String relatedObjectFieldStringValue =
+			_objectEntry2.getExternalReferenceCode();
+
+		_testFilterByRelatedObjectDefinitionSystemObjectField(
+			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1, filterOperator,
+			_objectDefinition1, objectRelationship,
+			relatedObjectFieldStringValue.substring(beginIndex, endIndex),
+			"externalReferenceCode");
+
+		relatedObjectFieldStringValue =
+			_objectEntry1.getExternalReferenceCode();
+
+		_testFilterByRelatedObjectDefinitionSystemObjectField(
+			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, filterOperator,
+			_objectDefinition2, objectRelationship,
+			relatedObjectFieldStringValue.substring(beginIndex, endIndex),
+			"externalReferenceCode");
 	}
 
 	private void _testGetNestedFieldDetailsInOneToManyRelationships(
