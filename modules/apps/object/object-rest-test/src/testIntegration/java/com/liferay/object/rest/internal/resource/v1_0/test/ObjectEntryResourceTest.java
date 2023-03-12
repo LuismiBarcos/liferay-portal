@@ -43,6 +43,7 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.log.LogCapture;
 import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.Inject;
@@ -202,6 +203,44 @@ public class ObjectEntryResourceTest {
 
 			_testFilterWithComparisonOperator(
 				comparisonOperator, _objectRelationship);
+		}
+
+		PropsUtil.addProperties(
+			UnicodePropertiesBuilder.setProperty(
+				"feature.flag.LPS-154672", "false"
+			).build());
+	}
+
+	@Test
+	public void testFilterWithLambdaOperatorObjectEntriesByRelatedObjectEntries()
+		throws Exception {
+
+		PropsUtil.addProperties(
+			UnicodePropertiesBuilder.setProperty(
+				"feature.flag.LPS-154672", "true"
+			).build());
+
+		_objectRelationship = _addObjectRelationshipAndRelateObjectsEntries(
+			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+
+		for (FilterURLCreatorUtil.FilterOperator.LambdaOperator lambdaOperator :
+				FilterURLCreatorUtil.FilterOperator.LambdaOperator.values()) {
+
+			_testFilterWithLambdaOperatorObjectEntriesByRelatedSystemFieldsInBothSidesOfRelationship(
+				lambdaOperator, _objectRelationship);
+		}
+
+		_objectRelationshipLocalService.deleteObjectRelationship(
+			_objectRelationship);
+
+		_objectRelationship = _addObjectRelationshipAndRelateObjectsEntries(
+			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+
+		for (FilterURLCreatorUtil.FilterOperator.LambdaOperator lambdaOperator :
+				FilterURLCreatorUtil.FilterOperator.LambdaOperator.values()) {
+
+			_testFilterWithLambdaOperatorObjectEntriesByRelatedSystemFieldsInBothSidesOfRelationship(
+				lambdaOperator, _objectRelationship);
 		}
 
 		PropsUtil.addProperties(
@@ -1129,7 +1168,10 @@ public class ObjectEntryResourceTest {
 		else if (filterOperator instanceof
 					FilterURLCreatorUtil.FilterOperator.LambdaOperator) {
 
-			return "";
+			return FilterURLCreatorUtil.createFilterWithLambdaOperator(
+				propertyName, leftFilter,
+				(FilterURLCreatorUtil.FilterOperator.LambdaOperator)
+					filterOperator);
 		}
 		else if (filterOperator instanceof
 					FilterURLCreatorUtil.FilterOperator.ListOperator) {
@@ -1407,6 +1449,33 @@ public class ObjectEntryResourceTest {
 			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, filterOperator,
 			_objectDefinition2, objectRelationship,
 			_objectEntry1.getObjectEntryId() + addToValue, "id");
+	}
+
+	private void
+			_testFilterWithLambdaOperatorObjectEntriesByRelatedSystemFieldsInBothSidesOfRelationship(
+				FilterURLCreatorUtil.FilterOperator.LambdaOperator
+					lambdaOperator,
+				ObjectRelationship objectRelationship)
+		throws Exception {
+
+		String objectRelationshipName = objectRelationship.getName();
+
+		String lambdaVariable = objectRelationshipName.substring(0, 1);
+
+		String lambdaFilter =
+			FilterURLCreatorUtil.createFilterWithComparisonOperator(
+				FilterURLCreatorUtil.FilterOperator.ComparisonOperator.EQ,
+				lambdaVariable, WorkflowConstants.STATUS_APPROVED);
+
+		_testFilterByRelatedObjectDefinitionSystemObjectField(
+			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1, lambdaOperator,
+			lambdaFilter, _objectDefinition1, objectRelationship,
+			_objectEntry2.getObjectEntryId(), StringPool.BLANK, "status");
+
+		_testFilterByRelatedObjectDefinitionSystemObjectField(
+			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, lambdaOperator,
+			lambdaFilter, _objectDefinition2, objectRelationship,
+			_objectEntry1.getObjectEntryId(), StringPool.BLANK, "status");
 	}
 
 	private void
