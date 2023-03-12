@@ -1022,6 +1022,49 @@ public class ObjectEntryResourceTest {
 			objectRelationship.getName(), StringPool.SLASH, propertyName);
 	}
 
+	private <T> String _createFilter(
+		FilterURLCreatorUtil.FilterOperator filterOperator, String propertyName,
+		T propertyValue) {
+
+		if (filterOperator instanceof
+				FilterURLCreatorUtil.FilterOperator.ComparisonOperator) {
+
+			return FilterURLCreatorUtil.createFilterWithComparisonOperator(
+				(FilterURLCreatorUtil.FilterOperator.ComparisonOperator)
+					filterOperator,
+				propertyName, propertyValue);
+		}
+		else if (filterOperator instanceof
+					FilterURLCreatorUtil.FilterOperator.LambdaOperator) {
+
+			return "";
+		}
+		else if (filterOperator instanceof
+					FilterURLCreatorUtil.FilterOperator.ListOperator) {
+
+			return FilterURLCreatorUtil.createFilterWithListOperator(
+				(FilterURLCreatorUtil.FilterOperator.ListOperator)
+					filterOperator,
+				propertyName, propertyValue);
+		}
+		else if (filterOperator instanceof
+					FilterURLCreatorUtil.FilterOperator.LogicalOperator) {
+
+			return "";
+		}
+		else if (filterOperator instanceof
+					FilterURLCreatorUtil.FilterOperator.StringOperator) {
+
+			return FilterURLCreatorUtil.createFilterWithStringOperator(
+				propertyName, (String)propertyValue,
+				(FilterURLCreatorUtil.FilterOperator.StringOperator)
+					filterOperator);
+		}
+
+		throw new NotSupportedException(
+			"Filter " + filterOperator.toString() + " is not supported");
+	}
+
 	private JSONArray _createObjectEntriesJSONArray(
 			String[] externalReferenceCodeValues, String objectFieldName,
 			String[] objectFieldValues)
@@ -1056,39 +1099,21 @@ public class ObjectEntryResourceTest {
 	}
 
 	private <T> void _testFilterByRelatedObjectDefinitionSystemObjectField(
-			FilterURLCreatorUtil.FilterOperator.ComparisonOperator
-				filterOperator,
-			ObjectRelationship objectRelationship, int addToValue)
-		throws Exception {
-
-		_testFilterByRelatedObjectDefinitionSystemObjectField(
-			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1, filterOperator,
-			_objectDefinition1, objectRelationship,
-			_objectEntry2.getObjectEntryId() + addToValue);
-
-		_testFilterByRelatedObjectDefinitionSystemObjectField(
-			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, filterOperator,
-			_objectDefinition2, objectRelationship,
-			_objectEntry1.getObjectEntryId() + addToValue);
-	}
-
-	private <T> void _testFilterByRelatedObjectDefinitionSystemObjectField(
 			String expectedObjectFieldName, T expectedObjectFieldValue,
-			FilterURLCreatorUtil.FilterOperator.ComparisonOperator
-				filterOperator,
+			FilterURLCreatorUtil.FilterOperator filterOperator,
 			ObjectDefinition objectDefinition,
-			ObjectRelationship objectRelationship, long relatedObjectEntryId)
+			ObjectRelationship objectRelationship, T relatedObjectEntryValue,
+			String systemPropertyName)
 		throws Exception {
 
-		String filterWithComparisonOperator =
-			FilterURLCreatorUtil.createFilterWithComparisonOperator(
-				filterOperator,
-				_buildRelationshipsPropertyNameSyntax(objectRelationship, "id"),
-				relatedObjectEntryId);
+		String filter = _createFilter(
+			filterOperator,
+			_buildRelationshipsPropertyNameSyntax(
+				objectRelationship, systemPropertyName),
+			relatedObjectEntryValue);
 
 		String endpoint = StringBundler.concat(
-			objectDefinition.getRESTContextPath(), "?filter=",
-			filterWithComparisonOperator);
+			objectDefinition.getRESTContextPath(), "?filter=", filter);
 
 		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
 			endpoint, expectedObjectFieldName, expectedObjectFieldValue);
@@ -1167,60 +1192,14 @@ public class ObjectEntryResourceTest {
 				String relatedObjectFieldName, T relatedObjectFieldValue)
 		throws Exception {
 
-		String endpoint = objectDefinition.getRESTContextPath() + "?filter=";
+		String filter = _createFilter(
+			filterOperator,
+			_buildRelationshipsPropertyNameSyntax(
+				objectRelationship, relatedObjectFieldName),
+			relatedObjectFieldValue);
 
-		if (filterOperator instanceof
-				FilterURLCreatorUtil.FilterOperator.ComparisonOperator) {
-
-			FilterURLCreatorUtil.FilterOperator.ComparisonOperator
-				comparisonOperator =
-					(FilterURLCreatorUtil.FilterOperator.ComparisonOperator)
-						filterOperator;
-
-			endpoint += FilterURLCreatorUtil.createFilterWithComparisonOperator(
-				comparisonOperator,
-				_buildRelationshipsPropertyNameSyntax(
-					objectRelationship, relatedObjectFieldName),
-				relatedObjectFieldValue);
-		}
-		else if (filterOperator instanceof
-					FilterURLCreatorUtil.FilterOperator.LambdaOperator) {
-		}
-		else if (filterOperator instanceof
-					FilterURLCreatorUtil.FilterOperator.ListOperator) {
-
-			FilterURLCreatorUtil.FilterOperator.ListOperator listOperator =
-				(FilterURLCreatorUtil.FilterOperator.ListOperator)
-					filterOperator;
-
-			endpoint += FilterURLCreatorUtil.createFilterWithListOperator(
-				listOperator,
-				_buildRelationshipsPropertyNameSyntax(
-					objectRelationship, relatedObjectFieldName),
-				RandomTestUtil.randomString(), relatedObjectFieldValue);
-		}
-		else if (filterOperator instanceof
-					FilterURLCreatorUtil.FilterOperator.LogicalOperator) {
-		}
-		else if (filterOperator instanceof
-					FilterURLCreatorUtil.FilterOperator.StringOperator) {
-
-			FilterURLCreatorUtil.FilterOperator.StringOperator stringOperator =
-				(FilterURLCreatorUtil.FilterOperator.StringOperator)
-					filterOperator;
-
-			String relatedObjectFieldStringValue =
-				(String)relatedObjectFieldValue;
-
-			endpoint += FilterURLCreatorUtil.createFilterWithStringOperator(
-				_buildRelationshipsPropertyNameSyntax(
-					objectRelationship, relatedObjectFieldName),
-				relatedObjectFieldStringValue, stringOperator);
-		}
-		else {
-			throw new NotSupportedException(
-				"Filter " + filterOperator.toString() + " is not supported");
-		}
+		String endpoint =
+			objectDefinition.getRESTContextPath() + "?filter=" + filter;
 
 		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
 			endpoint, expectedObjectFieldName, expectedObjectFieldValue);
@@ -1242,7 +1221,7 @@ public class ObjectEntryResourceTest {
 			_testFilterObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
 				objectRelationship, comparisonOperator, 0);
 
-			_testFilterByRelatedObjectDefinitionSystemObjectField(
+			_testFilterWithComparisonOperatorByRelatedObjectDefinitionSystemObjectFieldInBothSidesOfRelationship(
 				comparisonOperator, objectRelationship, 0);
 		}
 		else if ((comparisonOperator ==
@@ -1255,7 +1234,7 @@ public class ObjectEntryResourceTest {
 			_testFilterObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
 				objectRelationship, comparisonOperator, -1);
 
-			_testFilterByRelatedObjectDefinitionSystemObjectField(
+			_testFilterWithComparisonOperatorByRelatedObjectDefinitionSystemObjectFieldInBothSidesOfRelationship(
 				comparisonOperator, objectRelationship, -1);
 		}
 		else if (comparisonOperator ==
@@ -1264,13 +1243,31 @@ public class ObjectEntryResourceTest {
 			_testFilterObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
 				objectRelationship, comparisonOperator, 1);
 
-			_testFilterByRelatedObjectDefinitionSystemObjectField(
+			_testFilterWithComparisonOperatorByRelatedObjectDefinitionSystemObjectFieldInBothSidesOfRelationship(
 				comparisonOperator, objectRelationship, 1);
 		}
 		else {
 			throw new IllegalStateException(
 				"Unexpected value: " + comparisonOperator);
 		}
+	}
+
+	private <T> void
+			_testFilterWithComparisonOperatorByRelatedObjectDefinitionSystemObjectFieldInBothSidesOfRelationship(
+				FilterURLCreatorUtil.FilterOperator.ComparisonOperator
+					filterOperator,
+				ObjectRelationship objectRelationship, int addToValue)
+		throws Exception {
+
+		_testFilterByRelatedObjectDefinitionSystemObjectField(
+			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1, filterOperator,
+			_objectDefinition1, objectRelationship,
+			_objectEntry2.getObjectEntryId() + addToValue, "id");
+
+		_testFilterByRelatedObjectDefinitionSystemObjectField(
+			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, filterOperator,
+			_objectDefinition2, objectRelationship,
+			_objectEntry1.getObjectEntryId() + addToValue, "id");
 	}
 
 	private void _testFilterWithStringOperator(
@@ -1303,30 +1300,6 @@ public class ObjectEntryResourceTest {
 		}
 	}
 
-	private <T> void
-			_testFilterWithStringOperatorByRelatedObjectDefinitionSystemObjectField(
-				String expectedObjectFieldName, T expectedObjectFieldValue,
-				FilterURLCreatorUtil.FilterOperator.StringOperator
-					filterOperator,
-				ObjectDefinition objectDefinition,
-				ObjectRelationship objectRelationship,
-				String relatedObjectEntryERC)
-		throws Exception {
-
-		String filterWithStringOperator =
-			FilterURLCreatorUtil.createFilterWithStringOperator(
-				_buildRelationshipsPropertyNameSyntax(
-					objectRelationship, "externalReferenceCode"),
-				relatedObjectEntryERC, filterOperator);
-
-		String endpoint = StringBundler.concat(
-			objectDefinition.getRESTContextPath(), "?filter=",
-			filterWithStringOperator);
-
-		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
-			endpoint, expectedObjectFieldName, expectedObjectFieldValue);
-	}
-
 	private void
 			_testFilterWithStringOperatorByRelatedObjectDefinitionSystemObjectFieldInBothSidesOfRelationship(
 				int beginIndex, int endIndex,
@@ -1338,18 +1311,20 @@ public class ObjectEntryResourceTest {
 		String relatedObjectFieldStringValue =
 			_objectEntry2.getExternalReferenceCode();
 
-		_testFilterWithStringOperatorByRelatedObjectDefinitionSystemObjectField(
+		_testFilterByRelatedObjectDefinitionSystemObjectField(
 			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1, filterOperator,
 			_objectDefinition1, objectRelationship,
-			relatedObjectFieldStringValue.substring(beginIndex, endIndex));
+			relatedObjectFieldStringValue.substring(beginIndex, endIndex),
+			"externalReferenceCode");
 
 		relatedObjectFieldStringValue =
 			_objectEntry1.getExternalReferenceCode();
 
-		_testFilterWithStringOperatorByRelatedObjectDefinitionSystemObjectField(
+		_testFilterByRelatedObjectDefinitionSystemObjectField(
 			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, filterOperator,
 			_objectDefinition2, objectRelationship,
-			relatedObjectFieldStringValue.substring(beginIndex, endIndex));
+			relatedObjectFieldStringValue.substring(beginIndex, endIndex),
+			"externalReferenceCode");
 	}
 
 	private void
