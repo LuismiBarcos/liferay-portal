@@ -17,7 +17,6 @@ package com.liferay.object.rest.internal.util;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.URLCodec;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,11 +37,10 @@ public class FilterURLCreatorUtil {
 			apostrophe = StringPool.APOSTROPHE;
 		}
 
-		return _escape(
-			StringBundler.concat(
-				propertyName, StringPool.SPACE,
-				StringUtil.toLowerCase(comparisonOperator.name()),
-				StringPool.SPACE, apostrophe, propertyValue, apostrophe));
+		return StringBundler.concat(
+			propertyName, StringPool.SPACE,
+			StringUtil.toLowerCase(comparisonOperator.name()), StringPool.SPACE,
+			apostrophe, propertyValue, apostrophe);
 	}
 
 	public static String createFilterWithLambdaOperator(
@@ -52,11 +50,10 @@ public class FilterURLCreatorUtil {
 		String lambdaContent = StringBundler.concat(
 			propertyName.substring(0, 1), StringPool.COLON, filter);
 
-		return _escape(
-			StringBundler.concat(
-				propertyName, StringPool.SLASH,
-				StringUtil.toLowerCase(lambdaOperator.name()),
-				_addParenthesis(lambdaContent)));
+		return StringBundler.concat(
+			propertyName, StringPool.SLASH,
+			StringUtil.toLowerCase(lambdaOperator.name()),
+			_addParenthesis(lambdaContent));
 	}
 
 	@SafeVarargs
@@ -82,11 +79,10 @@ public class FilterURLCreatorUtil {
 			}
 		}
 
-		return _escape(
-			StringBundler.concat(
-				propertyName, StringPool.SPACE,
-				StringUtil.toLowerCase(listOperator.name()), StringPool.SPACE,
-				_addParenthesis(propertyValuesStringBuilder.toString())));
+		return StringBundler.concat(
+			propertyName, StringPool.SPACE,
+			StringUtil.toLowerCase(listOperator.name()), StringPool.SPACE,
+			_addParenthesis(propertyValuesStringBuilder.toString()));
 	}
 
 	public static String createFilterWithLogicalOperators(
@@ -99,11 +95,10 @@ public class FilterURLCreatorUtil {
 				StringPool.SPACE, _addParenthesis(leftFilter));
 		}
 
-		return _escape(
-			StringBundler.concat(
-				leftFilter, StringPool.SPACE,
-				StringUtil.toLowerCase(logicalOperator.name()),
-				StringPool.SPACE, rightFilter));
+		return StringBundler.concat(
+			leftFilter, StringPool.SPACE,
+			StringUtil.toLowerCase(logicalOperator.name()), StringPool.SPACE,
+			rightFilter);
 	}
 
 	public static String createFilterWithStringOperator(
@@ -114,9 +109,8 @@ public class FilterURLCreatorUtil {
 			propertyName, StringPool.COMMA_AND_SPACE, StringPool.APOSTROPHE,
 			propertyValue, StringPool.APOSTROPHE);
 
-		return _escape(
-			StringUtil.toLowerCase(stringOperator.name()) +
-				_addParenthesis(filter));
+		return StringUtil.toLowerCase(stringOperator.name()) +
+			_addParenthesis(filter);
 	}
 
 	public static List<FilterOperator> getFilterOperators() {
@@ -173,10 +167,6 @@ public class FilterURLCreatorUtil {
 	private static String _addParenthesis(String string) {
 		return StringBundler.concat(
 			StringPool.OPEN_PARENTHESIS, string, StringPool.CLOSE_PARENTHESIS);
-	}
-
-	private static String _escape(String string) {
-		return URLCodec.encodeURL(string);
 	}
 
 }
