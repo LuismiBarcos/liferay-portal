@@ -211,6 +211,50 @@ public class ObjectEntryResourceTest {
 	}
 
 	@Test
+	public void testFilterWithStringFunctionsObjectEntriesByRelatedObjectEntries()
+		throws Exception {
+
+		PropsUtil.addProperties(
+			UnicodePropertiesBuilder.setProperty(
+				"feature.flag.LPS-154672", "true"
+			).build());
+
+		_objectEntry1 = ObjectEntryTestUtil.addObjectEntry(
+			_objectDefinition1, _OBJECT_FIELD_NAME_1,
+			String.valueOf(_OBJECT_FIELD_VALUE_1));
+
+		_objectEntry2 = ObjectEntryTestUtil.addObjectEntry(
+			_objectDefinition2, _OBJECT_FIELD_NAME_2,
+			String.valueOf(_OBJECT_FIELD_VALUE_2));
+
+		_objectRelationship = _addObjectRelationshipAndRelateObjectsEntries(
+			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+
+		for (FilterURLCreatorUtil.FilterOperator.StringOperator stringOperator :
+				FilterURLCreatorUtil.FilterOperator.StringOperator.values()) {
+
+			_testFilterWithStringOperator(stringOperator, _objectRelationship);
+		}
+
+		_objectRelationshipLocalService.deleteObjectRelationship(
+			_objectRelationship);
+
+		_objectRelationship = _addObjectRelationshipAndRelateObjectsEntries(
+			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+
+		for (FilterURLCreatorUtil.FilterOperator.StringOperator stringOperator :
+				FilterURLCreatorUtil.FilterOperator.StringOperator.values()) {
+
+			_testFilterWithStringOperator(stringOperator, _objectRelationship);
+		}
+
+		PropsUtil.addProperties(
+			UnicodePropertiesBuilder.setProperty(
+				"feature.flag.LPS-154672", "false"
+			).build());
+	}
+
+	@Test
 	public void testGetNestedFieldDetailsInOneToManyRelationships()
 		throws Exception {
 
@@ -1171,7 +1215,7 @@ public class ObjectEntryResourceTest {
 			endpoint += FilterURLCreatorUtil.createFilterWithStringOperator(
 				_buildRelationshipsPropertyNameSyntax(
 					objectRelationship, relatedObjectFieldName),
-				relatedObjectFieldStringValue.substring(0, 1), stringOperator);
+				relatedObjectFieldStringValue, stringOperator);
 		}
 		else {
 			throw new NotSupportedException(
@@ -1227,6 +1271,108 @@ public class ObjectEntryResourceTest {
 			throw new IllegalStateException(
 				"Unexpected value: " + comparisonOperator);
 		}
+	}
+
+	private void _testFilterWithStringOperator(
+			FilterURLCreatorUtil.FilterOperator.StringOperator stringOperator,
+			ObjectRelationship objectRelationship)
+		throws Exception {
+
+		if (stringOperator ==
+				FilterURLCreatorUtil.FilterOperator.StringOperator.CONTAINS) {
+
+			_testFilterWithStringOperatorObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
+				1, 2, stringOperator, objectRelationship);
+
+			_testFilterWithStringOperatorByRelatedObjectDefinitionSystemObjectFieldInBothSidesOfRelationship(
+				1, 2, stringOperator, objectRelationship);
+		}
+		else if (stringOperator ==
+					FilterURLCreatorUtil.FilterOperator.StringOperator.
+						STARTSWITH) {
+
+			_testFilterWithStringOperatorObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
+				0, 1, stringOperator, objectRelationship);
+
+			_testFilterWithStringOperatorByRelatedObjectDefinitionSystemObjectFieldInBothSidesOfRelationship(
+				0, 1, stringOperator, objectRelationship);
+		}
+		else {
+			throw new IllegalStateException(
+				"Unexpected value: " + stringOperator);
+		}
+	}
+
+	private <T> void
+			_testFilterWithStringOperatorByRelatedObjectDefinitionSystemObjectField(
+				String expectedObjectFieldName, T expectedObjectFieldValue,
+				FilterURLCreatorUtil.FilterOperator.StringOperator
+					filterOperator,
+				ObjectDefinition objectDefinition,
+				ObjectRelationship objectRelationship,
+				String relatedObjectEntryERC)
+		throws Exception {
+
+		String filterWithStringOperator =
+			FilterURLCreatorUtil.createFilterWithStringOperator(
+				_buildRelationshipsPropertyNameSyntax(
+					objectRelationship, "externalReferenceCode"),
+				relatedObjectEntryERC, filterOperator);
+
+		String endpoint = StringBundler.concat(
+			objectDefinition.getRESTContextPath(), "?filter=",
+			filterWithStringOperator);
+
+		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
+			endpoint, expectedObjectFieldName, expectedObjectFieldValue);
+	}
+
+	private void
+			_testFilterWithStringOperatorByRelatedObjectDefinitionSystemObjectFieldInBothSidesOfRelationship(
+				int beginIndex, int endIndex,
+				FilterURLCreatorUtil.FilterOperator.StringOperator
+					filterOperator,
+				ObjectRelationship objectRelationship)
+		throws Exception {
+
+		String relatedObjectFieldStringValue =
+			_objectEntry2.getExternalReferenceCode();
+
+		_testFilterWithStringOperatorByRelatedObjectDefinitionSystemObjectField(
+			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1, filterOperator,
+			_objectDefinition1, objectRelationship,
+			relatedObjectFieldStringValue.substring(beginIndex, endIndex));
+
+		relatedObjectFieldStringValue =
+			_objectEntry1.getExternalReferenceCode();
+
+		_testFilterWithStringOperatorByRelatedObjectDefinitionSystemObjectField(
+			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, filterOperator,
+			_objectDefinition2, objectRelationship,
+			relatedObjectFieldStringValue.substring(beginIndex, endIndex));
+	}
+
+	private void
+			_testFilterWithStringOperatorObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
+				int beginIndex, int endIndex,
+				FilterURLCreatorUtil.FilterOperator filterOperator,
+				ObjectRelationship objectRelationship)
+		throws Exception {
+
+		String relatedObjectFieldStringValue = String.valueOf(
+			_OBJECT_FIELD_VALUE_2);
+
+		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
+			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1, filterOperator,
+			_objectDefinition1, objectRelationship, _OBJECT_FIELD_NAME_2,
+			relatedObjectFieldStringValue.substring(beginIndex, endIndex));
+
+		relatedObjectFieldStringValue = String.valueOf(_OBJECT_FIELD_VALUE_1);
+
+		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
+			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, filterOperator,
+			_objectDefinition2, objectRelationship, _OBJECT_FIELD_NAME_1,
+			relatedObjectFieldStringValue.substring(beginIndex, endIndex));
 	}
 
 	private void _testGetNestedFieldDetailsInOneToManyRelationships(
