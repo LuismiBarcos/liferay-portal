@@ -1162,10 +1162,25 @@ public class ObjectEntryResourceTest {
 			String systemPropertyName)
 		throws Exception {
 
-		_testFilterWithComposeFiltersByRelatedObjectDefinitionSystemObjectField(
+		_testFilterByRelatedObjectDefinitionSystemObjectField(
 			expectedObjectFieldName, expectedObjectFieldValue, filterOperator,
 			StringPool.BLANK, objectDefinition, objectRelationship,
 			relatedObjectEntryValue, StringPool.BLANK, systemPropertyName);
+	}
+
+	private <T> void _testFilterByRelatedObjectDefinitionSystemObjectField(
+			String expectedObjectFieldName, T expectedObjectFieldValue,
+			FilterURLCreatorUtil.FilterOperator filterOperator,
+			String leftFilter, ObjectDefinition objectDefinition,
+			ObjectRelationship objectRelationship, T relatedObjectEntryValue,
+			String rightFilter, String systemPropertyName)
+		throws Exception {
+
+		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
+			expectedObjectFieldName, expectedObjectFieldValue, filterOperator,
+			_buildRelationshipsPropertyNameSyntax(
+				objectRelationship, systemPropertyName),
+			leftFilter, objectDefinition, relatedObjectEntryValue, rightFilter);
 	}
 
 	private void _testFilterObjectEntriesByRelatedObjectEntries()
@@ -1241,10 +1256,48 @@ public class ObjectEntryResourceTest {
 				String relatedObjectFieldName, T relatedObjectFieldValue)
 		throws Exception {
 
-		_testFilterWithComposeFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
+		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
 			expectedObjectFieldName, expectedObjectFieldValue, filterOperator,
 			StringPool.BLANK, objectDefinition, objectRelationship,
 			relatedObjectFieldName, StringPool.BLANK, relatedObjectFieldValue);
+	}
+
+	private <T extends Serializable> void
+			_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
+				String expectedObjectFieldName, T expectedObjectFieldValue,
+				FilterURLCreatorUtil.FilterOperator filterOperator,
+				String leftFilter, ObjectDefinition objectDefinition,
+				ObjectRelationship objectRelationship,
+				String relatedObjectFieldName, String rightFilter,
+				T relatedObjectFieldValue)
+		throws Exception {
+
+		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
+			expectedObjectFieldName, expectedObjectFieldValue, filterOperator,
+			_buildRelationshipsPropertyNameSyntax(
+				objectRelationship, relatedObjectFieldName),
+			leftFilter, objectDefinition, relatedObjectFieldValue, rightFilter);
+	}
+
+	private <T> void
+			_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
+				String expectedObjectFieldName, T expectedObjectFieldValue,
+				FilterURLCreatorUtil.FilterOperator filterOperator,
+				String filterPropertyName, String leftFilter,
+				ObjectDefinition objectDefinition, T relatedObjectEntryValue,
+				String rightFilter)
+		throws Exception {
+
+		String filter = _escape(
+			_createFilter(
+				filterOperator, leftFilter, filterPropertyName,
+				relatedObjectEntryValue, rightFilter));
+
+		String endpoint = StringBundler.concat(
+			objectDefinition.getRESTContextPath(), "?filter=", filter);
+
+		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
+			endpoint, expectedObjectFieldName, expectedObjectFieldValue);
 	}
 
 	private void _testFilterWithComparisonOperator(
@@ -1312,54 +1365,6 @@ public class ObjectEntryResourceTest {
 			_objectEntry1.getObjectEntryId() + addToValue, "id");
 	}
 
-	private <T extends Serializable> void
-			_testFilterWithComposeFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
-				String expectedObjectFieldName, T expectedObjectFieldValue,
-				FilterURLCreatorUtil.FilterOperator filterOperator,
-				String leftFilter, ObjectDefinition objectDefinition,
-				ObjectRelationship objectRelationship,
-				String relatedObjectFieldName, String rightFilter,
-				T relatedObjectFieldValue)
-		throws Exception {
-
-		String filter = _escape(
-			_createFilter(
-				filterOperator, leftFilter,
-				_buildRelationshipsPropertyNameSyntax(
-					objectRelationship, relatedObjectFieldName),
-				relatedObjectFieldValue, rightFilter));
-
-		String endpoint =
-			objectDefinition.getRESTContextPath() + "?filter=" + filter;
-
-		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
-			endpoint, expectedObjectFieldName, expectedObjectFieldValue);
-	}
-
-	private <T> void
-			_testFilterWithComposeFiltersByRelatedObjectDefinitionSystemObjectField(
-				String expectedObjectFieldName, T expectedObjectFieldValue,
-				FilterURLCreatorUtil.FilterOperator filterOperator,
-				String leftFilter, ObjectDefinition objectDefinition,
-				ObjectRelationship objectRelationship,
-				T relatedObjectEntryValue, String rightFilter,
-				String systemPropertyName)
-		throws Exception {
-
-		String filter = _escape(
-			_createFilter(
-				filterOperator, leftFilter,
-				_buildRelationshipsPropertyNameSyntax(
-					objectRelationship, systemPropertyName),
-				relatedObjectEntryValue, rightFilter));
-
-		String endpoint = StringBundler.concat(
-			objectDefinition.getRESTContextPath(), "?filter=", filter);
-
-		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
-			endpoint, expectedObjectFieldName, expectedObjectFieldValue);
-	}
-
 	private void
 			_testFilterWithLogicalOperatorObjectEntriesByRelatedObjectEntriesInBothSidesOfRelationship(
 				FilterURLCreatorUtil.FilterOperator.LogicalOperator
@@ -1392,7 +1397,7 @@ public class ObjectEntryResourceTest {
 					_OBJECT_FIELD_VALUE_2);
 		}
 
-		_testFilterWithComposeFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
+		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
 			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1, logicalOperator,
 			leftFilter, _objectDefinition1, objectRelationship,
 			_OBJECT_FIELD_NAME_2, rightFilter, _OBJECT_FIELD_VALUE_2);
@@ -1420,7 +1425,7 @@ public class ObjectEntryResourceTest {
 					_OBJECT_FIELD_VALUE_1);
 		}
 
-		_testFilterWithComposeFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
+		_testFilterObjectEntriesByRelatedObjectEntriesUsingAFilterOperator(
 			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, logicalOperator,
 			leftFilter, _objectDefinition2, objectRelationship,
 			_OBJECT_FIELD_NAME_1, rightFilter, _OBJECT_FIELD_VALUE_1);
@@ -1458,7 +1463,7 @@ public class ObjectEntryResourceTest {
 					_OBJECT_FIELD_VALUE_2);
 		}
 
-		_testFilterWithComposeFiltersByRelatedObjectDefinitionSystemObjectField(
+		_testFilterByRelatedObjectDefinitionSystemObjectField(
 			_OBJECT_FIELD_NAME_1, _OBJECT_FIELD_VALUE_1, logicalOperator,
 			leftFilter, _objectDefinition1, objectRelationship,
 			_OBJECT_FIELD_NAME_2, rightFilter, "id");
@@ -1486,7 +1491,7 @@ public class ObjectEntryResourceTest {
 					_OBJECT_FIELD_VALUE_1);
 		}
 
-		_testFilterWithComposeFiltersByRelatedObjectDefinitionSystemObjectField(
+		_testFilterByRelatedObjectDefinitionSystemObjectField(
 			_OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2, logicalOperator,
 			leftFilter, _objectDefinition2, objectRelationship,
 			_OBJECT_FIELD_NAME_1, rightFilter, "id");
