@@ -136,8 +136,7 @@ public class BatchEngineEntityComatibilityTest {
 
 			_batchEngineEntitiesToVerify = tracked.values();
 
-			_batchEngineEntitiesToVerify.removeAll(
-				_incompatibleEntities);
+			_batchEngineEntitiesToVerify.removeAll(_incompatibleEntities);
 		}
 	}
 
@@ -174,9 +173,7 @@ public class BatchEngineEntityComatibilityTest {
 		StringBundler incompatibleSB = new StringBundler();
 		boolean failures = false;
 
-		for (String batchEngineEntityClassName :
-				_batchEngineEntitiesToVerify) {
-
+		for (String batchEngineEntityClassName : _batchEngineEntitiesToVerify) {
 			try {
 				_assertCompatibility(batchEngineEntityClassName);
 
@@ -316,6 +313,9 @@ public class BatchEngineEntityComatibilityTest {
 	private static final boolean _GENERATE_REPORT = Boolean.valueOf(
 		System.getenv("HEADLESS_BATCH_COMPATIBILITY_REPORT"));
 
+	private static Collection<String> _batchEngineEntitiesToVerify =
+		StringUtil.split(
+			System.getenv("HEADLESS_BATCH_ENGINE_ENTITIES_TO_VERIFY"));
 	private static ServiceTracker<Object, String>
 		_batchEngineEntityClassNameTracker;
 	private static final List<String> _incompatibleEntities = Arrays.asList(
@@ -543,9 +543,6 @@ public class BatchEngineEntityComatibilityTest {
 			"SXPParameterContributorDefinition",
 		"com.liferay.segments.asah.rest.dto.v1_0.Experiment",
 		"com.liferay.segments.asah.rest.dto.v1_0.Status");
-	private static Collection<String> _batchEngineEntitiesToVerify =
-		StringUtil.split(
-			System.getenv("HEADLESS_BATCH_ENGINE_ENTITIES_TO_VERIFY"));
 
 	@Inject
 	private Http _http;
