@@ -405,31 +405,25 @@ public class ObjectEntryRelatedObjectsResourceTest {
 				LoggerTestUtil.WARN)) {
 
 			ObjectRelationship objectRelationship =
-				ObjectRelationshipTestUtil.addObjectRelationship(
+				_addObjectRelationship(
 					_userSystemObjectDefinition, _objectDefinition1,
-					_user.getUserId(),
 					ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
-
-			_objectRelationships.add(objectRelationship);
 
 			_testPostCustomObjectEntryWithInvalidNestedSystemObjectEntriesInManyToManyRelationship(
 				objectRelationship);
 
 			objectRelationship =
-				ObjectRelationshipTestUtil.addObjectRelationship(
+				_addObjectRelationship(
 					_userSystemObjectDefinition, _objectDefinition1,
-					_user.getUserId(),
 					ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
-			_objectRelationships.add(objectRelationship);
 
 			_testPostCustomObjectEntryWithInvalidNestedSystemObjectEntriesInManyToOneRelationship(
 				objectRelationship);
 
 			objectRelationship =
-				ObjectRelationshipTestUtil.addObjectRelationship(
+				_addObjectRelationship(
 					_objectDefinition1, _userSystemObjectDefinition,
-					_user.getUserId(),
 					ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
 			_testPostCustomObjectEntryWithInvalidNestedSystemObjectEntriesInOneToManyRelationship(
@@ -442,12 +436,14 @@ public class ObjectEntryRelatedObjectsResourceTest {
 		throws Exception {
 
 		ObjectRelationship objectRelationship =
-			ObjectRelationshipTestUtil.addObjectRelationship(
+			_addObjectRelationship(
 				_userSystemObjectDefinition, _objectDefinition1,
-				_user.getUserId(),
 				ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
-		UserAccount userAccount = _randomUserAccount();
+		UserAccount userAccount = _randomUserAccount(
+			RandomTestUtil.randomString(),
+			StringUtil.toLowerCase(RandomTestUtil.randomString()) +
+				"@liferay.com");
 
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
 			userAccount.toString());
@@ -487,12 +483,14 @@ public class ObjectEntryRelatedObjectsResourceTest {
 		throws Exception {
 
 		ObjectRelationship objectRelationship =
-			ObjectRelationshipTestUtil.addObjectRelationship(
+			_addObjectRelationship(
 				_userSystemObjectDefinition, _objectDefinition1,
-				_user.getUserId(),
 				ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
-		UserAccount userAccount = _randomUserAccount();
+		UserAccount userAccount = _randomUserAccount(
+			RandomTestUtil.randomString(),
+			StringUtil.toLowerCase(RandomTestUtil.randomString()) +
+				"@liferay.com");
 
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
 			userAccount.toString());
@@ -529,12 +527,14 @@ public class ObjectEntryRelatedObjectsResourceTest {
 		throws Exception {
 
 		ObjectRelationship objectRelationship =
-			ObjectRelationshipTestUtil.addObjectRelationship(
+			_addObjectRelationship(
 				_objectDefinition1, _userSystemObjectDefinition,
-				_user.getUserId(),
 				ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
-		UserAccount userAccount = _randomUserAccount();
+		UserAccount userAccount = _randomUserAccount(
+			RandomTestUtil.randomString(),
+			StringUtil.toLowerCase(RandomTestUtil.randomString()) +
+				"@liferay.com");
 
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
 			userAccount.toString());
@@ -567,6 +567,208 @@ public class ObjectEntryRelatedObjectsResourceTest {
 		JSONArray itemsJSONArray = jsonObject.getJSONArray("items");
 
 		Assert.assertEquals(1, itemsJSONArray.length());
+	}
+
+	@Test
+	public void testPutCustomObjectEntryWithNestedSystemObjectEntriesInManyToManyRelationship()
+		throws Exception {
+
+		String newEmailAddress =
+			StringUtil.toLowerCase(RandomTestUtil.randomString()) +
+				"@liferay.com";
+
+		ObjectRelationship objectRelationship =
+			_addObjectRelationship(
+				_userSystemObjectDefinition, _objectDefinition1,
+				ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+
+		UserAccount userAccount = _randomUserAccount(
+			RandomTestUtil.randomString(),
+			StringUtil.toLowerCase(RandomTestUtil.randomString()) +
+				"@liferay.com");
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+			userAccount.toString());
+
+		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
+
+		JSONObject objectEntryJSONObject = JSONUtil.put(
+			objectRelationship.getName(), jsonArray.put(jsonObject));
+
+		jsonObject = HTTPTestUtil.invoke(
+			objectEntryJSONObject.toString(),
+			_objectDefinition1.getRESTContextPath(), Http.Method.POST);
+
+		String objectEntryId = jsonObject.getString("id");
+
+		UserAccount updateUserAccount = _randomUserAccount(
+			_getUserExternalReferenceCode(
+				objectEntryId, objectRelationship, false),
+			newEmailAddress);
+
+		jsonObject = JSONFactoryUtil.createJSONObject(
+			updateUserAccount.toString());
+
+		jsonArray = JSONFactoryUtil.createJSONArray();
+
+		objectEntryJSONObject = JSONUtil.put(
+			objectRelationship.getName(), jsonArray.put(jsonObject));
+
+		HTTPTestUtil.invoke(
+			objectEntryJSONObject.toString(),
+			StringBundler.concat(
+				_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
+				objectEntryId),
+			Http.Method.PUT);
+
+		jsonObject = JSONFactoryUtil.createJSONObject(
+			_invoke(
+				Http.Method.GET,
+				_getLocation(
+					objectEntryId, objectRelationship.getName(), false)));
+
+		JSONArray itemsJSONArray = jsonObject.getJSONArray("items");
+
+		Assert.assertEquals(1, itemsJSONArray.length());
+
+		JSONObject userSystemObjectEntryJSONObject =
+			itemsJSONArray.getJSONObject(0);
+
+		Assert.assertEquals(
+			userSystemObjectEntryJSONObject.get("emailAddress"),
+			newEmailAddress);
+	}
+
+	@Test
+	public void testPutCustomObjectEntryWithNestedSystemObjectEntriesInManyToOneRelationship()
+		throws Exception {
+
+		String newEmailAddress =
+			StringUtil.toLowerCase(RandomTestUtil.randomString()) +
+				"@liferay.com";
+
+		ObjectRelationship objectRelationship =
+			_addObjectRelationship(
+				_userSystemObjectDefinition, _objectDefinition1,
+				ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+
+		UserAccount userAccount = _randomUserAccount(
+			RandomTestUtil.randomString(),
+			StringUtil.toLowerCase(RandomTestUtil.randomString()) +
+				"@liferay.com");
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+			userAccount.toString());
+
+		JSONObject objectEntryJSONObject = JSONUtil.put(
+			objectRelationship.getName(), jsonObject);
+
+		jsonObject = HTTPTestUtil.invoke(
+			objectEntryJSONObject.toString(),
+			_objectDefinition1.getRESTContextPath(), Http.Method.POST);
+
+		String objectEntryId = jsonObject.getString("id");
+
+		UserAccount updateUserAccount = _randomUserAccount(
+			_getUserExternalReferenceCode(
+				objectEntryId, objectRelationship, true),
+			newEmailAddress);
+
+		jsonObject = JSONFactoryUtil.createJSONObject(
+			updateUserAccount.toString());
+
+		objectEntryJSONObject = JSONUtil.put(
+			objectRelationship.getName(), jsonObject);
+
+		HTTPTestUtil.invoke(
+			objectEntryJSONObject.toString(),
+			StringBundler.concat(
+				_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
+				objectEntryId),
+			Http.Method.PUT);
+
+		jsonObject = JSONFactoryUtil.createJSONObject(
+			_invoke(
+				Http.Method.GET,
+				_getLocation(
+					objectEntryId, objectRelationship.getName(), true)));
+
+		JSONObject userSystemObjectEntryJSONObject = jsonObject.getJSONObject(
+			objectRelationship.getName());
+
+		Assert.assertEquals(
+			userSystemObjectEntryJSONObject.get("emailAddress"),
+			newEmailAddress);
+	}
+
+	@Test
+	public void testPutCustomObjectEntryWithNestedSystemObjectEntriesInOneToManyRelationship()
+		throws Exception {
+
+		String newEmailAddress =
+			StringUtil.toLowerCase(RandomTestUtil.randomString()) +
+				"@liferay.com";
+
+		ObjectRelationship objectRelationship =
+			_addObjectRelationship(
+				_objectDefinition1, _userSystemObjectDefinition,
+				ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+
+		UserAccount userAccount = _randomUserAccount(
+			RandomTestUtil.randomString(),
+			StringUtil.toLowerCase(RandomTestUtil.randomString()) +
+				"@liferay.com");
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+			userAccount.toString());
+
+		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
+
+		JSONObject objectEntryJSONObject = JSONUtil.put(
+			objectRelationship.getName(), jsonArray.put(jsonObject));
+
+		jsonObject = HTTPTestUtil.invoke(
+			objectEntryJSONObject.toString(),
+			_objectDefinition1.getRESTContextPath(), Http.Method.POST);
+
+		String objectEntryId = jsonObject.getString("id");
+
+		UserAccount updateUserAccount = _randomUserAccount(
+			_getUserExternalReferenceCode(
+				objectEntryId, objectRelationship, false),
+			newEmailAddress);
+
+		jsonObject = JSONFactoryUtil.createJSONObject(
+			updateUserAccount.toString());
+
+		jsonArray = JSONFactoryUtil.createJSONArray();
+
+		objectEntryJSONObject = JSONUtil.put(
+			objectRelationship.getName(), jsonArray.put(jsonObject));
+
+		HTTPTestUtil.invoke(
+			objectEntryJSONObject.toString(),
+			StringBundler.concat(
+				_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
+				objectEntryId),
+			Http.Method.PUT);
+
+		jsonObject = JSONFactoryUtil.createJSONObject(
+			_invoke(
+				Http.Method.GET,
+				_getLocation(
+					objectEntryId, objectRelationship.getName(), false)));
+
+		JSONArray itemsJSONArray = jsonObject.getJSONArray("items");
+
+		Assert.assertEquals(1, itemsJSONArray.length());
+
+		JSONObject userSystemObjectEntryJSONObject =
+			itemsJSONArray.getJSONObject(0);
+
+		Assert.assertEquals(
+			userSystemObjectEntryJSONObject.get("emailAddress"),
+			newEmailAddress);
 	}
 
 	@Test
@@ -797,6 +999,34 @@ public class ObjectEntryRelatedObjectsResourceTest {
 			objectRelationshipName);
 	}
 
+	private String _getUserExternalReferenceCode(
+			String objectEntryId, ObjectRelationship objectRelationship,
+			boolean nestedFields)
+		throws Exception {
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+			_invoke(
+				Http.Method.GET,
+				_getLocation(
+					objectEntryId, objectRelationship.getName(),
+					nestedFields)));
+
+		if (nestedFields) {
+			return jsonObject.getString(
+				StringBundler.concat(
+					"r_", objectRelationship.getName(), "_",
+					StringUtil.replaceLast(
+						_userSystemObjectDefinition.getPKObjectFieldName(),
+						"Id", "ERC")));
+		}
+
+		JSONArray itemsJSONArray = jsonObject.getJSONArray("items");
+
+		jsonObject = itemsJSONArray.getJSONObject(0);
+
+		return jsonObject.getString("externalReferenceCode");
+	}
+
 	private String _invoke(Http.Method httpMethod, String location)
 		throws Exception {
 
@@ -815,7 +1045,10 @@ public class ObjectEntryRelatedObjectsResourceTest {
 		return response.getResponseCode();
 	}
 
-	private UserAccount _randomUserAccount() throws Exception {
+	private UserAccount _randomUserAccount(
+			String userExternalReferenceCode, String userEmailAdress)
+		throws Exception {
+
 		return new UserAccount() {
 			{
 				additionalName = StringUtil.toLowerCase(
@@ -829,9 +1062,8 @@ public class ObjectEntryRelatedObjectsResourceTest {
 					RandomTestUtil.randomString());
 				dateCreated = RandomTestUtil.nextDate();
 				dateModified = RandomTestUtil.nextDate();
-				emailAddress =
-					StringUtil.toLowerCase(RandomTestUtil.randomString()) +
-						"@liferay.com";
+				emailAddress = userEmailAdress;
+				externalReferenceCode = userExternalReferenceCode;
 				familyName = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 				givenName = StringUtil.toLowerCase(
@@ -979,7 +1211,10 @@ public class ObjectEntryRelatedObjectsResourceTest {
 				ObjectRelationship objectRelationship)
 		throws Exception {
 
-		UserAccount userAccount = _randomUserAccount();
+		UserAccount userAccount = _randomUserAccount(
+			RandomTestUtil.randomString(),
+			StringUtil.toLowerCase(RandomTestUtil.randomString()) +
+				"@liferay.com");
 
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
 			userAccount.toString());
@@ -999,7 +1234,10 @@ public class ObjectEntryRelatedObjectsResourceTest {
 				ObjectRelationship objectRelationship)
 		throws Exception {
 
-		UserAccount userAccount = _randomUserAccount();
+		UserAccount userAccount = _randomUserAccount(
+			RandomTestUtil.randomString(),
+			StringUtil.toLowerCase(RandomTestUtil.randomString()) +
+				"@liferay.com");
 
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
 			userAccount.toString());
@@ -1021,7 +1259,10 @@ public class ObjectEntryRelatedObjectsResourceTest {
 				ObjectRelationship objectRelationship)
 		throws Exception {
 
-		UserAccount userAccount = _randomUserAccount();
+		UserAccount userAccount = _randomUserAccount(
+			RandomTestUtil.randomString(),
+			StringUtil.toLowerCase(RandomTestUtil.randomString()) +
+				"@liferay.com");
 
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
 			userAccount.toString());
