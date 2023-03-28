@@ -183,104 +183,11 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 
 	@Override
 	public synchronized void undeploy(ObjectDefinition objectDefinition) {
-		String restContextPath;
-		boolean unregisterApplication;
-
 		if (objectDefinition.isSystem()) {
-			SystemObjectDefinitionMetadata systemObjectDefinitionMetadata =
-				_systemObjectDefinitionMetadataRegistry.
-					getSystemObjectDefinitionMetadata(
-						objectDefinition.getName());
-
-			if (systemObjectDefinitionMetadata == null) {
-				return;
-			}
-
-			JaxRsApplicationDescriptor jaxRsApplicationDescriptor =
-				systemObjectDefinitionMetadata.getJaxRsApplicationDescriptor();
-
-			restContextPath = jaxRsApplicationDescriptor.getRESTContextPath();
-
-			unregisterApplication = false;
+			_undeploySystemObjectDefinition(objectDefinition);
 		}
 		else {
-			restContextPath = objectDefinition.getRESTContextPath();
-			unregisterApplication = true;
-		}
-
-		Map<Long, ObjectDefinition> objectDefinitions =
-			_objectDefinitionsMap.get(restContextPath);
-
-		if (objectDefinitions != null) {
-			objectDefinitions.remove(objectDefinition.getCompanyId());
-
-			if (objectDefinitions.isEmpty()) {
-				_objectDefinitionsMap.remove(restContextPath);
-			}
-		}
-
-		List<String> companyIds = _restContextPathCompanyIds.get(
-			restContextPath);
-
-		if (companyIds != null) {
-			companyIds.remove(String.valueOf(objectDefinition.getCompanyId()));
-
-			if (!companyIds.isEmpty()) {
-				ServiceRegistration<?> serviceRegistration =
-					_applicationServiceRegistrations.get(restContextPath);
-
-				serviceRegistration.setProperties(
-					_applicationProperties.get(restContextPath));
-
-				unregisterApplication = false;
-			}
-		}
-
-		Map<Long, List<ServiceRegistration<?>>> serviceRegistrationsMap =
-			_scopedServiceRegistrationsMap.get(restContextPath);
-
-		if (serviceRegistrationsMap != null) {
-			List<ServiceRegistration<?>> serviceRegistrations =
-				serviceRegistrationsMap.remove(objectDefinition.getCompanyId());
-
-			if (serviceRegistrations != null) {
-				for (ServiceRegistration<?> serviceRegistration :
-						serviceRegistrations) {
-
-					serviceRegistration.unregister();
-				}
-			}
-
-			if (serviceRegistrationsMap.isEmpty()) {
-				_scopedServiceRegistrationsMap.remove(restContextPath);
-			}
-			else {
-				unregisterApplication = false;
-			}
-		}
-
-		_disposeComponentInstances(restContextPath);
-
-		if (!unregisterApplication) {
-			return;
-		}
-
-		ServiceRegistration<?> serviceRegistration1 =
-			_applicationServiceRegistrations.remove(restContextPath);
-
-		if (serviceRegistration1 != null) {
-			serviceRegistration1.unregister();
-		}
-
-		List<ServiceRegistration<?>> serviceRegistrations =
-			_serviceRegistrationsMap.remove(restContextPath);
-
-		if (serviceRegistrations != null) {
-			for (ServiceRegistration<?> serviceRegistration2 :
-					serviceRegistrations) {
-
-				serviceRegistration2.unregister();
-			}
+			_undeployCustomObjectDefinition(objectDefinition);
 		}
 	}
 
@@ -725,6 +632,145 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 
 				return serviceRegistrationsMap;
 			});
+	}
+
+	private boolean _shouldUnregisterApplication(String restContextPath) {
+		List<String> companyIds = _restContextPathCompanyIds.get(
+			restContextPath);
+
+		if (!companyIds.isEmpty()) {
+			return false;
+		}
+
+		Map<Long, List<ServiceRegistration<?>>> serviceRegistrationsMap =
+			_scopedServiceRegistrationsMap.get(restContextPath);
+
+		if (!serviceRegistrationsMap.isEmpty()) {
+			return false;
+		}
+
+		return true;
+	}
+
+	private void _undeployCustomObjectDefinition(
+		ObjectDefinition objectDefinition) {
+
+		long companyId = objectDefinition.getCompanyId();
+		String restContextPath = objectDefinition.getRESTContextPath();
+
+		_undeployObjectDefinitionsMap(companyId, restContextPath);
+		_undeployRestContextPathCompanyIds(companyId, restContextPath);
+		_undeployScopedServiceRegistrationsMap(restContextPath, companyId);
+
+		_unregisterApplication(
+			_shouldUnregisterApplication(restContextPath), restContextPath);
+	}
+
+	private void _undeployObjectDefinitionsMap(
+		long companyId, String restContextPath) {
+
+		Map<Long, ObjectDefinition> objectDefinitions =
+			_objectDefinitionsMap.get(restContextPath);
+
+		if (objectDefinitions != null) {
+			objectDefinitions.remove(companyId);
+
+			if (objectDefinitions.isEmpty()) {
+				_objectDefinitionsMap.remove(restContextPath);
+			}
+		}
+	}
+
+	private void _undeployRestContextPathCompanyIds(
+		long companyId, String restContextPath) {
+
+		List<String> companyIds = _restContextPathCompanyIds.get(
+			restContextPath);
+
+		if (companyIds != null) {
+			companyIds.remove(String.valueOf(companyId));
+
+			if (!companyIds.isEmpty()) {
+				ServiceRegistration<?> serviceRegistration =
+					_applicationServiceRegistrations.get(restContextPath);
+
+				serviceRegistration.setProperties(
+					_applicationProperties.get(restContextPath));
+			}
+		}
+	}
+
+	private void _undeployScopedServiceRegistrationsMap(
+		String restContextPath, long companyId) {
+
+		Map<Long, List<ServiceRegistration<?>>> serviceRegistrationsMap =
+			_scopedServiceRegistrationsMap.get(restContextPath);
+
+		if (serviceRegistrationsMap != null) {
+			List<ServiceRegistration<?>> serviceRegistrations =
+				serviceRegistrationsMap.remove(companyId);
+
+			if (serviceRegistrations != null) {
+				for (ServiceRegistration<?> serviceRegistration :
+						serviceRegistrations) {
+
+					serviceRegistration.unregister();
+				}
+			}
+
+			if (serviceRegistrationsMap.isEmpty()) {
+				_scopedServiceRegistrationsMap.remove(restContextPath);
+			}
+		}
+	}
+
+	private void _undeploySystemObjectDefinition(
+		ObjectDefinition objectDefinition) {
+
+		SystemObjectDefinitionMetadata systemObjectDefinitionMetadata =
+			_systemObjectDefinitionMetadataRegistry.
+				getSystemObjectDefinitionMetadata(objectDefinition.getName());
+
+		if (systemObjectDefinitionMetadata == null) {
+			return;
+		}
+
+		JaxRsApplicationDescriptor jaxRsApplicationDescriptor =
+			systemObjectDefinitionMetadata.getJaxRsApplicationDescriptor();
+
+		String restContextPath =
+			jaxRsApplicationDescriptor.getRESTContextPath();
+
+		_disposeComponentInstances(restContextPath);
+
+		_undeployScopedServiceRegistrationsMap(
+			restContextPath, objectDefinition.getCompanyId());
+	}
+
+	private void _unregisterApplication(
+		boolean shouldUnregisterApplication, String restContextPath) {
+
+		if (!shouldUnregisterApplication) {
+			return;
+		}
+
+		ServiceRegistration<?> serviceRegistration1 =
+			_applicationServiceRegistrations.remove(restContextPath);
+
+		if (serviceRegistration1 != null) {
+			serviceRegistration1.unregister();
+		}
+
+		List<ServiceRegistration<?>> serviceRegistrations =
+			_serviceRegistrationsMap.remove(restContextPath);
+
+		if (serviceRegistrations != null) {
+			for (ServiceRegistration<?> serviceRegistration2 :
+					serviceRegistrations) {
+
+				serviceRegistration2.unregister();
+			}
+		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
