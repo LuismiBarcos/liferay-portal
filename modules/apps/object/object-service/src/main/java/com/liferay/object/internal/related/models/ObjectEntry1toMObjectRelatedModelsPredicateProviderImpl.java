@@ -24,6 +24,7 @@ import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.petra.sql.dsl.Column;
 import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
 import com.liferay.petra.sql.dsl.expression.Predicate;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.StringBundler;
 
@@ -74,17 +75,15 @@ public class ObjectEntry1toMObjectRelatedModelsPredicateProviderImpl
 
 		Column<DynamicObjectDefinitionTable, ?> objectRelationshipColumn =
 			objectDefinition2DynamicObjectDefinitionTable.getColumn(
-				StringBundler.concat(
-					"r_", objectRelationship.getName(), "_",
-					objectDefinition1.getPKObjectFieldName()));
+				_getRelationshipFieldName(
+					objectDefinition1, objectRelationship, true));
 
 		if (objectRelationshipColumn == null) {
 			objectRelationshipColumn =
 				objectDefinition2ExtensionDynamicObjectDefinitionTable.
 					getColumn(
-						StringBundler.concat(
-							"r_", objectRelationship.getName(), "_",
-							objectDefinition1.getPKObjectFieldName()));
+						_getRelationshipFieldName(
+							objectDefinition1, objectRelationship, false));
 		}
 
 		if (objectDefinition.getObjectDefinitionId() ==
@@ -184,6 +183,21 @@ public class ObjectEntry1toMObjectRelatedModelsPredicateProviderImpl
 
 		return ObjectDefinitionLocalServiceUtil.getObjectDefinition(
 			objectRelationship.getObjectDefinitionId2());
+	}
+
+	private String _getRelationshipFieldName(
+		ObjectDefinition objectDefinition,
+		ObjectRelationship objectRelationship, boolean appendUnderscore) {
+
+		String relationshipFieldName = StringBundler.concat(
+			"r_", objectRelationship.getName(), StringPool.UNDERLINE,
+			objectDefinition.getPKObjectFieldName());
+
+		if (appendUnderscore) {
+			return relationshipFieldName + StringPool.UNDERLINE;
+		}
+
+		return relationshipFieldName;
 	}
 
 }
