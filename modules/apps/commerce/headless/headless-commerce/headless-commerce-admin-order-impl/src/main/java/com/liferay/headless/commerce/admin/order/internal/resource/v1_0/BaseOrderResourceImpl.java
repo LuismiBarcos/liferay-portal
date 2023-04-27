@@ -491,16 +491,14 @@ public abstract class BaseOrderResourceImpl
 	@javax.ws.rs.Path("/orders/{id}")
 	@javax.ws.rs.Produces({"application/json", "application/xml"})
 	@Override
-	public Response patchOrder(
+	public Order patchOrder(
 			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
 			@javax.validation.constraints.NotNull @javax.ws.rs.PathParam("id")
 			Long id,
 			Order order)
 		throws Exception {
 
-		Response.ResponseBuilder responseBuilder = Response.ok();
-
-		return responseBuilder.build();
+		return new Order();
 	}
 
 	@Override

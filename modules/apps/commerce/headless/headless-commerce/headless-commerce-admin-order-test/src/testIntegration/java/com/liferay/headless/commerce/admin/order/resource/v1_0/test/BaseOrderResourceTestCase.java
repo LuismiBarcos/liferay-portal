@@ -815,7 +815,27 @@ public abstract class BaseOrderResourceTestCase {
 
 	@Test
 	public void testPatchOrder() throws Exception {
-		Assert.assertTrue(false);
+		Order postOrder = testPatchOrder_addOrder();
+
+		Order randomPatchOrder = randomPatchOrder();
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		Order patchOrder = orderResource.patchOrder(
+			postOrder.getId(), randomPatchOrder);
+
+		Order expectedPatchOrder = postOrder.clone();
+
+		BeanTestUtil.copyProperties(randomPatchOrder, expectedPatchOrder);
+
+		Order getOrder = orderResource.getOrder(patchOrder.getId());
+
+		assertEquals(expectedPatchOrder, getOrder);
+		assertValid(getOrder);
+	}
+
+	protected Order testPatchOrder_addOrder() throws Exception {
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Rule

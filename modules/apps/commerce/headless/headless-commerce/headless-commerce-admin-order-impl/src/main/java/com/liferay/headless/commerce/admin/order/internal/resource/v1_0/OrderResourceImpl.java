@@ -191,12 +191,11 @@ public class OrderResourceImpl extends BaseOrderResourceImpl {
 	}
 
 	@Override
-	public Response patchOrder(Long id, Order order) throws Exception {
-		_updateOrder(_commerceOrderService.getCommerceOrder(id), order);
+	public Order patchOrder(Long id, Order order) throws Exception {
+		CommerceOrder commerceOrder =
+			_updateOrder(_commerceOrderService.getCommerceOrder(id), order);
+		return _orderHelper.toOrder(commerceOrder.getCommerceOrderId(), contextAcceptLanguage.getPreferredLocale());
 
-		Response.ResponseBuilder responseBuilder = Response.noContent();
-
-		return responseBuilder.build();
 	}
 
 	@Override

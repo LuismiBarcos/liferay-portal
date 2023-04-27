@@ -302,7 +302,7 @@ public class Mutation {
 	}
 
 	@GraphQLField
-	public Response patchOrder(
+	public Order patchOrder(
 			@GraphQLName("id") Long id, @GraphQLName("order") Order order)
 		throws Exception {
 

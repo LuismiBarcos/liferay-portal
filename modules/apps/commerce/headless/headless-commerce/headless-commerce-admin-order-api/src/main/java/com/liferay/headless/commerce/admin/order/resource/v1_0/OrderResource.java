@@ -89,7 +89,7 @@ public interface OrderResource {
 
 	public Order getOrder(Long id) throws Exception;
 
-	public Response patchOrder(Long id, Order order) throws Exception;
+	public Order patchOrder(Long id, Order order) throws Exception;
 
 	public default void setContextAcceptLanguage(
 		AcceptLanguage contextAcceptLanguage) {
