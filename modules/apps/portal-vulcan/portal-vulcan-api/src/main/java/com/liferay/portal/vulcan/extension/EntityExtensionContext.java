@@ -14,26 +14,28 @@
 
 package com.liferay.portal.vulcan.extension;
 
-import com.liferay.petra.lang.CentralizedThreadLocal;
+import java.io.Serializable;
+import java.util.Map;
 
 /**
- * @author Javier de Arcos
+ * @author Luis Miguel Barcos
  */
-public class EntityExtensionThreadLocal {
+public class EntityExtensionContext {
 
-	public static EntityExtensionContext getEntityExtensionContext() {
-		return _extendedPropertiesThreadLocal.get();
+	public EntityExtensionContext(
+		Class<?> entityClass, Map<String, Serializable> extendedProperties) {
+		this.extendedProperties = extendedProperties;
+		this.entityClass = entityClass;
 	}
 
-	public static void setEntityExtensionContext(
-		EntityExtensionContext entityExtensionContext) {
-
-		_extendedPropertiesThreadLocal.set(entityExtensionContext);
+	public Map<String, Serializable> getExtendedProperties() {
+		return extendedProperties;
 	}
 
-	private static final ThreadLocal<EntityExtensionContext>
-		_extendedPropertiesThreadLocal = new CentralizedThreadLocal<>(
-			EntityExtensionThreadLocal.class +
-				"._extendedPropertiesThreadLocal");
+	public Class<?> getEntityClass() {
+		return entityClass;
+	}
 
+	private final Map<String, Serializable> extendedProperties;
+	private final Class<?> entityClass;
 }

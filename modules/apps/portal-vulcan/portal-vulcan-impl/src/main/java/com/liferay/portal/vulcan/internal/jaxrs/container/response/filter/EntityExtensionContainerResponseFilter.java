@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.vulcan.extension.EntityExtensionContext;
 import com.liferay.portal.vulcan.extension.EntityExtensionThreadLocal;
 import com.liferay.portal.vulcan.internal.extension.EntityExtensionHandler;
 
@@ -53,10 +54,10 @@ public class EntityExtensionContainerResponseFilter
 			ContainerResponseContext containerResponseContext)
 		throws IOException {
 
-		Map<String, Serializable> extendedProperties =
-			EntityExtensionThreadLocal.getExtendedProperties();
+		EntityExtensionContext entityExtensionContext =
+			EntityExtensionThreadLocal.getEntityExtensionContext();
 
-		if (extendedProperties == null) {
+		if (entityExtensionContext == null) {
 			return;
 		}
 
@@ -76,7 +77,7 @@ public class EntityExtensionContainerResponseFilter
 
 		EntityExtensionHandler entityExtensionHandler =
 			_getEntityExtensionHandler(
-				containerResponseContext.getEntityClass(), contextResolver,
+				entityExtensionContext.getEntityClass(), contextResolver,
 				mediaType);
 
 		if (entityExtensionHandler == null) {
@@ -86,7 +87,8 @@ public class EntityExtensionContainerResponseFilter
 		try {
 			entityExtensionHandler.setExtendedProperties(
 				_company.getCompanyId(), _user.getUserId(),
-				containerResponseContext.getEntity(), extendedProperties);
+				containerResponseContext.getEntity(),
+				entityExtensionContext.getExtendedProperties());
 		}
 		catch (Exception exception) {
 			_log.error(exception);

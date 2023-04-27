@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
+import com.liferay.portal.vulcan.extension.EntityExtensionContext;
 import com.liferay.portal.vulcan.extension.EntityExtensionThreadLocal;
 import com.liferay.portal.vulcan.internal.extension.EntityExtensionHandler;
 import com.liferay.portal.vulcan.internal.jaxrs.context.resolver.EntityExtensionHandlerContextResolver;
@@ -48,7 +49,8 @@ public class EntityExtensionWriterInterceptorTest {
 
 	@Before
 	public void setUp() {
-		EntityExtensionThreadLocal.setExtendedProperties(null);
+		EntityExtensionThreadLocal.setEntityExtensionContext(
+			new EntityExtensionContext(null, null));
 
 		ReflectionTestUtil.setFieldValue(
 			_entityExtensionWriterInterceptor, "_company", _company);
@@ -58,9 +60,10 @@ public class EntityExtensionWriterInterceptorTest {
 
 	@Test
 	public void testAroundWrite() throws Exception {
-		EntityExtensionThreadLocal.setExtendedProperties(
-			Collections.singletonMap(
-				RandomTestUtil.randomString(), RandomTestUtil.randomString()));
+		EntityExtensionThreadLocal.setEntityExtensionContext(
+			new EntityExtensionContext(TestEntity.class,
+				Collections.singletonMap(RandomTestUtil.randomString(),
+					RandomTestUtil.randomString())));
 
 		Mockito.when(
 			_company.getCompanyId()

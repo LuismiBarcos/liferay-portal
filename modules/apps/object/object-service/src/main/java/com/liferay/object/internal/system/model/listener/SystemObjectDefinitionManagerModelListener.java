@@ -39,6 +39,7 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
+import com.liferay.portal.vulcan.extension.EntityExtensionContext;
 import com.liferay.portal.vulcan.extension.EntityExtensionThreadLocal;
 
 import java.util.Collections;
@@ -115,15 +116,21 @@ public class SystemObjectDefinitionManagerModelListener<T extends BaseModel<T>>
 				return;
 			}
 
-			EntityExtensionThreadLocal.setExtendedProperties(
-				HashMapBuilder.putAll(
-					_objectEntryLocalService.
-						getExtensionDynamicObjectDefinitionTableValues(
-							objectDefinition,
-							GetterUtil.getLong(baseModel.getPrimaryKeyObj()))
-				).putAll(
-					EntityExtensionThreadLocal.getExtendedProperties()
-				).build());
+			EntityExtensionContext entityExtensionContext =
+				EntityExtensionThreadLocal.getEntityExtensionContext();
+
+			EntityExtensionThreadLocal.setEntityExtensionContext(
+				new EntityExtensionContext(
+					entityExtensionContext.getEntityClass(),
+					HashMapBuilder.putAll(
+						_objectEntryLocalService.
+							getExtensionDynamicObjectDefinitionTableValues(
+								objectDefinition,
+								GetterUtil.getLong(
+									baseModel.getPrimaryKeyObj()))
+					).putAll(
+						entityExtensionContext.getExtendedProperties()
+					).build()));
 
 			_objectEntryLocalService.
 				deleteExtensionDynamicObjectDefinitionTableValues(
@@ -215,6 +222,9 @@ public class SystemObjectDefinitionManagerModelListener<T extends BaseModel<T>>
 
 		String dtoConverterType = _getDTOConverterType();
 
+		EntityExtensionContext entityExtensionContext =
+			EntityExtensionThreadLocal.getEntityExtensionContext();
+
 		return JSONUtil.put(
 			"classPK", baseModel.getPrimaryKeyObj()
 		).put(
@@ -225,7 +235,7 @@ public class SystemObjectDefinitionManagerModelListener<T extends BaseModel<T>>
 						objectDefinition,
 						GetterUtil.getLong(baseModel.getPrimaryKeyObj()))
 			).putAll(
-				EntityExtensionThreadLocal.getExtendedProperties()
+				entityExtensionContext.getExtendedProperties()
 			).build()
 		).put(
 			"model" + _modelClass.getSimpleName(),

@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
+import com.liferay.portal.vulcan.extension.EntityExtensionContext;
 import com.liferay.portal.vulcan.extension.EntityExtensionThreadLocal;
 import com.liferay.portal.vulcan.internal.extension.EntityExtensionHandler;
 
@@ -56,7 +57,8 @@ public class EntityExtensionContainerResponseFilterTest {
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 
-		EntityExtensionThreadLocal.setExtendedProperties(null);
+		EntityExtensionThreadLocal.setEntityExtensionContext(
+			new EntityExtensionContext(null, null));
 
 		ReflectionTestUtil.setFieldValue(
 			_entityExtensionContainerResponseFilter, "_company", _company);
@@ -126,7 +128,8 @@ public class EntityExtensionContainerResponseFilterTest {
 		Map<String, Serializable> extendedProperties = Collections.singletonMap(
 			RandomTestUtil.randomString(), RandomTestUtil.randomString());
 
-		EntityExtensionThreadLocal.setExtendedProperties(extendedProperties);
+		EntityExtensionThreadLocal.setEntityExtensionContext(
+			new EntityExtensionContext(TestEntity.class, extendedProperties));
 
 		_entityExtensionContainerResponseFilter.filter(
 			_containerRequestContext, _containerResponseContext);
@@ -183,9 +186,10 @@ public class EntityExtensionContainerResponseFilterTest {
 			null
 		);
 
-		EntityExtensionThreadLocal.setExtendedProperties(
-			Collections.singletonMap(
-				RandomTestUtil.randomString(), RandomTestUtil.randomString()));
+		EntityExtensionThreadLocal.setEntityExtensionContext(
+			new EntityExtensionContext(Mockito.any(Class.class),
+				Collections.singletonMap(RandomTestUtil.randomString(),
+					RandomTestUtil.randomString())));
 
 		_entityExtensionContainerResponseFilter.filter(
 			_containerRequestContext, _containerResponseContext);
