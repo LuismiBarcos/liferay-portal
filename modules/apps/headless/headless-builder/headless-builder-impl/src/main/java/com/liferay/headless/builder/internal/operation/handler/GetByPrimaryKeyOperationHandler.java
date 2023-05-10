@@ -19,8 +19,6 @@ import com.liferay.headless.builder.internal.objects.ObjectsIntegrationImpl;
 import com.liferay.headless.builder.internal.operation.Operation;
 import com.liferay.headless.builder.internal.util.HeadlessBuilderUtil;
 import com.liferay.headless.builder.internal.util.URLUtil;
-import com.liferay.info.exception.NoSuchInfoItemException;
-import com.liferay.portal.vulcan.jaxrs.exception.mapper.Problem;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -47,33 +45,18 @@ public class GetByPrimaryKeyOperationHandler implements OperationHandler {
 			httpServletRequest.getHeader(HttpHeaders.ACCEPT),
 			Response.Status.OK.getStatusCode());
 
-		try {
-			Map<String, String> pathParameters = URLUtil.getPathParameters(
-				httpServletRequest.getRequestURI(),
-				operation.getPathConfiguration());
 
-			return Response.status(
-				Response.Status.OK
-			).entity(
-				HeadlessBuilderUtil.getEntity(pathParameters,
-					response, _objectsIntegration)
-			).build();
-		}
-		catch (NoSuchInfoItemException noSuchInfoItemException) {
-			String message = noSuchInfoItemException.getMessage();
+		Map<String, String> pathParameters = URLUtil.getPathParameters(
+			httpServletRequest.getRequestURI(),
+			operation.getPathConfiguration());
 
-			Throwable throwable = noSuchInfoItemException.getCause();
+		return Response.status(
+			Response.Status.OK
+		).entity(
+			HeadlessBuilderUtil.getEntity(pathParameters,
+				response, _objectsIntegration)
+		).build();
 
-			if (throwable != null) {
-				message = throwable.getMessage();
-			}
-
-			return Response.status(
-				Response.Status.NOT_FOUND
-			).entity(
-				new Problem(Response.Status.NOT_FOUND, message)
-			).build();
-		}
 	}
 
 	@Reference
