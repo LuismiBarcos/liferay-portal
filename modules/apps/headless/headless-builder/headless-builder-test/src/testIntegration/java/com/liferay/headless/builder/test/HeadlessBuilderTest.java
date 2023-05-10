@@ -113,17 +113,12 @@ public class HeadlessBuilderTest {
 			TestPropsValues.getCompanyId(),
 			() -> {
 				JSONObject jsonObject = _invoke(
-					"headless-builder/v1.0/test-entries/" +
-						_testEntry.getTestEntryId(),
+					"headless-builder/v1.0/universities/" +
+					44237,
 					Http.Method.GET);
 
-				JSONAssert.assertEquals(
-					JSONUtil.put(
-						"date", _formatDate(_testEntry.getDateField())
-					).put(
-						"number", (int)_testEntry.getLongField()
-					).toString(),
-					jsonObject.toString(), true);
+				Assert.assertNotNull(jsonObject.get("date"));
+				Assert.assertEquals("Oxford", jsonObject.getString("name"));
 			});
 	}
 

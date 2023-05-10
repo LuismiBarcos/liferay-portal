@@ -14,7 +14,7 @@
 
 package com.liferay.headless.builder.internal.operation;
 
-import com.liferay.info.field.InfoField;
+import com.liferay.headless.builder.internal.objects.ObjectProperty;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -171,21 +171,16 @@ public interface Operation {
 
 	public class Response {
 
-		public Response(String entityName, Map<String, InfoField> infoFields) {
-			_entityName = entityName;
-			_infoFields = infoFields;
+		public Response(
+			Map<String, ObjectProperty> objectPropertyMap) {
+			_objectProperty = objectPropertyMap;
 		}
 
-		public String getEntityName() {
-			return _entityName;
+		public Map<String, ObjectProperty> getObjectProperty() {
+			return _objectProperty;
 		}
 
-		public Map<String, InfoField> getInfoFields() {
-			return _infoFields;
-		}
-
-		private final String _entityName;
-		private final Map<String, InfoField> _infoFields;
+		private final Map<String, ObjectProperty> _objectProperty;
 
 	}
 

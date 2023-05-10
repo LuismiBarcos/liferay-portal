@@ -15,23 +15,19 @@
 package com.liferay.headless.builder.internal.operation.handler;
 
 import com.liferay.headless.builder.internal.constants.HeadlessBuilderConstants;
+import com.liferay.headless.builder.internal.objects.ObjectsIntegrationImpl;
 import com.liferay.headless.builder.internal.operation.Operation;
 import com.liferay.headless.builder.internal.util.HeadlessBuilderUtil;
 import com.liferay.headless.builder.internal.util.URLUtil;
 import com.liferay.info.exception.NoSuchInfoItemException;
-import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
-import com.liferay.info.item.provider.InfoItemObjectProvider;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.vulcan.jaxrs.exception.mapper.Problem;
-
-import java.util.Map;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 import javax.servlet.http.HttpServletRequest;
-
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
-
-import org.osgi.service.component.annotations.Component;
+import java.util.Map;
 
 /**
  * @author Carlos Correa
@@ -51,29 +47,16 @@ public class GetByPrimaryKeyOperationHandler implements OperationHandler {
 			httpServletRequest.getHeader(HttpHeaders.ACCEPT),
 			Response.Status.OK.getStatusCode());
 
-		InfoItemObjectProvider<?> infoItemObjectProvider =
-			HeadlessBuilderUtil.getInfoItemService(
-				response.getEntityName(), InfoItemObjectProvider.class);
-
 		try {
 			Map<String, String> pathParameters = URLUtil.getPathParameters(
 				httpServletRequest.getRequestURI(),
 				operation.getPathConfiguration());
 
-			Object object = infoItemObjectProvider.getInfoItem(
-				GetterUtil.getLong(pathParameters.get("id")));
-
-			InfoItemFieldValuesProvider infoItemFieldValuesProvider =
-				HeadlessBuilderUtil.getInfoItemService(
-					response.getEntityName(),
-					InfoItemFieldValuesProvider.class);
-
 			return Response.status(
 				Response.Status.OK
 			).entity(
-				HeadlessBuilderUtil.getEntity(
-					infoItemFieldValuesProvider.getInfoItemFieldValues(object),
-					response)
+				HeadlessBuilderUtil.getEntity(pathParameters,
+					response, _objectsIntegration)
 			).build();
 		}
 		catch (NoSuchInfoItemException noSuchInfoItemException) {
@@ -93,4 +76,6 @@ public class GetByPrimaryKeyOperationHandler implements OperationHandler {
 		}
 	}
 
+	@Reference
+	private ObjectsIntegrationImpl _objectsIntegration;
 }

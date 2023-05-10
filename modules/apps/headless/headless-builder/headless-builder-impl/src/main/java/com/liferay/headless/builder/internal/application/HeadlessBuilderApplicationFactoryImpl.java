@@ -17,26 +17,17 @@ package com.liferay.headless.builder.internal.application;
 import com.liferay.headless.builder.application.HeadlessBuilderApplication;
 import com.liferay.headless.builder.application.HeadlessBuilderApplicationFactory;
 import com.liferay.headless.builder.internal.constants.HeadlessBuilderConstants;
+import com.liferay.headless.builder.internal.objects.ObjectProperty;
+import com.liferay.headless.builder.internal.objects.ObjectsIntegrationImpl;
 import com.liferay.headless.builder.internal.operation.Operation;
 import com.liferay.headless.builder.internal.operation.OperationRegistry;
 import com.liferay.headless.builder.internal.operation.handler.OperationHandler;
-import com.liferay.headless.builder.internal.util.HeadlessBuilderUtil;
 import com.liferay.headless.builder.internal.util.URLUtil;
-import com.liferay.info.field.InfoField;
-import com.liferay.info.field.type.BooleanInfoFieldType;
-import com.liferay.info.field.type.DateInfoFieldType;
-import com.liferay.info.field.type.InfoFieldType;
-import com.liferay.info.field.type.NumberInfoFieldType;
-import com.liferay.info.field.type.TextInfoFieldType;
-import com.liferay.info.form.InfoForm;
-import com.liferay.info.item.provider.InfoItemFormProvider;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.vulcan.yaml.openapi.Components;
 import com.liferay.portal.vulcan.yaml.openapi.Content;
-import com.liferay.portal.vulcan.yaml.openapi.FieldDefinition;
 import com.liferay.portal.vulcan.yaml.openapi.Info;
 import com.liferay.portal.vulcan.yaml.openapi.Method;
 import com.liferay.portal.vulcan.yaml.openapi.OpenAPIYAML;
@@ -45,22 +36,18 @@ import com.liferay.portal.vulcan.yaml.openapi.PathItem;
 import com.liferay.portal.vulcan.yaml.openapi.ResponseCode;
 import com.liferay.portal.vulcan.yaml.openapi.Schema;
 import com.liferay.portal.vulcan.yaml.openapi.SchemaDefinition;
-
-import java.io.InvalidObjectException;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import javax.ws.rs.core.Response;
-
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
+
+import javax.ws.rs.core.Response;
+import java.io.InvalidObjectException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Carlos Correa
@@ -118,84 +105,9 @@ public class HeadlessBuilderApplicationFactoryImpl
 		_serviceTrackerMap.close();
 	}
 
-	private Map<String, InfoField> _getInfoFields(
-			String entityName, Map<String, Schema> schemas)
-		throws Exception {
-
-		Map<String, InfoField> infoFields = new HashMap<>();
-
-		InfoItemFormProvider<?> infoItemFormProvider =
-			HeadlessBuilderUtil.getInfoItemService(
-				entityName, InfoItemFormProvider.class);
-
-		InfoForm infoForm = infoItemFormProvider.getInfoForm();
-
-		for (Map.Entry<String, Schema> entry : schemas.entrySet()) {
-			Schema schema = entry.getValue();
-
-			FieldDefinition fieldDefinition = schema.getFieldDefinition();
-
-			if (fieldDefinition == null) {
-				throw new InvalidObjectException(
-					"No field definition exists for " + entry.getKey());
-			}
-
-			InfoField infoField = infoForm.getInfoField(
-				fieldDefinition.getName());
-
-			if (infoField == null) {
-				throw new InvalidObjectException(
-					StringBundler.concat(
-						"Info field ", fieldDefinition.getName(),
-						" is not associated with ", entityName));
-			}
-
-			String externalFieldName = entry.getKey();
-
-			if (!Objects.equals(
-					_getInfoFieldType(schemas.get(externalFieldName)),
-					infoField.getInfoFieldType())) {
-
-				throw new InvalidObjectException(
-					externalFieldName + " is not compatible with " +
-						infoField.getName());
-			}
-
-			infoFields.put(externalFieldName, infoField);
-		}
-
-		return infoFields;
-	}
-
-	private InfoFieldType _getInfoFieldType(Schema schema) {
-		String type = schema.getType();
-
-		if (StringUtil.equals(type, "boolean")) {
-			return BooleanInfoFieldType.INSTANCE;
-		}
-		else if (StringUtil.equals(type, "integer")) {
-			if (StringUtil.equals(schema.getFormat(), "int64")) {
-				return NumberInfoFieldType.INSTANCE;
-			}
-			else if (StringUtil.equals(schema.getFormat(), "int32")) {
-				return NumberInfoFieldType.INSTANCE;
-			}
-		}
-		else if (StringUtil.equals(type, "string")) {
-			if (StringUtil.equals(schema.getFormat(), "date-time")) {
-				return DateInfoFieldType.INSTANCE;
-			}
-
-			return TextInfoFieldType.INSTANCE;
-		}
-
-		throw new UnsupportedOperationException("Schema type " + type);
-	}
-
 	private List<Operation> _getOperations(
 			long companyId, Operation.PathConfiguration pathConfiguration,
-			PathItem pathItem, Map<String, Schema> schemas)
-		throws Exception {
+			PathItem pathItem, Map<String, Schema> schemas) {
 
 		List<Operation> operations = new ArrayList<>();
 
@@ -221,7 +133,7 @@ public class HeadlessBuilderApplicationFactoryImpl
 				pathConfiguration
 			);
 
-			Map<String, InfoField> successfulInfoFields = null;
+			Map<String, ObjectProperty> successfulObjectProperties = null;
 
 			Map<ResponseCode, com.liferay.portal.vulcan.yaml.openapi.Response>
 				responses = operation.getResponses();
@@ -251,9 +163,10 @@ public class HeadlessBuilderApplicationFactoryImpl
 					SchemaDefinition schemaDefinition =
 						schema.getSchemaDefinition();
 
-					Map<String, InfoField> infoFields = _getInfoFields(
-						schemaDefinition.getEntityName(),
-						schema.getPropertySchemas());
+					Map<String, ObjectProperty> propertyObjectInformation =
+						_objectsIntegration.getObjectProperties(
+							schemaDefinition.getEntityName(),
+							schema.getPropertySchemas());
 
 					ResponseCode responseCode = entry.getKey();
 
@@ -262,17 +175,17 @@ public class HeadlessBuilderApplicationFactoryImpl
 					if (Objects.equals(
 							Response.Status.OK.getStatusCode(), httpCode)) {
 
-						successfulInfoFields = infoFields;
+						successfulObjectProperties = propertyObjectInformation;
 					}
 
 					builder.response(
-						new Operation.Response(
-							schemaDefinition.getEntityName(), infoFields),
-						entry2.getKey(), httpCode);
+						new Operation.Response(propertyObjectInformation
+						), entry2.getKey(),
+						httpCode);
 				}
 			}
 
-			if (successfulInfoFields == null) {
+			if (successfulObjectProperties == null) {
 				throw new IllegalStateException(
 					"No schema is defined for an HTTP 200 status code");
 			}
@@ -316,6 +229,9 @@ public class HeadlessBuilderApplicationFactoryImpl
 			throw new InvalidObjectException("No operation is defined");
 		}
 	}
+
+	@Reference
+	private ObjectsIntegrationImpl _objectsIntegration;
 
 	@Reference
 	private OperationRegistry _operationRegistry;

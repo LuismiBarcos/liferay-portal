@@ -14,13 +14,11 @@
 
 package com.liferay.headless.builder.internal.util;
 
+import com.liferay.headless.builder.internal.objects.ObjectProperty;
+import com.liferay.headless.builder.internal.objects.ObjectsIntegrationImpl;
 import com.liferay.headless.builder.internal.operation.Operation;
-import com.liferay.info.exception.NoSuchInfoItemException;
-import com.liferay.info.field.InfoField;
-import com.liferay.info.field.InfoFieldValue;
-import com.liferay.info.item.InfoItemFieldValues;
-import com.liferay.info.item.InfoItemServiceRegistry;
-import com.liferay.osgi.util.service.Snapshot;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.util.GetterUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,52 +28,21 @@ import java.util.Map;
  */
 public class HeadlessBuilderUtil {
 
-	public static Map<String, Object> getEntity(
-		InfoItemFieldValues infoItemFieldValues, Operation.Response response) {
-
+	public static Map<String, Object> getEntity(Map<String, String> pathParameters, Operation.Response response, ObjectsIntegrationImpl objectsIntegration)
+		throws PortalException {
 		Map<String, Object> entity = new HashMap<>();
 
-		Map<String, InfoField> infoFields = response.getInfoFields();
+		Map<String, ObjectProperty> objectProperty =
+			response.getObjectProperty();
 
-		for (Map.Entry<String, InfoField> entry : infoFields.entrySet()) {
-			entity.put(
-				entry.getKey(),
-				_getValue(infoItemFieldValues, entry.getValue()));
+		for (Map.Entry<String, ObjectProperty> objectPropertyEntry : objectProperty.entrySet()) {
+			entity.put(objectPropertyEntry.getKey(),
+				objectsIntegration.getValue(
+					objectPropertyEntry.getValue(),
+					GetterUtil.getLong(pathParameters.get("id"))));
 		}
 
 		return entity;
 	}
-
-	public static <T> T getInfoItemService(
-			String className, Class<T> serviceClass)
-		throws Exception {
-
-		InfoItemServiceRegistry infoItemServiceRegistry =
-			_infoItemServiceRegistrySnapshot.get();
-
-		T infoItemService = infoItemServiceRegistry.getFirstInfoItemService(
-			serviceClass, className);
-
-		if (infoItemService == null) {
-			throw new NoSuchInfoItemException(
-				serviceClass.getSimpleName() + " is not defined for " +
-					className);
-		}
-
-		return infoItemService;
-	}
-
-	private static Object _getValue(
-		InfoItemFieldValues infoItemFieldValues, InfoField infoField) {
-
-		InfoFieldValue<Object> infoFieldValue =
-			infoItemFieldValues.getInfoFieldValue(infoField.getName());
-
-		return infoFieldValue.getValue();
-	}
-
-	private static final Snapshot<InfoItemServiceRegistry>
-		_infoItemServiceRegistrySnapshot = new Snapshot<>(
-			HeadlessBuilderUtil.class, InfoItemServiceRegistry.class);
 
 }
