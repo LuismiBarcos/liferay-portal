@@ -17,13 +17,6 @@ package com.liferay.headless.builder.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.headless.builder.application.HeadlessBuilderApplication;
 import com.liferay.headless.builder.application.HeadlessBuilderApplicationFactory;
-import com.liferay.headless.builder.test.info.item.provider.TestEntryInfoItemFieldValuesProvider;
-import com.liferay.headless.builder.test.info.item.provider.TestEntryInfoItemFormProvider;
-import com.liferay.headless.builder.test.info.item.provider.TestEntryInfoItemObjectProvider;
-import com.liferay.headless.builder.test.model.TestEntry;
-import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
-import com.liferay.info.item.provider.InfoItemFormProvider;
-import com.liferay.info.item.provider.InfoItemObjectProvider;
 import com.liferay.petra.function.UnsafeRunnable;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -40,33 +33,21 @@ import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.vulcan.yaml.YAMLUtil;
 import com.liferay.portal.vulcan.yaml.openapi.OpenAPIYAML;
-
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
-
-import java.nio.charset.StandardCharsets;
-
-import java.text.SimpleDateFormat;
-
-import java.util.Date;
-
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
-
 import org.skyscreamer.jsonassert.JSONAssert;
+
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * @author Carlos Correa
@@ -79,32 +60,7 @@ public class HeadlessBuilderTest {
 	public static final AggregateTestRule aggregateTestRule =
 		new LiferayIntegrationTestRule();
 
-	@Before
-	public void setUp() {
-		Bundle bundle = FrameworkUtil.getBundle(HeadlessBuilderTest.class);
-
-		BundleContext bundleContext = bundle.getBundleContext();
-
-		_infoItemFieldValuesProviderServiceRegistration =
-			bundleContext.registerService(
-				InfoItemFieldValuesProvider.class,
-				new TestEntryInfoItemFieldValuesProvider(), null);
-		_infoItemFormProviderServiceRegistration =
-			bundleContext.registerService(
-				InfoItemFormProvider.class, new TestEntryInfoItemFormProvider(),
-				null);
-		_infoItemObjectProviderServiceRegistration =
-			bundleContext.registerService(
-				InfoItemObjectProvider.class,
-				new TestEntryInfoItemObjectProvider(), null);
-	}
-
-	@After
-	public void tearDown() {
-		_infoItemFieldValuesProviderServiceRegistration.unregister();
-		_infoItemFormProviderServiceRegistration.unregister();
-		_infoItemObjectProviderServiceRegistration.unregister();
-	}
+	// TODO Create a setUp that creates an ObjectEntry to test this better
 
 	@FeatureFlags("LPS-171047")
 	@Test
@@ -131,8 +87,8 @@ public class HeadlessBuilderTest {
 			0,
 			() -> {
 				JSONObject jsonObject = _invoke(
-					"headless-builder/v1.0/test-entries/" +
-						_testEntry.getTestEntryId(),
+					"headless-builder/v1.0/universities/" +
+					44237,
 					Http.Method.GET);
 
 				JSONAssert.assertEquals(
@@ -150,7 +106,7 @@ public class HeadlessBuilderTest {
 		throws Exception {
 
 		HttpURLConnection httpURLConnection = _createHttpURLConnection(
-			"headless-builder/v1.0/test-entries/" + _testEntry.getTestEntryId(),
+			"headless-builder/v1.0/universities/" + 44237,
 			Http.Method.GET);
 
 		httpURLConnection.connect();
@@ -253,11 +209,5 @@ public class HeadlessBuilderTest {
 	@Inject
 	private HeadlessBuilderApplicationFactory
 		_headlessBuilderApplicationFactory;
-
-	private ServiceRegistration<?>
-		_infoItemFieldValuesProviderServiceRegistration;
-	private ServiceRegistration<?> _infoItemFormProviderServiceRegistration;
-	private ServiceRegistration<?> _infoItemObjectProviderServiceRegistration;
-	private final TestEntry _testEntry = TestEntry.INSTANCE;
 
 }
