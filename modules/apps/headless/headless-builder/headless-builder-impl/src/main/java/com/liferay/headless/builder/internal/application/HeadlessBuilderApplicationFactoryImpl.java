@@ -17,8 +17,8 @@ package com.liferay.headless.builder.internal.application;
 import com.liferay.headless.builder.application.HeadlessBuilderApplication;
 import com.liferay.headless.builder.application.HeadlessBuilderApplicationFactory;
 import com.liferay.headless.builder.internal.constants.HeadlessBuilderConstants;
-import com.liferay.headless.builder.internal.objects.ObjectProperty;
-import com.liferay.headless.builder.internal.objects.ObjectsIntegrationImpl;
+import com.liferay.headless.builder.internal.contracts.PropertyInfo;
+import com.liferay.headless.builder.internal.contracts.SourceInformationBridge;
 import com.liferay.headless.builder.internal.operation.Operation;
 import com.liferay.headless.builder.internal.operation.OperationRegistry;
 import com.liferay.headless.builder.internal.operation.handler.OperationHandler;
@@ -133,7 +133,7 @@ public class HeadlessBuilderApplicationFactoryImpl
 				pathConfiguration
 			);
 
-			Map<String, ObjectProperty> successfulObjectProperties = null;
+			Map<String, PropertyInfo> successfulObjectProperties = null;
 
 			Map<ResponseCode, com.liferay.portal.vulcan.yaml.openapi.Response>
 				responses = operation.getResponses();
@@ -163,8 +163,8 @@ public class HeadlessBuilderApplicationFactoryImpl
 					SchemaDefinition schemaDefinition =
 						schema.getSchemaDefinition();
 
-					Map<String, ObjectProperty> propertyObjectInformation =
-						_objectsIntegration.getObjectProperties(
+					Map<String, PropertyInfo> propertyObjectInformation =
+						_sourceInformationBridge.getPropertiesInfo(
 							schemaDefinition.getEntityName(),
 							schema.getPropertySchemas());
 
@@ -231,7 +231,7 @@ public class HeadlessBuilderApplicationFactoryImpl
 	}
 
 	@Reference
-	private ObjectsIntegrationImpl _objectsIntegration;
+	private SourceInformationBridge _sourceInformationBridge;
 
 	@Reference
 	private OperationRegistry _operationRegistry;

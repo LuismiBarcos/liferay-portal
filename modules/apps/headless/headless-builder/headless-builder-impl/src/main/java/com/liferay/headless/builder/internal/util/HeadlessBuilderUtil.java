@@ -14,10 +14,9 @@
 
 package com.liferay.headless.builder.internal.util;
 
-import com.liferay.headless.builder.internal.objects.ObjectProperty;
-import com.liferay.headless.builder.internal.objects.ObjectsIntegrationImpl;
+import com.liferay.headless.builder.internal.contracts.PropertyInfo;
+import com.liferay.headless.builder.internal.contracts.SourceInformationBridge;
 import com.liferay.headless.builder.internal.operation.Operation;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.GetterUtil;
 
 import java.util.HashMap;
@@ -28,16 +27,16 @@ import java.util.Map;
  */
 public class HeadlessBuilderUtil {
 
-	public static Map<String, Object> getEntity(Map<String, String> pathParameters, Operation.Response response, ObjectsIntegrationImpl objectsIntegration)
-		throws PortalException {
+	public static Map<String, Object> getEntity(Map<String, String> pathParameters, Operation.Response response, SourceInformationBridge _sourceInformationBridge)
+		throws Exception {
 		Map<String, Object> entity = new HashMap<>();
 
-		Map<String, ObjectProperty> objectProperty =
-			response.getObjectProperty();
+		Map<String, PropertyInfo> objectProperty =
+			response.getObjectPropertiesInfo();
 
-		for (Map.Entry<String, ObjectProperty> objectPropertyEntry : objectProperty.entrySet()) {
+		for (Map.Entry<String, PropertyInfo> objectPropertyEntry : objectProperty.entrySet()) {
 			entity.put(objectPropertyEntry.getKey(),
-				objectsIntegration.getValue(
+				_sourceInformationBridge.getValue(
 					objectPropertyEntry.getValue(),
 					GetterUtil.getLong(pathParameters.get("id"))));
 		}

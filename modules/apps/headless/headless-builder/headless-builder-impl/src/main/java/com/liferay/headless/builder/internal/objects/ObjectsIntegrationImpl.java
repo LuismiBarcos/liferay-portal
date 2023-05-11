@@ -1,6 +1,8 @@
 package com.liferay.headless.builder.internal.objects;
 
 import com.liferay.headless.builder.internal.constants.HeadlessBuilderConstants;
+import com.liferay.headless.builder.internal.contracts.PropertyInfo;
+import com.liferay.headless.builder.internal.contracts.SourceInformationBridge;
 import com.liferay.headless.builder.internal.operation.handler.OperationHandler;
 import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.service.ObjectEntryLocalService;
@@ -21,8 +23,8 @@ import java.util.Map;
 /**
  * @author Luis Miguel Barcos
  */
-@Component(service = ObjectsIntegrationImpl.class)
-public class ObjectsIntegrationImpl {
+@Component(service = SourceInformationBridge.class)
+public class ObjectsIntegrationImpl implements SourceInformationBridge {
 
 	@Activate
 	protected void activate(BundleContext bundleContext) {
@@ -34,6 +36,37 @@ public class ObjectsIntegrationImpl {
 	@Deactivate
 	protected void deactivate() {
 		_serviceTrackerMap.close();
+	}
+
+	@Override
+	public Map<String, PropertyInfo> getPropertiesInfo(
+		String entityName, Map<String, Schema> propertySchemas) {
+
+		Map<String, PropertyInfo> stringObjectPropertyMap = new HashMap<>();
+		for (Map.Entry<String, Schema> schemaEntry : propertySchemas.entrySet()) {
+			String objectFieldName = schemaEntry.getValue().getFieldDefinition().getName();
+
+			stringObjectPropertyMap.put(
+				schemaEntry.getKey(),
+				new PropertyInfo(schemaEntry.getKey(), objectFieldName));
+		}
+
+		return stringObjectPropertyMap;
+	}
+
+	@Override
+	public Serializable getValue(
+		PropertyInfo propertyInfo, Object pathParameterValue)
+		throws PortalException {
+
+		ObjectEntry objectEntry = null;
+
+		if(pathParameterValue instanceof Long) {
+			objectEntry = _objectEntryLocalService.getObjectEntry(
+				(Long) pathParameterValue);
+		}
+
+		return getFieldValue(objectEntry, propertyInfo.getInternalName());
 	}
 
 	public Map<String, ObjectProperty> getObjectProperties(String entityName, Map<String, Schema> propertySchemas) {

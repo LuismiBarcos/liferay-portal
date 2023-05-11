@@ -14,7 +14,7 @@
 
 package com.liferay.headless.builder.internal.operation;
 
-import com.liferay.headless.builder.internal.objects.ObjectProperty;
+import com.liferay.headless.builder.internal.contracts.PropertyInfo;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -172,15 +172,15 @@ public interface Operation {
 	public class Response {
 
 		public Response(
-			Map<String, ObjectProperty> objectPropertyMap) {
-			_objectProperty = objectPropertyMap;
+			Map<String, PropertyInfo> propertyInfoMap) {
+			_objectPropertiesInfo = propertyInfoMap;
 		}
 
-		public Map<String, ObjectProperty> getObjectProperty() {
-			return _objectProperty;
+		public Map<String, PropertyInfo> getObjectPropertiesInfo() {
+			return _objectPropertiesInfo;
 		}
 
-		private final Map<String, ObjectProperty> _objectProperty;
+		private final Map<String, PropertyInfo> _objectPropertiesInfo;
 
 	}
 

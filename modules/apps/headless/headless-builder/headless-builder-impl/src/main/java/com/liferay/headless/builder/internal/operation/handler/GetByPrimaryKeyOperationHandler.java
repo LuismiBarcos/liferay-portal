@@ -15,7 +15,7 @@
 package com.liferay.headless.builder.internal.operation.handler;
 
 import com.liferay.headless.builder.internal.constants.HeadlessBuilderConstants;
-import com.liferay.headless.builder.internal.objects.ObjectsIntegrationImpl;
+import com.liferay.headless.builder.internal.contracts.SourceInformationBridge;
 import com.liferay.headless.builder.internal.operation.Operation;
 import com.liferay.headless.builder.internal.util.HeadlessBuilderUtil;
 import com.liferay.headless.builder.internal.util.URLUtil;
@@ -54,11 +54,11 @@ public class GetByPrimaryKeyOperationHandler implements OperationHandler {
 			Response.Status.OK
 		).entity(
 			HeadlessBuilderUtil.getEntity(pathParameters,
-				response, _objectsIntegration)
+				response, _sourceInformationBridge)
 		).build();
 
 	}
 
 	@Reference
-	private ObjectsIntegrationImpl _objectsIntegration;
+	private SourceInformationBridge _sourceInformationBridge;
 }
