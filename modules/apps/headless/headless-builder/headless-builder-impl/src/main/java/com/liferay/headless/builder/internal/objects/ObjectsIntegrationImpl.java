@@ -69,30 +69,6 @@ public class ObjectsIntegrationImpl implements SourceInformationBridge {
 		return getFieldValue(objectEntry, propertyInfo.getInternalName());
 	}
 
-	public Map<String, ObjectProperty> getObjectProperties(String entityName, Map<String, Schema> propertySchemas) {
-		int objectDefinitionId = Integer.parseInt(entityName.split("#")[1]);
-
-		Map<String, ObjectProperty> stringObjectPropertyMap = new HashMap<>();
-		for (Map.Entry<String, Schema> schemaEntry : propertySchemas.entrySet()) {
-			String objectFieldName = schemaEntry.getValue().getFieldDefinition().getName();
-
-			stringObjectPropertyMap.put(
-				schemaEntry.getKey(),
-				new ObjectProperty(objectFieldName));
-		}
-
-		return stringObjectPropertyMap;
-	}
-
-	public Serializable getValue(ObjectProperty objectProperty, long objectEntryId)
-		throws PortalException {
-
-		ObjectEntry objectEntry =
-			_objectEntryLocalService.getObjectEntry(objectEntryId);
-
-		return getFieldValue(objectEntry, objectProperty.getObjectFieldName());
-	}
-
 	private Serializable getFieldValue(ObjectEntry objectEntry, String name) {
 		Serializable systemField = getSystemFields(objectEntry, name);
 		if (systemField == null) {
