@@ -25,6 +25,7 @@ import org.osgi.service.component.annotations.Reference;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.util.Map;
 
 /**
@@ -38,7 +39,8 @@ public class GetByPrimaryKeyOperationHandler implements OperationHandler {
 
 	@Override
 	public Response handle(
-			HttpServletRequest httpServletRequest, Operation operation)
+		HttpServletRequest httpServletRequest, Operation operation,
+		UriInfo uriInfo)
 		throws Exception {
 
 		Operation.Response response = operation.getResponse(
@@ -54,7 +56,7 @@ public class GetByPrimaryKeyOperationHandler implements OperationHandler {
 			Response.Status.OK
 		).entity(
 			HeadlessBuilderUtil.getEntity(pathParameters,
-				response, _sourceInformationBridge)
+				response, _sourceInformationBridge, httpServletRequest, uriInfo)
 		).build();
 
 	}

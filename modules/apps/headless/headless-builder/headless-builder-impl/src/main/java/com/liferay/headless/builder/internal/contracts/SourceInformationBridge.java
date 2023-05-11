@@ -2,7 +2,8 @@ package com.liferay.headless.builder.internal.contracts;
 
 import com.liferay.portal.vulcan.yaml.openapi.Schema;
 
-import java.io.Serializable;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.UriInfo;
 import java.util.Map;
 
 /**
@@ -12,5 +13,7 @@ public interface SourceInformationBridge {
 
 	public Map<String, PropertyInfo> getPropertiesInfo(String entityName, Map<String, Schema> propertySchemas);
 
-	public Serializable getValue(PropertyInfo propertyInfo, Object pathParameterValue) throws Exception;
+	public Object getValue(PropertyInfo propertyInfo, Object pathParameterValue,
+						   HttpServletRequest httpServletRequest,
+						   UriInfo uriInfo) throws Exception;
 }

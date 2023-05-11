@@ -7,10 +7,12 @@ public class PropertyInfo {
 
 	private final String name;
 	private final String internalName;
+	private final String internalClass;
 
-	public PropertyInfo(String name, String internalName) {
+	public PropertyInfo(String name, String internalName, String internalClass) {
 		this.name = name;
 		this.internalName = internalName;
+		this.internalClass = internalClass;
 	}
 
 	public String getName() {
@@ -19,5 +21,9 @@ public class PropertyInfo {
 
 	public String getInternalName() {
 		return internalName;
+	}
+
+	public String getInternalClass() {
+		return internalClass;
 	}
 }

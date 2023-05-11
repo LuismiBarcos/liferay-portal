@@ -18,7 +18,7 @@ components:
                     x-field-definition:
                         name: universityName
             x-schema-definition:
-                entityName: "com.liferay.object.model.ObjectDefinition#44103"
+                entityName: "com.liferay.object.model.ObjectDefinition#44265"
 info:
     license:
         name: "Apache 2.0"

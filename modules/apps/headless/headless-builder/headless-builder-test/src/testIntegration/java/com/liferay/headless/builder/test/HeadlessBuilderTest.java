@@ -38,7 +38,6 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.osgi.framework.ServiceRegistration;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.io.FileNotFoundException;
@@ -70,7 +69,7 @@ public class HeadlessBuilderTest {
 			() -> {
 				JSONObject jsonObject = _invoke(
 					"headless-builder/v1.0/universities/" +
-					44237,
+					44399,
 					Http.Method.GET);
 
 				Assert.assertNotNull(jsonObject.get("date"));
@@ -88,7 +87,7 @@ public class HeadlessBuilderTest {
 			() -> {
 				JSONObject jsonObject = _invoke(
 					"headless-builder/v1.0/universities/" +
-					44237,
+					44399,
 					Http.Method.GET);
 
 				JSONAssert.assertEquals(
@@ -106,7 +105,7 @@ public class HeadlessBuilderTest {
 		throws Exception {
 
 		HttpURLConnection httpURLConnection = _createHttpURLConnection(
-			"headless-builder/v1.0/universities/" + 44237,
+			"headless-builder/v1.0/universities/" + 44399,
 			Http.Method.GET);
 
 		httpURLConnection.connect();

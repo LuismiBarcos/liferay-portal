@@ -80,7 +80,8 @@ public class HeadlessBuilderResource extends BaseHeadlessBuilderResource {
 		OperationHandler operationHandler = _serviceTrackerMap.getService(
 			operation.getOperationType());
 
-		return operationHandler.handle(contextHttpServletRequest, operation);
+		return operationHandler.handle(contextHttpServletRequest, operation,
+			_contextUriInfo);
 	}
 
 	@Activate

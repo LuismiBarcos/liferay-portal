@@ -19,6 +19,8 @@ import com.liferay.headless.builder.internal.contracts.SourceInformationBridge;
 import com.liferay.headless.builder.internal.operation.Operation;
 import com.liferay.portal.kernel.util.GetterUtil;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.UriInfo;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,7 +29,10 @@ import java.util.Map;
  */
 public class HeadlessBuilderUtil {
 
-	public static Map<String, Object> getEntity(Map<String, String> pathParameters, Operation.Response response, SourceInformationBridge _sourceInformationBridge)
+	public static Map<String, Object> getEntity(
+		Map<String, String> pathParameters, Operation.Response response,
+		SourceInformationBridge _sourceInformationBridge,
+		HttpServletRequest httpServletRequest, UriInfo uriInfo)
 		throws Exception {
 		Map<String, Object> entity = new HashMap<>();
 
@@ -38,7 +43,7 @@ public class HeadlessBuilderUtil {
 			entity.put(objectPropertyEntry.getKey(),
 				_sourceInformationBridge.getValue(
 					objectPropertyEntry.getValue(),
-					GetterUtil.getLong(pathParameters.get("id"))));
+					GetterUtil.getLong(pathParameters.get("id")), httpServletRequest, uriInfo));
 		}
 
 		return entity;
