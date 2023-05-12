@@ -21,15 +21,21 @@ import com.liferay.headless.builder.test.info.item.provider.TestEntryInfoItemFie
 import com.liferay.headless.builder.test.info.item.provider.TestEntryInfoItemFormProvider;
 import com.liferay.headless.builder.test.info.item.provider.TestEntryInfoItemObjectProvider;
 import com.liferay.headless.builder.test.model.TestEntry;
+import com.liferay.headless.builder.test.util.HeadlessBuilderTestUtil;
 import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
 import com.liferay.info.item.provider.InfoItemFormProvider;
 import com.liferay.info.item.provider.InfoItemObjectProvider;
+import com.liferay.object.constants.ObjectDefinitionConstants;
+import com.liferay.object.field.util.ObjectFieldUtil;
+import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.petra.function.UnsafeRunnable;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.ContentTypes;
@@ -51,6 +57,7 @@ import java.nio.charset.StandardCharsets;
 
 import java.text.SimpleDateFormat;
 
+import java.util.Collections;
 import java.util.Date;
 
 import org.junit.After;
@@ -80,7 +87,7 @@ public class HeadlessBuilderTest {
 		new LiferayIntegrationTestRule();
 
 	@Before
-	public void setUp() {
+	public void setUp() throws Exception {
 		Bundle bundle = FrameworkUtil.getBundle(HeadlessBuilderTest.class);
 
 		BundleContext bundleContext = bundle.getBundleContext();
@@ -97,13 +104,25 @@ public class HeadlessBuilderTest {
 			bundleContext.registerService(
 				InfoItemObjectProvider.class,
 				new TestEntryInfoItemObjectProvider(), null);
+
+		_objectDefinition = HeadlessBuilderTestUtil.publishObjectDefinition(
+			Collections.singletonList(
+				ObjectFieldUtil.createObjectField(
+					"Text", "String", true, true, null,
+					RandomTestUtil.randomString(), _OBJECT_FIELD_NAME_1,
+					false)),
+			ObjectDefinitionConstants.SCOPE_COMPANY,
+			TestPropsValues.getUserId());
 	}
 
 	@After
-	public void tearDown() {
+	public void tearDown() throws Exception {
 		_infoItemFieldValuesProviderServiceRegistration.unregister();
 		_infoItemFormProviderServiceRegistration.unregister();
 		_infoItemObjectProviderServiceRegistration.unregister();
+
+		_objectDefinitionLocalService.deleteObjectDefinition(
+			_objectDefinition.getObjectDefinitionId());
 	}
 
 	@FeatureFlags("LPS-171047")
@@ -255,6 +274,9 @@ public class HeadlessBuilderTest {
 		}
 	}
 
+	private static final String _OBJECT_FIELD_NAME_1 =
+		"x" + RandomTestUtil.randomString();
+
 	@Inject
 	private HeadlessBuilderApplicationFactory
 		_headlessBuilderApplicationFactory;
@@ -263,6 +285,11 @@ public class HeadlessBuilderTest {
 		_infoItemFieldValuesProviderServiceRegistration;
 	private ServiceRegistration<?> _infoItemFormProviderServiceRegistration;
 	private ServiceRegistration<?> _infoItemObjectProviderServiceRegistration;
+	private ObjectDefinition _objectDefinition;
+
+	@Inject
+	private ObjectDefinitionLocalService _objectDefinitionLocalService;
+
 	private final TestEntry _testEntry = TestEntry.INSTANCE;
 
 }
