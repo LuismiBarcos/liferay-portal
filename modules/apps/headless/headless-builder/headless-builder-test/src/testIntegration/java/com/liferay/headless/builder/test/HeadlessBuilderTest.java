@@ -28,6 +28,7 @@ import com.liferay.info.item.provider.InfoItemObjectProvider;
 import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.field.util.ObjectFieldUtil;
 import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.petra.function.UnsafeRunnable;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -48,10 +49,10 @@ import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.vulcan.yaml.YAMLUtil;
-import com.liferay.portal.vulcan.yaml.openapi.OpenAPIYAML;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.Serializable;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -113,39 +114,19 @@ public class HeadlessBuilderTest {
 			Collections.singletonList(
 				ObjectFieldUtil.createObjectField(
 					"Text", "String", true, true, null,
-					RandomTestUtil.randomString(), _OBJECT_FIELD_NAME_1,
-					false)),
+					RandomTestUtil.randomString(), _OBJECT_FIELD_NAME, false)),
 			ObjectDefinitionConstants.SCOPE_COMPANY,
 			TestPropsValues.getUserId());
 
-		InputStream inputStream = getClass().getResourceAsStream(
-			"/rest-openapi.yaml");
-
-		Scanner scanner = new Scanner(inputStream);
-
-		while (scanner.hasNextLine()) {
-			_finalOpenAPI = StringBundler.concat(
-				_finalOpenAPI, scanner.nextLine(), "\n");
-		}
-
-		_finalOpenAPI = HeadlessBuilderTestUtil.parseOpenAPIYaml(
-			_finalOpenAPI,
-			HashMapBuilder.put(
-				HeadlessBuilderTestUtil.ParserConstants.OBJECT_DEFINITION_ID,
-				String.valueOf(_objectDefinition.getObjectDefinitionId())
-			).put(
-				HeadlessBuilderTestUtil.ParserConstants.OBJECT_DEFINITION_NAME,
-				_objectDefinition.getShortName()
-			).put(
-				HeadlessBuilderTestUtil.ParserConstants.
-					OBJECT_DEFINITION_PLURAL_NAME,
-				_objectDefinition.getPluralLabel(
-					LocaleUtil.fromLanguageId(
-						_objectDefinition.getDefaultLanguageId()))
-			).put(
-				HeadlessBuilderTestUtil.ParserConstants.OBJECT_FIELD_NAME,
-				_OBJECT_FIELD_NAME_1
+		_objectEntry = HeadlessBuilderTestUtil.addObjectEntry(
+			_objectDefinition,
+			HashMapBuilder.<String, Serializable>put(
+				_OBJECT_FIELD_NAME, _OBJECT_FIELD_VALUE
 			).build());
+
+		if (_finalOpenAPI.isEmpty()) {
+			_finalOpenAPI = _parseOpenAPI("/rest-openapi.yaml");
+		}
 	}
 
 	@After
@@ -165,15 +146,19 @@ public class HeadlessBuilderTest {
 			TestPropsValues.getCompanyId(),
 			() -> {
 				JSONObject jsonObject = _invoke(
-					"headless-builder/v1.0/test-entries/" +
-						_testEntry.getTestEntryId(),
+					String.format(
+						"headless-builder/v1.0/%s/%d",
+						_objectDefinition.getPluralLabel(
+							LocaleUtil.fromLanguageId(
+								_objectDefinition.getDefaultLanguageId())),
+						_objectEntry.getObjectEntryId()),
 					Http.Method.GET);
 
 				JSONAssert.assertEquals(
 					JSONUtil.put(
-						"date", _formatDate(_testEntry.getDateField())
+						"date", _formatDate(_objectEntry.getCreateDate())
 					).put(
-						"number", (int)_testEntry.getLongField()
+						"objectField", _OBJECT_FIELD_VALUE
 					).toString(),
 					jsonObject.toString(), true);
 			});
@@ -188,8 +173,12 @@ public class HeadlessBuilderTest {
 			0,
 			() -> {
 				JSONObject jsonObject = _invoke(
-					"headless-builder/v1.0/test-entries/" +
-						_testEntry.getTestEntryId(),
+					String.format(
+						"headless-builder/v1.0/%s/%d",
+						_objectDefinition.getPluralLabel(
+							LocaleUtil.fromLanguageId(
+								_objectDefinition.getDefaultLanguageId())),
+						_objectEntry.getObjectEntryId()),
 					Http.Method.GET);
 
 				JSONAssert.assertEquals(
@@ -207,7 +196,12 @@ public class HeadlessBuilderTest {
 		throws Exception {
 
 		HttpURLConnection httpURLConnection = _createHttpURLConnection(
-			"headless-builder/v1.0/test-entries/" + _testEntry.getTestEntryId(),
+			String.format(
+				"headless-builder/v1.0/%s/%d",
+				_objectDefinition.getPluralLabel(
+					LocaleUtil.fromLanguageId(
+						_objectDefinition.getDefaultLanguageId())),
+				_objectEntry.getObjectEntryId()),
 			Http.Method.GET);
 
 		httpURLConnection.connect();
@@ -219,7 +213,13 @@ public class HeadlessBuilderTest {
 	@Test
 	public void testMissingHeadlessBuilderApplication() throws Exception {
 		JSONObject jsonObject = _invoke(
-			"headless-builder/v1.0/test-entries/1234", Http.Method.GET);
+			String.format(
+				"headless-builder/v1.0/%s/%d",
+				_objectDefinition.getPluralLabel(
+					LocaleUtil.fromLanguageId(
+						_objectDefinition.getDefaultLanguageId())),
+				_objectEntry.getObjectEntryId()),
+			Http.Method.GET);
 
 		JSONAssert.assertEquals(
 			JSONUtil.put(
@@ -280,12 +280,34 @@ public class HeadlessBuilderTest {
 		}
 	}
 
-	private OpenAPIYAML _readOpenAPIYAML(String yamlFile) throws Exception {
-		try (InputStream inputStream = getClass().getResourceAsStream(
-				yamlFile)) {
+	private String _parseOpenAPI(String openAPIFile) {
+		InputStream inputStream = getClass().getResourceAsStream(openAPIFile);
 
-			return YAMLUtil.loadOpenAPIYAML(StringUtil.read(inputStream));
+		Scanner scanner = new Scanner(inputStream);
+
+		while (scanner.hasNextLine()) {
+			_finalOpenAPI = StringBundler.concat(
+				_finalOpenAPI, scanner.nextLine(), "\n");
 		}
+
+		return HeadlessBuilderTestUtil.parseOpenAPIYaml(
+			_finalOpenAPI,
+			HashMapBuilder.put(
+				HeadlessBuilderTestUtil.ParserConstants.OBJECT_DEFINITION_ID,
+				String.valueOf(_objectDefinition.getObjectDefinitionId())
+			).put(
+				HeadlessBuilderTestUtil.ParserConstants.OBJECT_DEFINITION_NAME,
+				_objectDefinition.getShortName()
+			).put(
+				HeadlessBuilderTestUtil.ParserConstants.
+					OBJECT_DEFINITION_PLURAL_NAME,
+				_objectDefinition.getPluralLabel(
+					LocaleUtil.fromLanguageId(
+						_objectDefinition.getDefaultLanguageId()))
+			).put(
+				HeadlessBuilderTestUtil.ParserConstants.OBJECT_FIELD_NAME,
+				_OBJECT_FIELD_NAME
+			).build());
 	}
 
 	private void _withHeadlessBuilderApplication(
@@ -294,7 +316,7 @@ public class HeadlessBuilderTest {
 
 		HeadlessBuilderApplication headlessBuilderApplication =
 			_headlessBuilderApplicationFactory.getHeadlessBuilderApplication(
-				companyId, _readOpenAPIYAML("/rest-openapi.yaml"));
+				companyId, YAMLUtil.loadOpenAPIYAML(_finalOpenAPI));
 
 		HeadlessBuilderApplication.Handle handle =
 			headlessBuilderApplication.deploy();
@@ -307,8 +329,11 @@ public class HeadlessBuilderTest {
 		}
 	}
 
-	private static final String _OBJECT_FIELD_NAME_1 =
+	private static final String _OBJECT_FIELD_NAME =
 		"x" + RandomTestUtil.randomString();
+
+	private static final String _OBJECT_FIELD_VALUE =
+		RandomTestUtil.randomString();
 
 	private static String _finalOpenAPI = "";
 	private static ObjectDefinition _objectDefinition;
@@ -325,6 +350,7 @@ public class HeadlessBuilderTest {
 	@Inject
 	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
+	private ObjectEntry _objectEntry;
 	private final TestEntry _testEntry = TestEntry.INSTANCE;
 
 }
