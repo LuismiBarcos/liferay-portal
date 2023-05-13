@@ -64,7 +64,7 @@ public class ObjectSourcerImpl implements Sourcer {
 			stringObjectPropertyMap.put(
 				schemaEntry.getKey(),
 				new PropertyInfo(
-					schemaEntry.getKey(), objectFieldName, entityName));
+					entityName, objectFieldName, schemaEntry.getKey()));
 		}
 
 		return stringObjectPropertyMap;

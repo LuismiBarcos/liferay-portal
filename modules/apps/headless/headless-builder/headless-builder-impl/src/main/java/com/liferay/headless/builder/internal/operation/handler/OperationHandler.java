@@ -19,6 +19,7 @@ import com.liferay.headless.builder.internal.operation.Operation;
 import javax.servlet.http.HttpServletRequest;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 /**
  * @author Carlos Correa
@@ -26,7 +27,8 @@ import javax.ws.rs.core.Response;
 public interface OperationHandler {
 
 	public Response handle(
-			HttpServletRequest httpServletRequest, Operation operation)
+			HttpServletRequest httpServletRequest, Operation operation,
+			UriInfo uriInfo)
 		throws Exception;
 
 }
