@@ -16,11 +16,17 @@ package com.liferay.headless.builder.test.util;
 
 import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.service.ObjectDefinitionLocalServiceUtil;
+import com.liferay.object.service.ObjectEntryLocalServiceUtil;
 import com.liferay.petra.string.StringUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
+
+import java.io.Serializable;
 
 import java.util.Iterator;
 import java.util.List;
@@ -31,6 +37,25 @@ import java.util.Set;
  * @author Luis Migue Barcos
  */
 public class HeadlessBuilderTestUtil {
+
+	public static ObjectEntry addObjectEntry(
+			ObjectDefinition objectDefinition, Map<String, Serializable> values)
+		throws Exception {
+
+		long groupId = 0;
+
+		if (com.liferay.portal.kernel.util.StringUtil.equals(
+				objectDefinition.getScope(),
+				ObjectDefinitionConstants.SCOPE_SITE)) {
+
+			groupId = TestPropsValues.getGroupId();
+		}
+
+		return ObjectEntryLocalServiceUtil.addObjectEntry(
+			TestPropsValues.getUserId(), groupId,
+			objectDefinition.getObjectDefinitionId(), values,
+			ServiceContextTestUtil.getServiceContext());
+	}
 
 	public static String parseOpenAPIYaml(
 		String openAPIYaml, Map<ParserConstants, String> replacements) {
