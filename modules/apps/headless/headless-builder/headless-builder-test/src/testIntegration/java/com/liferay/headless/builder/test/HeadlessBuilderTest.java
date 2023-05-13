@@ -39,7 +39,10 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.ContentTypes;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Http;
+import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
@@ -59,6 +62,7 @@ import java.text.SimpleDateFormat;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.Scanner;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -113,6 +117,35 @@ public class HeadlessBuilderTest {
 					false)),
 			ObjectDefinitionConstants.SCOPE_COMPANY,
 			TestPropsValues.getUserId());
+
+		InputStream inputStream = getClass().getResourceAsStream(
+			"/rest-openapi.yaml");
+
+		Scanner scanner = new Scanner(inputStream);
+
+		while (scanner.hasNextLine()) {
+			_finalOpenAPI = StringBundler.concat(
+				_finalOpenAPI, scanner.nextLine(), "\n");
+		}
+
+		_finalOpenAPI = HeadlessBuilderTestUtil.parseOpenAPIYaml(
+			_finalOpenAPI,
+			HashMapBuilder.put(
+				HeadlessBuilderTestUtil.ParserConstants.OBJECT_DEFINITION_ID,
+				String.valueOf(_objectDefinition.getObjectDefinitionId())
+			).put(
+				HeadlessBuilderTestUtil.ParserConstants.OBJECT_DEFINITION_NAME,
+				_objectDefinition.getShortName()
+			).put(
+				HeadlessBuilderTestUtil.ParserConstants.
+					OBJECT_DEFINITION_PLURAL_NAME,
+				_objectDefinition.getPluralLabel(
+					LocaleUtil.fromLanguageId(
+						_objectDefinition.getDefaultLanguageId()))
+			).put(
+				HeadlessBuilderTestUtil.ParserConstants.OBJECT_FIELD_NAME,
+				_OBJECT_FIELD_NAME_1
+			).build());
 	}
 
 	@After
@@ -277,6 +310,9 @@ public class HeadlessBuilderTest {
 	private static final String _OBJECT_FIELD_NAME_1 =
 		"x" + RandomTestUtil.randomString();
 
+	private static String _finalOpenAPI = "";
+	private static ObjectDefinition _objectDefinition;
+
 	@Inject
 	private HeadlessBuilderApplicationFactory
 		_headlessBuilderApplicationFactory;
@@ -285,7 +321,6 @@ public class HeadlessBuilderTest {
 		_infoItemFieldValuesProviderServiceRegistration;
 	private ServiceRegistration<?> _infoItemFormProviderServiceRegistration;
 	private ServiceRegistration<?> _infoItemObjectProviderServiceRegistration;
-	private ObjectDefinition _objectDefinition;
 
 	@Inject
 	private ObjectDefinitionLocalService _objectDefinitionLocalService;

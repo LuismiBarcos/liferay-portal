@@ -18,15 +18,31 @@ import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.service.ObjectDefinitionLocalServiceUtil;
+import com.liferay.petra.string.StringUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Luis Migue Barcos
  */
 public class HeadlessBuilderTestUtil {
+
+	public static String parseOpenAPIYaml(
+		String openAPIYaml, Map<ParserConstants, String> replacements) {
+
+		Set<Map.Entry<ParserConstants, String>> entries =
+			replacements.entrySet();
+
+		Iterator<Map.Entry<ParserConstants, String>> iterator =
+			entries.iterator();
+
+		return _replace(iterator, iterator.next(), openAPIYaml);
+	}
 
 	public static ObjectDefinition publishObjectDefinition(
 			List<ObjectField> objectFields, String scope, long userId)
@@ -43,6 +59,40 @@ public class HeadlessBuilderTestUtil {
 
 		return ObjectDefinitionLocalServiceUtil.publishCustomObjectDefinition(
 			userId, objectDefinition.getObjectDefinitionId());
+	}
+
+	public enum ParserConstants {
+
+		OBJECT_DEFINITION_ID("!#objectDefinitionId#!"),
+		OBJECT_DEFINITION_NAME("!#objectDefinitionName#!"),
+		OBJECT_DEFINITION_PLURAL_NAME("!#objectDefinitionPluralName#!"),
+		OBJECT_FIELD_NAME("!#objectFieldName#!");
+
+		public String getText() {
+			return _text;
+		}
+
+		private ParserConstants(String text) {
+			_text = text;
+		}
+
+		private final String _text;
+
+	}
+
+	private static String _replace(
+		Iterator<Map.Entry<ParserConstants, String>> iterator,
+		Map.Entry<ParserConstants, String> entry, String text) {
+
+		ParserConstants key = entry.getKey();
+
+		if (iterator.hasNext()) {
+			return _replace(
+				iterator, iterator.next(),
+				StringUtil.replace(text, key.getText(), entry.getValue()));
+		}
+
+		return StringUtil.replace(text, key.getText(), entry.getValue());
 	}
 
 }
