@@ -17,14 +17,7 @@ package com.liferay.headless.builder.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.headless.builder.application.HeadlessBuilderApplication;
 import com.liferay.headless.builder.application.HeadlessBuilderApplicationFactory;
-import com.liferay.headless.builder.test.info.item.provider.TestEntryInfoItemFieldValuesProvider;
-import com.liferay.headless.builder.test.info.item.provider.TestEntryInfoItemFormProvider;
-import com.liferay.headless.builder.test.info.item.provider.TestEntryInfoItemObjectProvider;
-import com.liferay.headless.builder.test.model.TestEntry;
 import com.liferay.headless.builder.test.util.HeadlessBuilderTestUtil;
-import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
-import com.liferay.info.item.provider.InfoItemFormProvider;
-import com.liferay.info.item.provider.InfoItemObjectProvider;
 import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.field.util.ObjectFieldUtil;
 import com.liferay.object.model.ObjectDefinition;
@@ -73,11 +66,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.ServiceRegistration;
-
 import org.skyscreamer.jsonassert.JSONAssert;
 
 /**
@@ -93,23 +81,6 @@ public class HeadlessBuilderTest {
 
 	@Before
 	public void setUp() throws Exception {
-		Bundle bundle = FrameworkUtil.getBundle(HeadlessBuilderTest.class);
-
-		BundleContext bundleContext = bundle.getBundleContext();
-
-		_infoItemFieldValuesProviderServiceRegistration =
-			bundleContext.registerService(
-				InfoItemFieldValuesProvider.class,
-				new TestEntryInfoItemFieldValuesProvider(), null);
-		_infoItemFormProviderServiceRegistration =
-			bundleContext.registerService(
-				InfoItemFormProvider.class, new TestEntryInfoItemFormProvider(),
-				null);
-		_infoItemObjectProviderServiceRegistration =
-			bundleContext.registerService(
-				InfoItemObjectProvider.class,
-				new TestEntryInfoItemObjectProvider(), null);
-
 		_objectDefinition = HeadlessBuilderTestUtil.publishObjectDefinition(
 			Collections.singletonList(
 				ObjectFieldUtil.createObjectField(
@@ -131,10 +102,6 @@ public class HeadlessBuilderTest {
 
 	@After
 	public void tearDown() throws Exception {
-		_infoItemFieldValuesProviderServiceRegistration.unregister();
-		_infoItemFormProviderServiceRegistration.unregister();
-		_infoItemObjectProviderServiceRegistration.unregister();
-
 		_objectDefinitionLocalService.deleteObjectDefinition(
 			_objectDefinition.getObjectDefinitionId());
 	}
@@ -342,15 +309,9 @@ public class HeadlessBuilderTest {
 	private HeadlessBuilderApplicationFactory
 		_headlessBuilderApplicationFactory;
 
-	private ServiceRegistration<?>
-		_infoItemFieldValuesProviderServiceRegistration;
-	private ServiceRegistration<?> _infoItemFormProviderServiceRegistration;
-	private ServiceRegistration<?> _infoItemObjectProviderServiceRegistration;
-
 	@Inject
 	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 	private ObjectEntry _objectEntry;
-	private final TestEntry _testEntry = TestEntry.INSTANCE;
 
 }
