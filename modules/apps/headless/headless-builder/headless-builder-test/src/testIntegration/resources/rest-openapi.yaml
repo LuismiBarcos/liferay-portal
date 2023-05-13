@@ -1,24 +1,23 @@
 components:
     schemas:
-        TestEntry:
+        !#objectDefinitionName#!:
             properties:
                 date:
                     description:
-                        The test entry date.
+                        The object date.
                     format: date-time
                     readOnly: true
                     type: string
                     x-field-definition:
-                        name: dateField
-                number:
+                        name: createDate
+                objectField:
                     description:
-                        The test entry number.
-                    format: int64
-                    type: integer
+                        The object custom field.
+                    type: string
                     x-field-definition:
-                        name: numberField
+                        name: !#objectFieldName#!
             x-schema-definition:
-                entityName: "com.liferay.headless.builder.test.model.TestEntry"
+                entityName: "com.liferay.object.model.ObjectDefinition#!#objectDefinitionId#!"
 info:
     license:
         name: "Apache 2.0"
@@ -27,7 +26,7 @@ info:
     version: v1.0
 openapi: "3.0.1"
 paths:
-    "/test-entries/{id}":
+    "/!#objectDefinitionPluralName#!/{id}":
         get:
             operationId: getTestEntry
             parameters:
@@ -42,7 +41,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/TestEntry"
-            tags: ["TestEntry"]
+                                $ref: "#/components/schemas/!#objectDefinitionName#!"
+            tags: ["!#objectDefinitionName#!"]
             x-operation-definition:
                 type: "getByPrimaryKey"
