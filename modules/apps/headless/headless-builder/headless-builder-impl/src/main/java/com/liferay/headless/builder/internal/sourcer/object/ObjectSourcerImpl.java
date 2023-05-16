@@ -18,7 +18,8 @@ import com.liferay.headless.builder.internal.sourcer.api.PropertyInfo;
 import com.liferay.headless.builder.internal.sourcer.api.Sourcer;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
-import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
+import com.liferay.object.rest.manager.v1_0.DefaultObjectEntryManager;
+import com.liferay.object.rest.manager.v1_0.DefaultObjectEntryManagerProvider;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -91,12 +92,13 @@ public class ObjectSourcerImpl implements Sourcer {
 			_objectDefinitionLocalService.getObjectDefinition(
 				objectDefinitionId);
 
-		ObjectEntryManager objectEntryManager =
-			_objectEntryManagerRegistry.getObjectEntryManager(
-				objectDefinition.getStorageType());
+		DefaultObjectEntryManager defaultObjectEntryManager =
+			DefaultObjectEntryManagerProvider.provide(
+				_objectEntryManagerRegistry.getObjectEntryManager(
+					objectDefinition.getStorageType()));
 
 		return _getFieldValue(
-			objectEntryManager.getObjectEntry(
+			defaultObjectEntryManager.getObjectEntry(
 				_getDTOConverterContext(
 					objectEntryId, objectDefinition, uriInfo,
 					httpServletRequest),
