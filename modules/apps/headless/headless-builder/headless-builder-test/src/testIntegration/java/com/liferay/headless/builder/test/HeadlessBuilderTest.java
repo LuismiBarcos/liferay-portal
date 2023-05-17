@@ -37,7 +37,6 @@ import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
@@ -45,7 +44,6 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.vulcan.yaml.YAMLUtil;
 
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.io.Serializable;
 
 import java.net.HttpURLConnection;
@@ -57,7 +55,6 @@ import java.text.SimpleDateFormat;
 
 import java.util.Collections;
 import java.util.Date;
-import java.util.Scanner;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -97,7 +94,24 @@ public class HeadlessBuilderTest {
 			).build());
 
 		if (_finalOpenAPI.isEmpty()) {
-			_finalOpenAPI = _parseOpenAPI("/rest-openapi.yaml");
+			_finalOpenAPI = HeadlessBuilderTestUtil.parseOpenAPIYaml(
+				StringUtil.read(
+					getClass().getResourceAsStream("/rest-openapi.yaml")),
+				HashMapBuilder.put(
+					HeadlessBuilderTestConstants.OBJECT_DEFINITION_ID,
+					String.valueOf(_objectDefinition.getObjectDefinitionId())
+				).put(
+					HeadlessBuilderTestConstants.OBJECT_DEFINITION_NAME,
+					_objectDefinition.getShortName()
+				).put(
+					HeadlessBuilderTestConstants.OBJECT_DEFINITION_PLURAL_NAME,
+					_objectDefinition.getPluralLabel(
+						LocaleUtil.fromLanguageId(
+							_objectDefinition.getDefaultLanguageId()))
+				).put(
+					HeadlessBuilderTestConstants.OBJECT_FIELD_NAME,
+					_OBJECT_FIELD_NAME
+				).build());
 		}
 	}
 
@@ -246,35 +260,6 @@ public class HeadlessBuilderTest {
 			return JSONFactoryUtil.createJSONObject(
 				StringUtil.read(httpURLConnection.getErrorStream()));
 		}
-	}
-
-	private String _parseOpenAPI(String openAPIFile) {
-		InputStream inputStream = getClass().getResourceAsStream(openAPIFile);
-
-		Scanner scanner = new Scanner(inputStream);
-
-		while (scanner.hasNextLine()) {
-			_finalOpenAPI = StringBundler.concat(
-				_finalOpenAPI, scanner.nextLine(), "\n");
-		}
-
-		return HeadlessBuilderTestUtil.parseOpenAPIYaml(
-			_finalOpenAPI,
-			HashMapBuilder.put(
-				HeadlessBuilderTestConstants.OBJECT_DEFINITION_ID,
-				String.valueOf(_objectDefinition.getObjectDefinitionId())
-			).put(
-				HeadlessBuilderTestConstants.OBJECT_DEFINITION_NAME,
-				_objectDefinition.getShortName()
-			).put(
-				HeadlessBuilderTestConstants.OBJECT_DEFINITION_PLURAL_NAME,
-				_objectDefinition.getPluralLabel(
-					LocaleUtil.fromLanguageId(
-						_objectDefinition.getDefaultLanguageId()))
-			).put(
-				HeadlessBuilderTestConstants.OBJECT_FIELD_NAME,
-				_OBJECT_FIELD_NAME
-			).build());
 	}
 
 	private void _withHeadlessBuilderApplication(
