@@ -58,13 +58,11 @@ public class HeadlessBuilderTestUtil {
 	}
 
 	public static String parseOpenAPIYaml(
-		String openAPIYaml, Map<ParserConstants, String> replacements) {
+		String openAPIYaml, Map<String, String> replacements) {
 
-		Set<Map.Entry<ParserConstants, String>> entries =
-			replacements.entrySet();
+		Set<Map.Entry<String, String>> entries = replacements.entrySet();
 
-		Iterator<Map.Entry<ParserConstants, String>> iterator =
-			entries.iterator();
+		Iterator<Map.Entry<String, String>> iterator = entries.iterator();
 
 		return _replace(iterator, iterator.next(), openAPIYaml);
 	}
@@ -86,38 +84,19 @@ public class HeadlessBuilderTestUtil {
 			userId, objectDefinition.getObjectDefinitionId());
 	}
 
-	public enum ParserConstants {
-
-		OBJECT_DEFINITION_ID("!#objectDefinitionId#!"),
-		OBJECT_DEFINITION_NAME("!#objectDefinitionName#!"),
-		OBJECT_DEFINITION_PLURAL_NAME("!#objectDefinitionPluralName#!"),
-		OBJECT_FIELD_NAME("!#objectFieldName#!");
-
-		public String getText() {
-			return _text;
-		}
-
-		private ParserConstants(String text) {
-			_text = text;
-		}
-
-		private final String _text;
-
-	}
-
 	private static String _replace(
-		Iterator<Map.Entry<ParserConstants, String>> iterator,
-		Map.Entry<ParserConstants, String> entry, String text) {
+		Iterator<Map.Entry<String, String>> iterator,
+		Map.Entry<String, String> entry, String text) {
 
-		ParserConstants key = entry.getKey();
+		String key = entry.getKey();
 
 		if (iterator.hasNext()) {
 			return _replace(
 				iterator, iterator.next(),
-				StringUtil.replace(text, key.getText(), entry.getValue()));
+				StringUtil.replace(text, key, entry.getValue()));
 		}
 
-		return StringUtil.replace(text, key.getText(), entry.getValue());
+		return StringUtil.replace(text, key, entry.getValue());
 	}
 
 }

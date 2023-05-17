@@ -17,6 +17,7 @@ package com.liferay.headless.builder.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.headless.builder.application.HeadlessBuilderApplication;
 import com.liferay.headless.builder.application.HeadlessBuilderApplicationFactory;
+import com.liferay.headless.builder.test.util.HeadlessBuilderTestConstants;
 import com.liferay.headless.builder.test.util.HeadlessBuilderTestUtil;
 import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.field.util.ObjectFieldUtil;
@@ -260,19 +261,18 @@ public class HeadlessBuilderTest {
 		return HeadlessBuilderTestUtil.parseOpenAPIYaml(
 			_finalOpenAPI,
 			HashMapBuilder.put(
-				HeadlessBuilderTestUtil.ParserConstants.OBJECT_DEFINITION_ID,
+				HeadlessBuilderTestConstants.OBJECT_DEFINITION_ID,
 				String.valueOf(_objectDefinition.getObjectDefinitionId())
 			).put(
-				HeadlessBuilderTestUtil.ParserConstants.OBJECT_DEFINITION_NAME,
+				HeadlessBuilderTestConstants.OBJECT_DEFINITION_NAME,
 				_objectDefinition.getShortName()
 			).put(
-				HeadlessBuilderTestUtil.ParserConstants.
-					OBJECT_DEFINITION_PLURAL_NAME,
+				HeadlessBuilderTestConstants.OBJECT_DEFINITION_PLURAL_NAME,
 				_objectDefinition.getPluralLabel(
 					LocaleUtil.fromLanguageId(
 						_objectDefinition.getDefaultLanguageId()))
 			).put(
-				HeadlessBuilderTestUtil.ParserConstants.OBJECT_FIELD_NAME,
+				HeadlessBuilderTestConstants.OBJECT_FIELD_NAME,
 				_OBJECT_FIELD_NAME
 			).build());
 	}
