@@ -17,43 +17,43 @@
 		{
 			"active": true,
 			"enableCategorization": true,
-			"externalReferenceCode": "MSOD_SORT",
+			"externalReferenceCode": "MSOD_API_APPLICATION",
 			"label": {
-				"en_US": "Sort"
+				"en_US": "API Application"
 			},
 			"modifiable": false,
-			"name": "Sort",
+			"name": "APIApplication",
 			"objectFields": [
 				{
 					"DBType": "String",
 					"businessType": "Picklist",
-					"defaultValue": "ascending",
-					"externalReferenceCode": "ORDER",
+					"defaultValue": "draft",
+					"externalReferenceCode": "STATUS",
 					"indexed": true,
 					"indexedAsKeyword": false,
 					"label": {
-						"en_US": "Order"
+						"en_US": "Application status"
 					},
-					"listTypeDefinitionExternalReferenceCode": "ORDER_PICKLIST",
-					"name": "order",
+					"listTypeDefinitionExternalReferenceCode": "STATUS_PICKLIST",
+					"name": "applicationStatus",
 					"objectFieldSettings": [
 						{
 							"name": "stateFlow",
 							"value": {
 								"objectStates": [
 									{
-										"key": "ascending",
+										"key": "draft",
 										"objectStateTransitions": [
 											{
-												"key": "descending"
+												"key": "published"
 											}
 										]
 									},
 									{
-										"key": "descending",
+										"key": "published",
 										"objectStateTransitions": [
 											{
-												"key": "ascending"
+												"key": "draft"
 											}
 										]
 									}
@@ -69,49 +69,20 @@
 				{
 					"DBType": "String",
 					"businessType": "Text",
-					"externalReferenceCode": "OBJECT_FIELD_ERC",
+					"externalReferenceCode": "BASE_URL",
 					"indexed": true,
 					"indexedAsKeyword": false,
+					"indexedLanguageId": "",
 					"label": {
-						"en_US": "Object Field ERC"
+						"en_US": "Base URL"
 					},
-					"name": "objectFieldERC",
-					"required": true,
-					"state": false,
-					"system": false,
-					"type": "String"
-				}
-			],
-			"pluralLabel": {
-				"en_US": "Sorts"
-			},
-			"portlet": false,
-			"scope": "company",
-			"status": {
-				"code": 0
-			},
-			"system": true
-		},
-		{
-			"active": true,
-			"enableCategorization": true,
-			"externalReferenceCode": "MSOD_FILTER",
-			"label": {
-				"en_US": "Filter"
-			},
-			"modifiable": false,
-			"name": "Filter",
-			"objectFields": [
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "OBJECT_FIELD_ERC",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"label": {
-						"en_US": "Object Field ERC"
-					},
-					"name": "objectFieldERC",
+					"name": "baseURL",
+					"objectFieldSettings": [
+						{
+							"name": "uniqueValues",
+							"value": true
+						}
+					],
 					"required": true,
 					"state": false,
 					"system": false,
@@ -120,21 +91,86 @@
 				{
 					"DBType": "String",
 					"businessType": "Text",
-					"externalReferenceCode": "ODATA_FILTER",
+					"externalReferenceCode": "DESCRIPTION",
 					"indexed": true,
 					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
 					"label": {
-						"en_US": "OData Filter"
+						"en_US": "Description"
 					},
-					"name": "oDataFilter",
+					"name": "description",
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "TITLE",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "Title"
+					},
+					"name": "title",
 					"required": true,
 					"state": false,
 					"system": false,
 					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "VERSION",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "Version"
+					},
+					"name": "version",
+					"required": false,
+					"state": false,
+					"system": true,
+					"type": "String"
 				}
 			],
+			"objectRelationships": [
+				{
+					"deletionType": "prevent",
+					"label": {
+						"en_US": "Application Schemas"
+					},
+					"name": "applicationSchemas",
+					"objectDefinitionExternalReferenceCode1": "MSOD_API_APPLICATION",
+					"objectDefinitionExternalReferenceCode2": "MSOD_SCHEMA",
+					"objectDefinitionName2": "Schema",
+					"parameterObjectFieldId": 0,
+					"parameterObjectFieldName": "",
+					"reverse": false,
+					"type": "oneToMany"
+				},
+				{
+					"deletionType": "prevent",
+					"label": {
+						"en_US": "Application Endpoints"
+					},
+					"name": "applicationEndpoints",
+					"objectDefinitionExternalReferenceCode1": "MSOD_API_APPLICATION",
+					"objectDefinitionExternalReferenceCode2": "MSOD_ENDPOINT",
+					"objectDefinitionName2": "Endpoint",
+					"parameterObjectFieldId": 0,
+					"parameterObjectFieldName": "",
+					"reverse": false,
+					"type": "oneToMany"
+				}
+			],
+			"panelCategoryKey": "",
+			"parameterRequired": false,
 			"pluralLabel": {
-				"en_US": "Sorts"
+				"en_US": "API Applications"
 			},
 			"portlet": false,
 			"scope": "company",
@@ -306,6 +342,57 @@
 			"parameterRequired": false,
 			"pluralLabel": {
 				"en_US": "Endpoints"
+			},
+			"portlet": false,
+			"scope": "company",
+			"status": {
+				"code": 0
+			},
+			"system": true
+		},
+		{
+			"active": true,
+			"enableCategorization": true,
+			"externalReferenceCode": "MSOD_FILTER",
+			"label": {
+				"en_US": "Filter"
+			},
+			"modifiable": false,
+			"name": "Filter",
+			"objectFields": [
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "OBJECT_FIELD_ERC",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "Object Field ERC"
+					},
+					"name": "objectFieldERC",
+					"required": true,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "ODATA_FILTER",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"label": {
+						"en_US": "OData Filter"
+					},
+					"name": "oDataFilter",
+					"required": true,
+					"state": false,
+					"system": false,
+					"type": "String"
+				}
+			],
+			"pluralLabel": {
+				"en_US": "Sorts"
 			},
 			"portlet": false,
 			"scope": "company",
@@ -530,43 +617,43 @@
 		{
 			"active": true,
 			"enableCategorization": true,
-			"externalReferenceCode": "MSOD_API_APPLICATION",
+			"externalReferenceCode": "MSOD_SORT",
 			"label": {
-				"en_US": "API Application"
+				"en_US": "Sort"
 			},
 			"modifiable": false,
-			"name": "APIApplication",
+			"name": "Sort",
 			"objectFields": [
 				{
 					"DBType": "String",
 					"businessType": "Picklist",
-					"defaultValue": "draft",
-					"externalReferenceCode": "STATUS",
+					"defaultValue": "ascending",
+					"externalReferenceCode": "ORDER",
 					"indexed": true,
 					"indexedAsKeyword": false,
 					"label": {
-						"en_US": "Application status"
+						"en_US": "Order"
 					},
-					"listTypeDefinitionExternalReferenceCode": "STATUS_PICKLIST",
-					"name": "applicationStatus",
+					"listTypeDefinitionExternalReferenceCode": "ORDER_PICKLIST",
+					"name": "order",
 					"objectFieldSettings": [
 						{
 							"name": "stateFlow",
 							"value": {
 								"objectStates": [
 									{
-										"key": "draft",
+										"key": "ascending",
 										"objectStateTransitions": [
 											{
-												"key": "published"
+												"key": "descending"
 											}
 										]
 									},
 									{
-										"key": "published",
+										"key": "descending",
 										"objectStateTransitions": [
 											{
-												"key": "draft"
+												"key": "ascending"
 											}
 										]
 									}
@@ -582,108 +669,21 @@
 				{
 					"DBType": "String",
 					"businessType": "Text",
-					"externalReferenceCode": "BASE_URL",
+					"externalReferenceCode": "OBJECT_FIELD_ERC",
 					"indexed": true,
 					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
 					"label": {
-						"en_US": "Base URL"
+						"en_US": "Object Field ERC"
 					},
-					"name": "baseURL",
-					"objectFieldSettings": [
-						{
-							"name": "uniqueValues",
-							"value": true
-						}
-					],
+					"name": "objectFieldERC",
 					"required": true,
 					"state": false,
 					"system": false,
 					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "DESCRIPTION",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "en_US",
-					"label": {
-						"en_US": "Description"
-					},
-					"name": "description",
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "TITLE",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "en_US",
-					"label": {
-						"en_US": "Title"
-					},
-					"name": "title",
-					"required": true,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "VERSION",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "en_US",
-					"label": {
-						"en_US": "Version"
-					},
-					"name": "version",
-					"required": false,
-					"state": false,
-					"system": true,
-					"type": "String"
 				}
 			],
-			"objectRelationships": [
-				{
-					"deletionType": "prevent",
-					"label": {
-						"en_US": "Application Schemas"
-					},
-					"name": "applicationSchemas",
-					"objectDefinitionExternalReferenceCode1": "MSOD_API_APPLICATION",
-					"objectDefinitionExternalReferenceCode2": "MSOD_SCHEMA",
-					"objectDefinitionName2": "Schema",
-					"parameterObjectFieldId": 0,
-					"parameterObjectFieldName": "",
-					"reverse": false,
-					"type": "oneToMany"
-				},
-				{
-					"deletionType": "prevent",
-					"label": {
-						"en_US": "Application Endpoints"
-					},
-					"name": "applicationEndpoints",
-					"objectDefinitionExternalReferenceCode1": "MSOD_API_APPLICATION",
-					"objectDefinitionExternalReferenceCode2": "MSOD_ENDPOINT",
-					"objectDefinitionName2": "Endpoint",
-					"parameterObjectFieldId": 0,
-					"parameterObjectFieldName": "",
-					"reverse": false,
-					"type": "oneToMany"
-				}
-			],
-			"panelCategoryKey": "",
-			"parameterRequired": false,
 			"pluralLabel": {
-				"en_US": "API Applications"
+				"en_US": "Sorts"
 			},
 			"portlet": false,
 			"scope": "company",
