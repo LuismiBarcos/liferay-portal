@@ -54,10 +54,6 @@ public class ApiApplicationObjectModel extends ObjectModel {
 		return _operations;
 	}
 
-	public String getOsgiJaxRsName() {
-		return getTitle() + companyId;
-	}
-
 	public List<Schema> getSchemas() {
 		return _schemas;
 	}

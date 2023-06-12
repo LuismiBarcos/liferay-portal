@@ -48,8 +48,8 @@ public class ObjectsConsumerImpl implements Consumer<String> {
 			apiApplicationObjectModel.getBaseURL(),
 			apiApplicationObjectModel.getCompanyId(),
 			apiApplicationObjectModel.getOperations(),
-			apiApplicationObjectModel.getOsgiJaxRsName(),
-			apiApplicationObjectModel.getSchemas());
+			apiApplicationObjectModel.getSchemas(),
+			apiApplicationObjectModel.getTitle());
 	}
 
 	@Reference

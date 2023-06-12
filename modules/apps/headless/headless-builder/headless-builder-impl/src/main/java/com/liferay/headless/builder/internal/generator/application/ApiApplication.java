@@ -23,13 +23,15 @@ public class ApiApplication {
 
 	public ApiApplication(
 		String baseURL, long companyId, List<Operation> operations,
-		String osgiJaxRsName, List<Schema> schemas) {
+		List<Schema> schemas, String title) {
 
 		_baseURL = baseURL;
 		_companyId = companyId;
 		_operations = operations;
-		_osgiJaxRsName = osgiJaxRsName;
 		_schemas = schemas;
+		_title = title;
+
+		_osgiJaxRsName = _setOsgiJaxRsName(companyId, title);
 	}
 
 	public String getBaseURL() {
@@ -52,10 +54,19 @@ public class ApiApplication {
 		return _schemas;
 	}
 
+	public String getTitle() {
+		return _title;
+	}
+
+	private String _setOsgiJaxRsName(long companyId, String title) {
+		return title + companyId;
+	}
+
 	private final String _baseURL;
 	private final long _companyId;
 	private final List<Operation> _operations;
 	private final String _osgiJaxRsName;
 	private final List<Schema> _schemas;
+	private final String _title;
 
 }
