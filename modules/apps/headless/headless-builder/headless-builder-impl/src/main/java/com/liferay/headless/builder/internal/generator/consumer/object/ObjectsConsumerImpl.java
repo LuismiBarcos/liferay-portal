@@ -96,14 +96,14 @@ public class ObjectsConsumerImpl implements Consumer<String> {
 
 		Schema.Builder builder = new Schema.Builder();
 
-		for (ApiSchemasObjectModel.ApiSchema apiSchema :
-				apiSchemasObjectModel.getApiSchemaList()) {
-
+		for (Schema apiSchema : apiSchemasObjectModel.getApiSchemaList()) {
 			schemas.add(
 				builder.setName(
 					apiSchema.getName()
 				).setMainObjectDefinitionERC(
-					apiSchema.getMainObjectRelationshipERC()
+					apiSchema.getMainObjectDefinitionERC()
+				).setProperties(
+					apiSchema.getProperties()
 				).build());
 		}
 

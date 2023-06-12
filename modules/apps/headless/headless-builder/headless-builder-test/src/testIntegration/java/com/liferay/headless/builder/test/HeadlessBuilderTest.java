@@ -162,6 +162,24 @@ public class HeadlessBuilderTest {
 					}
 				});
 
+		_apiPropertyObjectDefinition =
+			ObjectDefinitionTestUtil.publishObjectDefinition(
+				"MSOD_API_PROPERTY",
+				new ArrayList<ObjectField>() {
+					{
+						add(
+							ObjectFieldUtil.createObjectField(
+								"Text", "String", true, true, null,
+								RandomTestUtil.randomString(),
+								_API_PROPERTY_NAME, false));
+						add(
+							ObjectFieldUtil.createObjectField(
+								"Text", "String", true, true, null,
+								RandomTestUtil.randomString(),
+								_API_PROPERTY_OBJECT_FIELD_ERC, false));
+					}
+				});
+
 		_applicationEndpointsObjectRelationship =
 			ObjectRelationshipTestUtil.addObjectRelationship(
 				_apiApplicationObjectDefinition, "applicationEndpoints",
@@ -173,6 +191,12 @@ public class HeadlessBuilderTest {
 				_apiApplicationObjectDefinition, "applicationSchemas",
 				_apiSchemaObjectDefinition, TestPropsValues.getUserId(),
 				ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+
+		_schemaPropertyObjectRelationship =
+			ObjectRelationshipTestUtil.addObjectRelationship(
+				_apiSchemaObjectDefinition, "schemaProperties",
+				_apiPropertyObjectDefinition, TestPropsValues.getUserId(),
+				ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
 
 		Bundle bundle = FrameworkUtil.getBundle(HeadlessBuilderTest.class);
 
@@ -202,12 +226,17 @@ public class HeadlessBuilderTest {
 			_applicationEndpointsObjectRelationship);
 		_objectRelationshipLocalService.deleteObjectRelationship(
 			_applicationSchemasObjectRelationship);
+		_objectRelationshipLocalService.deleteObjectRelationship(
+			_schemaPropertyObjectRelationship);
+
 		_objectDefinitionLocalService.deleteObjectDefinition(
 			_apiApplicationObjectDefinition);
 		_objectDefinitionLocalService.deleteObjectDefinition(
 			_apiEndpointObjectDefinition);
 		_objectDefinitionLocalService.deleteObjectDefinition(
 			_apiSchemaObjectDefinition);
+		_objectDefinitionLocalService.deleteObjectDefinition(
+			_apiPropertyObjectDefinition);
 	}
 
 	@FeatureFlags("LPS-171047")
@@ -253,12 +282,6 @@ public class HeadlessBuilderTest {
 					jsonObject.toString(), true);
 			});
 	}
-
-	// TODO Missing tests:
-	//  Create multiple api applications with multiple endpoints
-	//  that should be accessible but not others
-	//  Create same endpoints in different applications with
-	//  different responses and ensure that the responses are ok
 
 	@Test
 	public void testHeadlessBuilderApplicationWithoutFeatureFlag()
@@ -309,6 +332,14 @@ public class HeadlessBuilderTest {
 		ObjectRelationshipTestUtil.relateObjectEntries(
 			apiApplication.getObjectEntryId(), apiSchema.getObjectEntryId(),
 			_applicationSchemasObjectRelationship, TestPropsValues.getUserId());
+
+		ObjectEntry apiPropertyObjectEntry = _createApiPropertyObjectEntry(
+			"myProperty", "objectFieldERC");
+
+		ObjectRelationshipTestUtil.relateObjectEntries(
+			apiSchema.getObjectEntryId(),
+			apiPropertyObjectEntry.getObjectEntryId(),
+			_schemaPropertyObjectRelationship, TestPropsValues.getUserId());
 
 		CountDownLatch addedCountLatch = new CountDownLatch(1);
 
@@ -401,6 +432,14 @@ public class HeadlessBuilderTest {
 			apiApplication2.getObjectEntryId(), apiSchema.getObjectEntryId(),
 			_applicationSchemasObjectRelationship, TestPropsValues.getUserId());
 
+		ObjectEntry apiPropertyObjectEntry = _createApiPropertyObjectEntry(
+			"myProperty", "objectFieldERC");
+
+		ObjectRelationshipTestUtil.relateObjectEntries(
+			apiSchema.getObjectEntryId(),
+			apiPropertyObjectEntry.getObjectEntryId(),
+			_schemaPropertyObjectRelationship, TestPropsValues.getUserId());
+
 		CountDownLatch addedCountLatch = new CountDownLatch(2);
 		CountDownLatch removedCountLatch = new CountDownLatch(1);
 
@@ -492,6 +531,12 @@ public class HeadlessBuilderTest {
 		}
 	}
 
+	// TODO Missing tests:
+	//  Create multiple api applications with multiple endpoints
+	//  that should be accessible but not others
+	//  Create same endpoints in different applications with
+	//  different responses and ensure that the responses are ok
+
 	private ObjectEntry _createApiApplicationObjectEntry(
 			String baseURL, String title)
 		throws Exception {
@@ -517,6 +562,19 @@ public class HeadlessBuilderTest {
 				_API_ENDPOINT_PATH, path
 			).put(
 				_API_ENDPOINT_SCOPE, scope
+			).build());
+	}
+
+	private ObjectEntry _createApiPropertyObjectEntry(
+			String name, String objectFieldERC)
+		throws Exception {
+
+		return ObjectEntryTestUtil.addObjectEntry(
+			_apiPropertyObjectDefinition,
+			HashMapBuilder.<String, Serializable>put(
+				_API_PROPERTY_NAME, name
+			).put(
+				_API_PROPERTY_OBJECT_FIELD_ERC, objectFieldERC
 			).build());
 	}
 
@@ -622,6 +680,11 @@ public class HeadlessBuilderTest {
 
 	private static final String _API_ENDPOINT_SCOPE = "scope";
 
+	private static final String _API_PROPERTY_NAME = "name";
+
+	private static final String _API_PROPERTY_OBJECT_FIELD_ERC =
+		"objectFieldERC";
+
 	private static final String _API_SCHEMA_MAIN_OBJECT_DEFINITION_ERC =
 		"mainObjectDefinitionERC";
 
@@ -629,6 +692,7 @@ public class HeadlessBuilderTest {
 
 	private ObjectDefinition _apiApplicationObjectDefinition;
 	private ObjectDefinition _apiEndpointObjectDefinition;
+	private ObjectDefinition _apiPropertyObjectDefinition;
 	private ObjectDefinition _apiSchemaObjectDefinition;
 	private ObjectRelationship _applicationEndpointsObjectRelationship;
 	private ObjectRelationship _applicationSchemasObjectRelationship;
@@ -652,6 +716,7 @@ public class HeadlessBuilderTest {
 	@Inject
 	private ObjectRelationshipLocalService _objectRelationshipLocalService;
 
+	private ObjectRelationship _schemaPropertyObjectRelationship;
 	private final TestEntry _testEntry = TestEntry.INSTANCE;
 
 }

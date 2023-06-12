@@ -15,7 +15,6 @@
 package com.liferay.headless.builder.internal.generator.consumer.object.model;
 
 import com.liferay.headless.builder.internal.generator.application.Property;
-import com.liferay.headless.builder.internal.generator.application.Schema;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.service.ObjectDefinitionLocalService;
@@ -30,9 +29,9 @@ import java.util.List;
 /**
  * @author Luis Miguel Barcos
  */
-public class ApiSchemasObjectModel extends ObjectModel {
+public class ApiPropertyObjectModel extends ObjectModel {
 
-	public ApiSchemasObjectModel(
+	public ApiPropertyObjectModel(
 			String apiApplicationERC, long companyId,
 			ObjectDefinitionLocalService objectDefinitionLocalService,
 			ObjectEntryLocalService objectEntryLocalService,
@@ -47,8 +46,8 @@ public class ApiSchemasObjectModel extends ObjectModel {
 			permissionCheckerFactory, userLocalService);
 	}
 
-	public List<Schema> getApiSchemaList() {
-		return _apiSchemaList;
+	public List<Property> getProperties() {
+		return _properties;
 	}
 
 	@Override
@@ -56,50 +55,35 @@ public class ApiSchemasObjectModel extends ObjectModel {
 		Page<ObjectEntry> objectEntriesPage = getObjectEntries(
 			String.format(
 				"%s/externalReferenceCode eq '%s'",
-				_APPLICATION_SCHEMA_OBJECT_RELATIONSHIP_NAME,
-				apiApplicationERC),
+				_SCHEMA_PROPERTY_OBJECT_RELATIONSHIP_NAME, apiApplicationERC),
 			_OBJECT_DEFINITION_ERC);
 
-		_apiSchemaList = new ArrayList<>();
+		_properties = new ArrayList<>();
 
-		Schema.Builder builder = new Schema.Builder();
+		Property.Builder builder = new Property.Builder();
 
-		for (ObjectEntry schemaObjectEntry : objectEntriesPage.getItems()) {
-			_apiSchemaList.add(
+		for (ObjectEntry propertyObjectEntry : objectEntriesPage.getItems()) {
+			_properties.add(
 				builder.setName(
 					(String)getObjectEntryPropertyValue(
-						schemaObjectEntry, _NAME_PROPERTY_VALUE)
-				).setMainObjectDefinitionERC(
+						propertyObjectEntry, _NAME_PROPERTY_VALUE)
+				).setObjectFieldERC(
 					(String)getObjectEntryPropertyValue(
-						schemaObjectEntry,
-						_MAIN_OBJECT_DEFINITION_ERC_PROPERTY_VALUE)
-				).setProperties(
-					_getSchemaProperties(
-						schemaObjectEntry.getExternalReferenceCode())
+						propertyObjectEntry, _OBJECT_FIELD_ERC_PROPERTY_VALUE)
 				).build());
 		}
 	}
 
-	private List<Property> _getSchemaProperties(String schemaERC)
-		throws Exception {
-
-		return new ApiPropertyObjectModel(
-			schemaERC, companyId, objectDefinitionLocalService,
-			objectEntryLocalService, objectEntryManager,
-			permissionCheckerFactory, userLocalService
-		).getProperties();
-	}
-
-	private static final String _APPLICATION_SCHEMA_OBJECT_RELATIONSHIP_NAME =
-		"applicationSchemas";
-
-	private static final String _MAIN_OBJECT_DEFINITION_ERC_PROPERTY_VALUE =
-		"mainObjectDefinitionERC";
-
 	private static final String _NAME_PROPERTY_VALUE = "name";
 
-	private static final String _OBJECT_DEFINITION_ERC = "MSOD_API_SCHEMA";
+	private static final String _OBJECT_DEFINITION_ERC = "MSOD_API_PROPERTY";
 
-	private List<Schema> _apiSchemaList;
+	private static final String _OBJECT_FIELD_ERC_PROPERTY_VALUE =
+		"objectFieldERC";
+
+	private static final String _SCHEMA_PROPERTY_OBJECT_RELATIONSHIP_NAME =
+		"schemaProperties";
+
+	private List<Property> _properties;
 
 }

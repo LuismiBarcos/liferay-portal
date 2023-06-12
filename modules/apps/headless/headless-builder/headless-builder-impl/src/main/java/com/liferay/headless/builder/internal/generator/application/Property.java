@@ -14,37 +14,23 @@
 
 package com.liferay.headless.builder.internal.generator.application;
 
-import java.util.List;
-
 /**
  * @author Luis Miguel Barcos
  */
-public class Schema {
-
-	public String getMainObjectDefinitionERC() {
-		return _builder._mainObjectDefinitionERC;
-	}
+public class Property {
 
 	public String getName() {
 		return _builder._name;
 	}
 
-	public List<Property> getProperties() {
-		return _builder._properties;
+	public String getObjectFieldERC() {
+		return _builder._objectFieldERC;
 	}
 
 	public static class Builder {
 
-		public Schema build() {
-			return new Schema(this);
-		}
-
-		public Builder setMainObjectDefinitionERC(
-			String mainObjectDefinitionERC) {
-
-			_mainObjectDefinitionERC = mainObjectDefinitionERC;
-
-			return this;
+		public Property build() {
+			return new Property(this);
 		}
 
 		public Builder setName(String name) {
@@ -53,19 +39,18 @@ public class Schema {
 			return this;
 		}
 
-		public Builder setProperties(List<Property> properties) {
-			_properties = properties;
+		public Builder setObjectFieldERC(String objectFieldERC) {
+			_objectFieldERC = objectFieldERC;
 
 			return this;
 		}
 
-		private String _mainObjectDefinitionERC;
 		private String _name;
-		private List<Property> _properties;
+		private String _objectFieldERC;
 
 	}
 
-	private Schema(Builder builder) {
+	private Property(Builder builder) {
 		_builder = builder;
 	}
 

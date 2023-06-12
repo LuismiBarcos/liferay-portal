@@ -51,10 +51,10 @@ public abstract class ObjectModel {
 		this.apiApplicationERC = apiApplicationERC;
 		this.companyId = companyId;
 		this.objectDefinitionLocalService = objectDefinitionLocalService;
-		_objectEntryLocalService = objectEntryLocalService;
+		this.objectEntryLocalService = objectEntryLocalService;
 		this.objectEntryManager = objectEntryManager;
-		_permissionCheckerFactory = permissionCheckerFactory;
-		_userLocalService = userLocalService;
+		this.permissionCheckerFactory = permissionCheckerFactory;
+		this.userLocalService = userLocalService;
 
 		initObjectModel();
 	}
@@ -91,7 +91,7 @@ public abstract class ObjectModel {
 		throws Exception {
 
 		PermissionThreadLocal.setPermissionChecker(
-			_permissionCheckerFactory.create(_getUser()));
+			permissionCheckerFactory.create(_getUser()));
 
 		return objectEntryManager.getObjectEntries(
 			companyId, getObjectDefinition(objectDefinitionERC), null, null,
@@ -112,25 +112,24 @@ public abstract class ObjectModel {
 	protected final String apiApplicationERC;
 	protected final long companyId;
 	protected final ObjectDefinitionLocalService objectDefinitionLocalService;
+	protected final ObjectEntryLocalService objectEntryLocalService;
 	protected final ObjectEntryManager objectEntryManager;
+	protected final PermissionCheckerFactory permissionCheckerFactory;
+	protected final UserLocalService userLocalService;
 
 	private User _getUser() throws Exception {
 		if (_user == null) {
 			com.liferay.object.model.ObjectEntry objectEntry =
-				_objectEntryLocalService.getObjectEntry(
+				objectEntryLocalService.getObjectEntry(
 					apiApplicationERC, CompanyThreadLocal.getCompanyId(),
 					GroupThreadLocal.getGroupId());
 
-			_user = _userLocalService.getUser(objectEntry.getUserId());
+			_user = userLocalService.getUser(objectEntry.getUserId());
 		}
 
 		return _user;
 	}
 
 	private static User _user;
-
-	private final ObjectEntryLocalService _objectEntryLocalService;
-	private final PermissionCheckerFactory _permissionCheckerFactory;
-	private final UserLocalService _userLocalService;
 
 }
