@@ -14,6 +14,7 @@
 
 package com.liferay.headless.builder.internal.generator.consumer.object.model;
 
+import com.liferay.headless.builder.internal.generator.application.Operation;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.service.ObjectDefinitionLocalService;
@@ -32,48 +33,22 @@ import java.util.List;
 public class ApiEndpointsObjectModel extends ObjectModel {
 
 	public ApiEndpointsObjectModel(
-			String apiApplicationERC, long companyId,
+			long companyId,
 			ObjectDefinitionLocalService objectDefinitionLocalService,
 			ObjectEntryLocalService objectEntryLocalService,
 			ObjectEntryManager objectEntryManager,
 			PermissionCheckerFactory permissionCheckerFactory,
-			UserLocalService userLocalService)
+			String relatedObjectEntry, UserLocalService userLocalService)
 		throws Exception {
 
 		super(
 			companyId, objectDefinitionLocalService, objectEntryLocalService,
-			objectEntryManager, permissionCheckerFactory, apiApplicationERC,
+			objectEntryManager, permissionCheckerFactory, relatedObjectEntry,
 			userLocalService);
 	}
 
-	public List<ApiEndpoint> getApiEndpoints() {
-		return _apiEndpoints;
-	}
-
-	public static class ApiEndpoint {
-
-		public ApiEndpoint(String method, String path, String scope) {
-			_method = method;
-			_path = path;
-			_scope = scope;
-		}
-
-		public String getMethod() {
-			return _method;
-		}
-
-		public String getPath() {
-			return _path;
-		}
-
-		public String getScope() {
-			return _scope;
-		}
-
-		private final String _method;
-		private final String _path;
-		private final String _scope;
-
+	public List<Operation> getOperations() {
+		return _operations;
 	}
 
 	@Override
@@ -87,11 +62,11 @@ public class ApiEndpointsObjectModel extends ObjectModel {
 
 		Collection<ObjectEntry> items = objectEntriesPage.getItems();
 
-		_apiEndpoints = new ArrayList<>();
+		_operations = new ArrayList<>();
 
 		for (ObjectEntry endpointObjectEntry : items) {
-			_apiEndpoints.add(
-				new ApiEndpoint(
+			_operations.add(
+				new Operation(
 					(String)getObjectEntryPropertyValue(
 						endpointObjectEntry, _HTTP_METHOD_PROPERTY_NAME),
 					(String)getObjectEntryPropertyValue(
@@ -112,6 +87,6 @@ public class ApiEndpointsObjectModel extends ObjectModel {
 
 	private static final String _SCOPE_PROPERTY_NAME = "scope";
 
-	private List<ApiEndpoint> _apiEndpoints;
+	private List<Operation> _operations;
 
 }

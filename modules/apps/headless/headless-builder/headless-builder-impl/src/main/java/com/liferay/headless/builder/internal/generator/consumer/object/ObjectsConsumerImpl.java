@@ -15,16 +15,14 @@
 package com.liferay.headless.builder.internal.generator.consumer.object;
 
 import com.liferay.headless.builder.internal.generator.application.ApiApplication;
-import com.liferay.headless.builder.internal.generator.application.Operation;
-import com.liferay.headless.builder.internal.generator.application.Schema;
 import com.liferay.headless.builder.internal.generator.consumer.Consumer;
 import com.liferay.headless.builder.internal.generator.consumer.object.model.ApiApplicationObjectModel;
-import com.liferay.headless.builder.internal.generator.consumer.object.model.ApiEndpointsObjectModel;
-import com.liferay.headless.builder.internal.generator.consumer.object.model.ApiSchemasObjectModel;
-import com.liferay.headless.builder.internal.generator.consumer.object.model.ObjectModelsFactory;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
+import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.object.service.ObjectEntryLocalService;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.security.permission.PermissionCheckerFactory;
+import com.liferay.portal.kernel.service.UserLocalService;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -40,58 +38,33 @@ public class ObjectsConsumerImpl implements Consumer<String> {
 		throws Exception {
 
 		ApiApplicationObjectModel apiApplicationObjectModel =
-			_objectModelsFactory.getObjectModel(
-				apiApplicationERC, ApiApplicationObjectModel.class);
+			new ApiApplicationObjectModel(
+				CompanyThreadLocal.getCompanyId(),
+				_objectDefinitionLocalService, _objectEntryLocalService,
+				_objectEntryManager, _permissionCheckerFactory,
+				apiApplicationERC, _userLocalService);
 
 		return new ApiApplication(
 			apiApplicationObjectModel.getBaseURL(),
 			apiApplicationObjectModel.getCompanyId(),
-			_getOperations(apiApplicationERC),
+			apiApplicationObjectModel.getOperations(),
 			apiApplicationObjectModel.getOsgiJaxRsName(),
-			_getSchemas(apiApplicationERC));
-	}
-
-	private List<Operation> _getOperations(String apiApplicationERC)
-		throws Exception {
-
-		ApiEndpointsObjectModel apiEndpointsObjectModel =
-			_objectModelsFactory.getObjectModel(
-				apiApplicationERC, ApiEndpointsObjectModel.class);
-
-		List<Operation> operations = new ArrayList<>();
-
-		for (ApiEndpointsObjectModel.ApiEndpoint apiEndpoint :
-				apiEndpointsObjectModel.getApiEndpoints()) {
-
-			operations.add(
-				new Operation(
-					apiEndpoint.getMethod(), apiEndpoint.getPath(),
-					apiEndpoint.getScope()));
-		}
-
-		return operations;
-	}
-
-	private List<Schema> _getSchemas(String apiApplicationERC)
-		throws Exception {
-
-		ApiSchemasObjectModel apiSchemasObjectModel =
-			_objectModelsFactory.getObjectModel(
-				apiApplicationERC, ApiSchemasObjectModel.class);
-
-		List<Schema> schemas = new ArrayList<>();
-
-		for (Schema apiSchema : apiSchemasObjectModel.getApiSchemaList()) {
-			schemas.add(
-				new Schema(
-					apiSchema.getMainObjectDefinitionERC(), apiSchema.getName(),
-					apiSchema.getProperties()));
-		}
-
-		return schemas;
+			apiApplicationObjectModel.getSchemas());
 	}
 
 	@Reference
-	private ObjectModelsFactory _objectModelsFactory;
+	private ObjectDefinitionLocalService _objectDefinitionLocalService;
+
+	@Reference
+	private ObjectEntryLocalService _objectEntryLocalService;
+
+	@Reference(target = "(object.entry.manager.storage.type=default)")
+	private ObjectEntryManager _objectEntryManager;
+
+	@Reference
+	private PermissionCheckerFactory _permissionCheckerFactory;
+
+	@Reference
+	private UserLocalService _userLocalService;
 
 }

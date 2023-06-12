@@ -33,22 +33,22 @@ import java.util.List;
 public class ApiSchemasObjectModel extends ObjectModel {
 
 	public ApiSchemasObjectModel(
-			String apiApplicationERC, long companyId,
+			long companyId,
 			ObjectDefinitionLocalService objectDefinitionLocalService,
 			ObjectEntryLocalService objectEntryLocalService,
 			ObjectEntryManager objectEntryManager,
 			PermissionCheckerFactory permissionCheckerFactory,
-			UserLocalService userLocalService)
+			String relatedObjectEntryERC, UserLocalService userLocalService)
 		throws Exception {
 
 		super(
 			companyId, objectDefinitionLocalService, objectEntryLocalService,
-			objectEntryManager, permissionCheckerFactory, apiApplicationERC,
+			objectEntryManager, permissionCheckerFactory, relatedObjectEntryERC,
 			userLocalService);
 	}
 
-	public List<Schema> getApiSchemaList() {
-		return _apiSchemaList;
+	public List<Schema> getSchemas() {
+		return _schemas;
 	}
 
 	@Override
@@ -60,10 +60,10 @@ public class ApiSchemasObjectModel extends ObjectModel {
 				relatedObjectEntryERC),
 			_OBJECT_DEFINITION_ERC);
 
-		_apiSchemaList = new ArrayList<>();
+		_schemas = new ArrayList<>();
 
 		for (ObjectEntry schemaObjectEntry : objectEntriesPage.getItems()) {
-			_apiSchemaList.add(
+			_schemas.add(
 				new Schema(
 					(String)getObjectEntryPropertyValue(
 						schemaObjectEntry,
@@ -79,9 +79,9 @@ public class ApiSchemasObjectModel extends ObjectModel {
 		throws Exception {
 
 		return new ApiPropertyObjectModel(
-			schemaERC, companyId, objectDefinitionLocalService,
-			objectEntryLocalService, objectEntryManager,
-			permissionCheckerFactory, userLocalService
+			companyId, objectDefinitionLocalService, objectEntryLocalService,
+			objectEntryManager, permissionCheckerFactory, schemaERC,
+			userLocalService
 		).getProperties();
 	}
 
@@ -95,6 +95,6 @@ public class ApiSchemasObjectModel extends ObjectModel {
 
 	private static final String _OBJECT_DEFINITION_ERC = "MSOD_API_SCHEMA";
 
-	private List<Schema> _apiSchemaList;
+	private List<Schema> _schemas;
 
 }

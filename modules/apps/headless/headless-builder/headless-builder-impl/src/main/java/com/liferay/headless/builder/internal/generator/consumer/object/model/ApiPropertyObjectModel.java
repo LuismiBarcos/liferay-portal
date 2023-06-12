@@ -32,17 +32,17 @@ import java.util.List;
 public class ApiPropertyObjectModel extends ObjectModel {
 
 	public ApiPropertyObjectModel(
-			String apiApplicationERC, long companyId,
+			long companyId,
 			ObjectDefinitionLocalService objectDefinitionLocalService,
 			ObjectEntryLocalService objectEntryLocalService,
 			ObjectEntryManager objectEntryManager,
 			PermissionCheckerFactory permissionCheckerFactory,
-			UserLocalService userLocalService)
+			String relatedObjectEntryERC, UserLocalService userLocalService)
 		throws Exception {
 
 		super(
 			companyId, objectDefinitionLocalService, objectEntryLocalService,
-			objectEntryManager, permissionCheckerFactory, apiApplicationERC,
+			objectEntryManager, permissionCheckerFactory, relatedObjectEntryERC,
 			userLocalService);
 	}
 

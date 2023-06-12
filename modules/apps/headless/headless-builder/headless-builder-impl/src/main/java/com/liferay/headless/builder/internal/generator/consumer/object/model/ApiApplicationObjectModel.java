@@ -14,6 +14,8 @@
 
 package com.liferay.headless.builder.internal.generator.consumer.object.model;
 
+import com.liferay.headless.builder.internal.generator.application.Operation;
+import com.liferay.headless.builder.internal.generator.application.Schema;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.service.ObjectDefinitionLocalService;
@@ -22,23 +24,25 @@ import com.liferay.portal.kernel.security.permission.PermissionCheckerFactory;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.vulcan.pagination.Page;
 
+import java.util.List;
+
 /**
  * @author Luis Miguel Barcos
  */
 public class ApiApplicationObjectModel extends ObjectModel {
 
 	public ApiApplicationObjectModel(
-			String apiApplicationERC, long companyId,
+			long companyId,
 			ObjectDefinitionLocalService objectDefinitionLocalService,
 			ObjectEntryLocalService objectEntryLocalService,
 			ObjectEntryManager objectEntryManager,
 			PermissionCheckerFactory permissionCheckerFactory,
-			UserLocalService userLocalService)
+			String relatedObjectEntryERC, UserLocalService userLocalService)
 		throws Exception {
 
 		super(
 			companyId, objectDefinitionLocalService, objectEntryLocalService,
-			objectEntryManager, permissionCheckerFactory, apiApplicationERC,
+			objectEntryManager, permissionCheckerFactory, relatedObjectEntryERC,
 			userLocalService);
 	}
 
@@ -46,8 +50,16 @@ public class ApiApplicationObjectModel extends ObjectModel {
 		return _baseURL;
 	}
 
+	public List<Operation> getOperations() {
+		return _operations;
+	}
+
 	public String getOsgiJaxRsName() {
 		return getTitle() + companyId;
+	}
+
+	public List<Schema> getSchemas() {
+		return _schemas;
 	}
 
 	public String getTitle() {
@@ -64,6 +76,19 @@ public class ApiApplicationObjectModel extends ObjectModel {
 
 		_baseURL = (String)getObjectEntryPropertyValue(
 			objectEntry, _BASE_URL_PROPERTY_NAME);
+
+		_operations = new ApiEndpointsObjectModel(
+			companyId, objectDefinitionLocalService, objectEntryLocalService,
+			objectEntryManager, permissionCheckerFactory, relatedObjectEntryERC,
+			userLocalService
+		).getOperations();
+
+		_schemas = new ApiSchemasObjectModel(
+			companyId, objectDefinitionLocalService, objectEntryLocalService,
+			objectEntryManager, permissionCheckerFactory, relatedObjectEntryERC,
+			userLocalService
+		).getSchemas();
+
 		_title = (String)getObjectEntryPropertyValue(
 			objectEntry, _TITLE_PROPERTY_NAME);
 	}
@@ -75,6 +100,8 @@ public class ApiApplicationObjectModel extends ObjectModel {
 	private static final String _TITLE_PROPERTY_NAME = "title";
 
 	private String _baseURL;
+	private List<Operation> _operations;
+	private List<Schema> _schemas;
 	private String _title;
 
 }
