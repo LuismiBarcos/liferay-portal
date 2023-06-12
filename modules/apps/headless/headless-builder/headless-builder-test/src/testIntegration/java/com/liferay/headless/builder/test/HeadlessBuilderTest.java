@@ -144,10 +144,34 @@ public class HeadlessBuilderTest {
 					}
 				});
 
+		_apiSchemaObjectDefinition =
+			ObjectDefinitionTestUtil.publishObjectDefinition(
+				"MSOD_API_SCHEMA",
+				new ArrayList<ObjectField>() {
+					{
+						add(
+							ObjectFieldUtil.createObjectField(
+								"Text", "String", true, true, null,
+								RandomTestUtil.randomString(), _API_SCHEMA_NAME,
+								false));
+						add(
+							ObjectFieldUtil.createObjectField(
+								"Text", "String", true, true, null,
+								RandomTestUtil.randomString(),
+								_API_SCHEMA_MAIN_OBJECT_DEFINITION_ERC, false));
+					}
+				});
+
 		_applicationEndpointsObjectRelationship =
 			ObjectRelationshipTestUtil.addObjectRelationship(
 				_apiApplicationObjectDefinition, "applicationEndpoints",
 				_apiEndpointObjectDefinition, TestPropsValues.getUserId(),
+				ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+
+		_applicationSchemasObjectRelationship =
+			ObjectRelationshipTestUtil.addObjectRelationship(
+				_apiApplicationObjectDefinition, "applicationSchemas",
+				_apiSchemaObjectDefinition, TestPropsValues.getUserId(),
 				ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
 		Bundle bundle = FrameworkUtil.getBundle(HeadlessBuilderTest.class);
@@ -176,17 +200,15 @@ public class HeadlessBuilderTest {
 
 		_objectRelationshipLocalService.deleteObjectRelationship(
 			_applicationEndpointsObjectRelationship);
+		_objectRelationshipLocalService.deleteObjectRelationship(
+			_applicationSchemasObjectRelationship);
 		_objectDefinitionLocalService.deleteObjectDefinition(
 			_apiApplicationObjectDefinition);
 		_objectDefinitionLocalService.deleteObjectDefinition(
 			_apiEndpointObjectDefinition);
+		_objectDefinitionLocalService.deleteObjectDefinition(
+			_apiSchemaObjectDefinition);
 	}
-
-	// TODO Missing tests:
-	//  Create multiple api applications with multiple endpoints
-	//  that should be accessible but not others
-	//  Create same endpoints in different applications with
-	//  different responses and ensure that the responses are ok
 
 	@FeatureFlags("LPS-171047")
 	@Test
@@ -232,6 +254,12 @@ public class HeadlessBuilderTest {
 			});
 	}
 
+	// TODO Missing tests:
+	//  Create multiple api applications with multiple endpoints
+	//  that should be accessible but not others
+	//  Create same endpoints in different applications with
+	//  different responses and ensure that the responses are ok
+
 	@Test
 	public void testHeadlessBuilderApplicationWithoutFeatureFlag()
 		throws Exception {
@@ -274,6 +302,13 @@ public class HeadlessBuilderTest {
 			apiApplication.getObjectEntryId(), apiEndpoint.getObjectEntryId(),
 			_applicationEndpointsObjectRelationship,
 			TestPropsValues.getUserId());
+
+		ObjectEntry apiSchema = _createApiSchemaObjectEntry(
+			"mainObjectDefintionERC", "MySchema");
+
+		ObjectRelationshipTestUtil.relateObjectEntries(
+			apiApplication.getObjectEntryId(), apiSchema.getObjectEntryId(),
+			_applicationSchemasObjectRelationship, TestPropsValues.getUserId());
 
 		CountDownLatch addedCountLatch = new CountDownLatch(1);
 
@@ -354,6 +389,17 @@ public class HeadlessBuilderTest {
 			apiApplication2.getObjectEntryId(), apiEndpoint2.getObjectEntryId(),
 			_applicationEndpointsObjectRelationship,
 			TestPropsValues.getUserId());
+
+		ObjectEntry apiSchema = _createApiSchemaObjectEntry(
+			"mainObjectDefintionERC", "MySchema");
+
+		ObjectRelationshipTestUtil.relateObjectEntries(
+			apiApplication1.getObjectEntryId(), apiSchema.getObjectEntryId(),
+			_applicationSchemasObjectRelationship, TestPropsValues.getUserId());
+
+		ObjectRelationshipTestUtil.relateObjectEntries(
+			apiApplication2.getObjectEntryId(), apiSchema.getObjectEntryId(),
+			_applicationSchemasObjectRelationship, TestPropsValues.getUserId());
 
 		CountDownLatch addedCountLatch = new CountDownLatch(2);
 		CountDownLatch removedCountLatch = new CountDownLatch(1);
@@ -474,6 +520,19 @@ public class HeadlessBuilderTest {
 			).build());
 	}
 
+	private ObjectEntry _createApiSchemaObjectEntry(
+			String mainObjectDefinitionERC, String name)
+		throws Exception {
+
+		return ObjectEntryTestUtil.addObjectEntry(
+			_apiSchemaObjectDefinition,
+			HashMapBuilder.<String, Serializable>put(
+				_API_SCHEMA_MAIN_OBJECT_DEFINITION_ERC, mainObjectDefinitionERC
+			).put(
+				_API_SCHEMA_NAME, name
+			).build());
+	}
+
 	private HttpURLConnection _createHttpURLConnection(
 			String endpoint, Http.Method method)
 		throws Exception {
@@ -563,9 +622,16 @@ public class HeadlessBuilderTest {
 
 	private static final String _API_ENDPOINT_SCOPE = "scope";
 
+	private static final String _API_SCHEMA_MAIN_OBJECT_DEFINITION_ERC =
+		"mainObjectDefinitionERC";
+
+	private static final String _API_SCHEMA_NAME = "name";
+
 	private ObjectDefinition _apiApplicationObjectDefinition;
 	private ObjectDefinition _apiEndpointObjectDefinition;
+	private ObjectDefinition _apiSchemaObjectDefinition;
 	private ObjectRelationship _applicationEndpointsObjectRelationship;
+	private ObjectRelationship _applicationSchemasObjectRelationship;
 
 	@Inject
 	private HeadlessBuilderApplicationFactory
