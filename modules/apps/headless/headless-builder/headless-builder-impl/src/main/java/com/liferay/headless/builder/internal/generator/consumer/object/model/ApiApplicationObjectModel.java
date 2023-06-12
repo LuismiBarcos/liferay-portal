@@ -37,9 +37,9 @@ public class ApiApplicationObjectModel extends ObjectModel {
 		throws Exception {
 
 		super(
-			apiApplicationERC, companyId, objectDefinitionLocalService,
-			objectEntryLocalService, objectEntryManager,
-			permissionCheckerFactory, userLocalService);
+			companyId, objectDefinitionLocalService, objectEntryLocalService,
+			objectEntryManager, permissionCheckerFactory, apiApplicationERC,
+			userLocalService);
 	}
 
 	public String getBaseURL() {
@@ -57,7 +57,7 @@ public class ApiApplicationObjectModel extends ObjectModel {
 	@Override
 	protected void initObjectModel() throws Exception {
 		Page<ObjectEntry> objectEntriesPage = getObjectEntries(
-			"externalReferenceCode eq '" + apiApplicationERC + "'",
+			"externalReferenceCode eq '" + relatedObjectEntryERC + "'",
 			_OBJECT_DEFINITION_ERC);
 
 		ObjectEntry objectEntry = objectEntriesPage.fetchFirstItem();

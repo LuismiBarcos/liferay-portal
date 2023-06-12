@@ -40,20 +40,20 @@ import java.util.Map;
 public abstract class ObjectModel {
 
 	public ObjectModel(
-			String apiApplicationERC, long companyId,
+			long companyId,
 			ObjectDefinitionLocalService objectDefinitionLocalService,
 			ObjectEntryLocalService objectEntryLocalService,
 			ObjectEntryManager objectEntryManager,
 			PermissionCheckerFactory permissionCheckerFactory,
-			UserLocalService userLocalService)
+			String relatedObjectEntryERC, UserLocalService userLocalService)
 		throws Exception {
 
-		this.apiApplicationERC = apiApplicationERC;
 		this.companyId = companyId;
 		this.objectDefinitionLocalService = objectDefinitionLocalService;
 		this.objectEntryLocalService = objectEntryLocalService;
 		this.objectEntryManager = objectEntryManager;
 		this.permissionCheckerFactory = permissionCheckerFactory;
+		this.relatedObjectEntryERC = relatedObjectEntryERC;
 		this.userLocalService = userLocalService;
 
 		initObjectModel();
@@ -109,19 +109,19 @@ public abstract class ObjectModel {
 
 	protected abstract void initObjectModel() throws Exception;
 
-	protected final String apiApplicationERC;
 	protected final long companyId;
 	protected final ObjectDefinitionLocalService objectDefinitionLocalService;
 	protected final ObjectEntryLocalService objectEntryLocalService;
 	protected final ObjectEntryManager objectEntryManager;
 	protected final PermissionCheckerFactory permissionCheckerFactory;
+	protected final String relatedObjectEntryERC;
 	protected final UserLocalService userLocalService;
 
 	private User _getUser() throws Exception {
 		if (_user == null) {
 			com.liferay.object.model.ObjectEntry objectEntry =
 				objectEntryLocalService.getObjectEntry(
-					apiApplicationERC, CompanyThreadLocal.getCompanyId(),
+					relatedObjectEntryERC, CompanyThreadLocal.getCompanyId(),
 					GroupThreadLocal.getGroupId());
 
 			_user = userLocalService.getUser(objectEntry.getUserId());

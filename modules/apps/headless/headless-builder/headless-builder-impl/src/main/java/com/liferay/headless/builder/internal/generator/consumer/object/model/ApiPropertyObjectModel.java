@@ -41,9 +41,9 @@ public class ApiPropertyObjectModel extends ObjectModel {
 		throws Exception {
 
 		super(
-			apiApplicationERC, companyId, objectDefinitionLocalService,
-			objectEntryLocalService, objectEntryManager,
-			permissionCheckerFactory, userLocalService);
+			companyId, objectDefinitionLocalService, objectEntryLocalService,
+			objectEntryManager, permissionCheckerFactory, apiApplicationERC,
+			userLocalService);
 	}
 
 	public List<Property> getProperties() {
@@ -55,7 +55,8 @@ public class ApiPropertyObjectModel extends ObjectModel {
 		Page<ObjectEntry> objectEntriesPage = getObjectEntries(
 			String.format(
 				"%s/externalReferenceCode eq '%s'",
-				_SCHEMA_PROPERTY_OBJECT_RELATIONSHIP_NAME, apiApplicationERC),
+				_SCHEMA_PROPERTY_OBJECT_RELATIONSHIP_NAME,
+				relatedObjectEntryERC),
 			_OBJECT_DEFINITION_ERC);
 
 		_properties = new ArrayList<>();

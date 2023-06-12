@@ -41,9 +41,9 @@ public class ApiEndpointsObjectModel extends ObjectModel {
 		throws Exception {
 
 		super(
-			apiApplicationERC, companyId, objectDefinitionLocalService,
-			objectEntryLocalService, objectEntryManager,
-			permissionCheckerFactory, userLocalService);
+			companyId, objectDefinitionLocalService, objectEntryLocalService,
+			objectEntryManager, permissionCheckerFactory, apiApplicationERC,
+			userLocalService);
 	}
 
 	public List<ApiEndpoint> getApiEndpoints() {
@@ -82,7 +82,7 @@ public class ApiEndpointsObjectModel extends ObjectModel {
 			String.format(
 				"%s/externalReferenceCode eq '%s'",
 				_APPLICATION_ENDPOINT_OBJECT_RELATIONSHIP_NAME,
-				apiApplicationERC),
+				relatedObjectEntryERC),
 			_OBJECT_DEFINITION_ERC);
 
 		Collection<ObjectEntry> items = objectEntriesPage.getItems();

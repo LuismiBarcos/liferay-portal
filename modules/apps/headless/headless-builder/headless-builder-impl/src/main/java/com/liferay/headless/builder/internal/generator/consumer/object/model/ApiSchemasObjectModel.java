@@ -42,9 +42,9 @@ public class ApiSchemasObjectModel extends ObjectModel {
 		throws Exception {
 
 		super(
-			apiApplicationERC, companyId, objectDefinitionLocalService,
-			objectEntryLocalService, objectEntryManager,
-			permissionCheckerFactory, userLocalService);
+			companyId, objectDefinitionLocalService, objectEntryLocalService,
+			objectEntryManager, permissionCheckerFactory, apiApplicationERC,
+			userLocalService);
 	}
 
 	public List<Schema> getApiSchemaList() {
@@ -57,7 +57,7 @@ public class ApiSchemasObjectModel extends ObjectModel {
 			String.format(
 				"%s/externalReferenceCode eq '%s'",
 				_APPLICATION_SCHEMA_OBJECT_RELATIONSHIP_NAME,
-				apiApplicationERC),
+				relatedObjectEntryERC),
 			_OBJECT_DEFINITION_ERC);
 
 		_apiSchemaList = new ArrayList<>();
