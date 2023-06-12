@@ -37,6 +37,10 @@ public class ApiApplication {
 		return _builder._osgiJaxRsName;
 	}
 
+	public List<Schema> getSchemas() {
+		return _builder._schemas;
+	}
+
 	// TODO Implements a Builder that requires required fields.
 
 	public static class Builder {
@@ -69,10 +73,17 @@ public class ApiApplication {
 			return this;
 		}
 
+		public Builder setSchemas(List<Schema> schemas) {
+			_schemas = schemas;
+
+			return this;
+		}
+
 		private String _baseURL;
 		private long _companyId;
 		private List<Operation> _operations;
 		private String _osgiJaxRsName;
+		private List<Schema> _schemas;
 
 	}
 

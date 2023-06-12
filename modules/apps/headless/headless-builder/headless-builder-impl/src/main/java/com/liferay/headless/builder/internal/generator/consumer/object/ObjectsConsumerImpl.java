@@ -16,9 +16,11 @@ package com.liferay.headless.builder.internal.generator.consumer.object;
 
 import com.liferay.headless.builder.internal.generator.application.ApiApplication;
 import com.liferay.headless.builder.internal.generator.application.Operation;
+import com.liferay.headless.builder.internal.generator.application.Schema;
 import com.liferay.headless.builder.internal.generator.consumer.Consumer;
 import com.liferay.headless.builder.internal.generator.consumer.object.model.ApiApplicationObjectModel;
 import com.liferay.headless.builder.internal.generator.consumer.object.model.ApiEndpointsObjectModel;
+import com.liferay.headless.builder.internal.generator.consumer.object.model.ApiSchemasObjectModel;
 import com.liferay.headless.builder.internal.generator.consumer.object.model.ObjectModelsFactory;
 
 import java.util.ArrayList;
@@ -51,6 +53,8 @@ public class ObjectsConsumerImpl implements Consumer<String> {
 			apiApplicationObjectModel.getOsgiJaxRsName()
 		).setOperations(
 			_getOperations(apiApplicationERC)
+		).setSchemas(
+			_getSchemas(apiApplicationERC)
 		).build();
 	}
 
@@ -79,6 +83,31 @@ public class ObjectsConsumerImpl implements Consumer<String> {
 		}
 
 		return operations;
+	}
+
+	private List<Schema> _getSchemas(String apiApplicationERC)
+		throws Exception {
+
+		ApiSchemasObjectModel apiSchemasObjectModel =
+			_objectModelsFactory.getObjectModel(
+				apiApplicationERC, ApiSchemasObjectModel.class);
+
+		List<Schema> schemas = new ArrayList<>();
+
+		Schema.Builder builder = new Schema.Builder();
+
+		for (ApiSchemasObjectModel.ApiSchema apiSchema :
+				apiSchemasObjectModel.getApiSchemaList()) {
+
+			schemas.add(
+				builder.setName(
+					apiSchema.getName()
+				).setMainObjectDefinitionERC(
+					apiSchema.getMainObjectRelationshipERC()
+				).build());
+		}
+
+		return schemas;
 	}
 
 	@Reference

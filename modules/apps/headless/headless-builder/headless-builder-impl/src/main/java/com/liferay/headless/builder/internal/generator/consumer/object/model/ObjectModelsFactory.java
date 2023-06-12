@@ -50,6 +50,13 @@ public class ObjectModelsFactory {
 				_objectEntryManager, _permissionCheckerFactory,
 				_userLocalService);
 		}
+		else if (clazz.isAssignableFrom(ApiSchemasObjectModel.class)) {
+			return (T)new ApiSchemasObjectModel(
+				apiApplicationERC, CompanyThreadLocal.getCompanyId(),
+				_objectDefinitionLocalService, _objectEntryLocalService,
+				_objectEntryManager, _permissionCheckerFactory,
+				_userLocalService);
+		}
 
 		throw new NoSuchClassTypeException();
 	}
