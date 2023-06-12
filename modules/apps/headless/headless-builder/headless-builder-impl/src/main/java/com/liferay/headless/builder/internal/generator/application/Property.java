@@ -19,41 +19,20 @@ package com.liferay.headless.builder.internal.generator.application;
  */
 public class Property {
 
+	public Property(String name, String objectFieldERC) {
+		_name = name;
+		_objectFieldERC = objectFieldERC;
+	}
+
 	public String getName() {
-		return _builder._name;
+		return _name;
 	}
 
 	public String getObjectFieldERC() {
-		return _builder._objectFieldERC;
+		return _objectFieldERC;
 	}
 
-	public static class Builder {
-
-		public Property build() {
-			return new Property(this);
-		}
-
-		public Builder setName(String name) {
-			_name = name;
-
-			return this;
-		}
-
-		public Builder setObjectFieldERC(String objectFieldERC) {
-			_objectFieldERC = objectFieldERC;
-
-			return this;
-		}
-
-		private String _name;
-		private String _objectFieldERC;
-
-	}
-
-	private Property(Builder builder) {
-		_builder = builder;
-	}
-
-	private final Builder _builder;
+	private final String _name;
+	private final String _objectFieldERC;
 
 }

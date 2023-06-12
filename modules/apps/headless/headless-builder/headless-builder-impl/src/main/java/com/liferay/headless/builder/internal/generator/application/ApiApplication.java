@@ -21,76 +21,41 @@ import java.util.List;
  */
 public class ApiApplication {
 
+	public ApiApplication(
+		String baseURL, long companyId, List<Operation> operations,
+		String osgiJaxRsName, List<Schema> schemas) {
+
+		_baseURL = baseURL;
+		_companyId = companyId;
+		_operations = operations;
+		_osgiJaxRsName = osgiJaxRsName;
+		_schemas = schemas;
+	}
+
 	public String getBaseURL() {
-		return _builder._baseURL;
+		return _baseURL;
 	}
 
 	public long getCompanyId() {
-		return _builder._companyId;
+		return _companyId;
 	}
 
 	public List<Operation> getOperations() {
-		return _builder._operations;
+		return _operations;
 	}
 
 	public String getOsgiJaxRsName() {
-		return _builder._osgiJaxRsName;
+		return _osgiJaxRsName;
 	}
 
 	public List<Schema> getSchemas() {
-		return _builder._schemas;
+		return _schemas;
 	}
 
-	// TODO Implements a Builder that requires required fields.
-
-	public static class Builder {
-
-		public ApiApplication build() {
-			return new ApiApplication(this);
-		}
-
-		public Builder setBaseURL(String baseURL) {
-			_baseURL = baseURL;
-
-			return this;
-		}
-
-		public Builder setCompanyId(long companyId) {
-			_companyId = companyId;
-
-			return this;
-		}
-
-		public Builder setOperations(List<Operation> operations) {
-			_operations = operations;
-
-			return this;
-		}
-
-		public Builder setOsgiJaxRsName(String osgiJaxRsName) {
-			_osgiJaxRsName = osgiJaxRsName;
-
-			return this;
-		}
-
-		public Builder setSchemas(List<Schema> schemas) {
-			_schemas = schemas;
-
-			return this;
-		}
-
-		private String _baseURL;
-		private long _companyId;
-		private List<Operation> _operations;
-		private String _osgiJaxRsName;
-		private List<Schema> _schemas;
-
-	}
-
-	private ApiApplication(Builder builder) {
-		_builder = builder;
-	}
-
-	private final Builder _builder;
+	private final String _baseURL;
+	private final long _companyId;
+	private final List<Operation> _operations;
+	private final String _osgiJaxRsName;
+	private final List<Schema> _schemas;
 
 }

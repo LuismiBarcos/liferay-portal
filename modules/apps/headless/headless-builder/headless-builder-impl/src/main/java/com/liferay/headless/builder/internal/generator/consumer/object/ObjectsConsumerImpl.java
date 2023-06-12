@@ -43,19 +43,12 @@ public class ObjectsConsumerImpl implements Consumer<String> {
 			_objectModelsFactory.getObjectModel(
 				apiApplicationERC, ApiApplicationObjectModel.class);
 
-		ApiApplication.Builder builder = new ApiApplication.Builder();
-
-		return builder.setBaseURL(
-			apiApplicationObjectModel.getBaseURL()
-		).setCompanyId(
-			apiApplicationObjectModel.getCompanyId()
-		).setOsgiJaxRsName(
-			apiApplicationObjectModel.getOsgiJaxRsName()
-		).setOperations(
-			_getOperations(apiApplicationERC)
-		).setSchemas(
-			_getSchemas(apiApplicationERC)
-		).build();
+		return new ApiApplication(
+			apiApplicationObjectModel.getBaseURL(),
+			apiApplicationObjectModel.getCompanyId(),
+			_getOperations(apiApplicationERC),
+			apiApplicationObjectModel.getOsgiJaxRsName(),
+			_getSchemas(apiApplicationERC));
 	}
 
 	private List<Operation> _getOperations(String apiApplicationERC)
@@ -67,19 +60,13 @@ public class ObjectsConsumerImpl implements Consumer<String> {
 
 		List<Operation> operations = new ArrayList<>();
 
-		Operation.Builder operationBuilder = new Operation.Builder();
-
 		for (ApiEndpointsObjectModel.ApiEndpoint apiEndpoint :
 				apiEndpointsObjectModel.getApiEndpoints()) {
 
 			operations.add(
-				operationBuilder.setMethod(
-					apiEndpoint.getMethod()
-				).setPath(
-					apiEndpoint.getPath()
-				).setScope(
-					apiEndpoint.getScope()
-				).build());
+				new Operation(
+					apiEndpoint.getMethod(), apiEndpoint.getPath(),
+					apiEndpoint.getScope()));
 		}
 
 		return operations;
@@ -94,17 +81,11 @@ public class ObjectsConsumerImpl implements Consumer<String> {
 
 		List<Schema> schemas = new ArrayList<>();
 
-		Schema.Builder builder = new Schema.Builder();
-
 		for (Schema apiSchema : apiSchemasObjectModel.getApiSchemaList()) {
 			schemas.add(
-				builder.setName(
-					apiSchema.getName()
-				).setMainObjectDefinitionERC(
-					apiSchema.getMainObjectDefinitionERC()
-				).setProperties(
-					apiSchema.getProperties()
-				).build());
+				new Schema(
+					apiSchema.getMainObjectDefinitionERC(), apiSchema.getName(),
+					apiSchema.getProperties()));
 		}
 
 		return schemas;

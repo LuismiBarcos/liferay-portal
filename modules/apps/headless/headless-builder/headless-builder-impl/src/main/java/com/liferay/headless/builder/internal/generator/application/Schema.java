@@ -21,54 +21,29 @@ import java.util.List;
  */
 public class Schema {
 
+	public Schema(
+		String mainObjectDefinitionERC, String name,
+		List<Property> properties) {
+
+		_mainObjectDefinitionERC = mainObjectDefinitionERC;
+		_name = name;
+		_properties = properties;
+	}
+
 	public String getMainObjectDefinitionERC() {
-		return _builder._mainObjectDefinitionERC;
+		return _mainObjectDefinitionERC;
 	}
 
 	public String getName() {
-		return _builder._name;
+		return _name;
 	}
 
 	public List<Property> getProperties() {
-		return _builder._properties;
+		return _properties;
 	}
 
-	public static class Builder {
-
-		public Schema build() {
-			return new Schema(this);
-		}
-
-		public Builder setMainObjectDefinitionERC(
-			String mainObjectDefinitionERC) {
-
-			_mainObjectDefinitionERC = mainObjectDefinitionERC;
-
-			return this;
-		}
-
-		public Builder setName(String name) {
-			_name = name;
-
-			return this;
-		}
-
-		public Builder setProperties(List<Property> properties) {
-			_properties = properties;
-
-			return this;
-		}
-
-		private String _mainObjectDefinitionERC;
-		private String _name;
-		private List<Property> _properties;
-
-	}
-
-	private Schema(Builder builder) {
-		_builder = builder;
-	}
-
-	private final Builder _builder;
+	private final String _mainObjectDefinitionERC;
+	private final String _name;
+	private final List<Property> _properties;
 
 }

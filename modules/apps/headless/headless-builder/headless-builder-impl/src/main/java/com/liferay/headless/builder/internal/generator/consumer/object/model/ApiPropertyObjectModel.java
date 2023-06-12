@@ -61,17 +61,14 @@ public class ApiPropertyObjectModel extends ObjectModel {
 
 		_properties = new ArrayList<>();
 
-		Property.Builder builder = new Property.Builder();
-
 		for (ObjectEntry propertyObjectEntry : objectEntriesPage.getItems()) {
 			_properties.add(
-				builder.setName(
+				new Property(
 					(String)getObjectEntryPropertyValue(
-						propertyObjectEntry, _NAME_PROPERTY_VALUE)
-				).setObjectFieldERC(
+						propertyObjectEntry, _NAME_PROPERTY_VALUE),
 					(String)getObjectEntryPropertyValue(
-						propertyObjectEntry, _OBJECT_FIELD_ERC_PROPERTY_VALUE)
-				).build());
+						propertyObjectEntry,
+						_OBJECT_FIELD_ERC_PROPERTY_VALUE)));
 		}
 	}
 

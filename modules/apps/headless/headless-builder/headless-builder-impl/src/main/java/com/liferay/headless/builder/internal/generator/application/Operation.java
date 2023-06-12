@@ -22,70 +22,22 @@ import com.liferay.portal.kernel.util.StringUtil;
  */
 public class Operation {
 
-	public Operation(Builder builder) {
-		_builder = builder;
+	public Operation(String method, String path, String scope) {
+		_method = _setMethod(method);
+		_path = path;
+		_scope = _setScope(scope);
 	}
 
 	public Http.Method getMethod() {
-		return _builder._method;
+		return _method;
 	}
 
 	public String getPath() {
-		return _builder._path;
+		return _path;
 	}
 
 	public Scope getScope() {
-		return _builder._scope;
-	}
-
-	public static class Builder {
-
-		public Operation build() {
-			return new Operation(this);
-		}
-
-		public Builder setMethod(String method) {
-			if (StringUtil.toUpperCase(
-					method
-				).equals(
-					"GET"
-				)) {
-
-				_method = Http.Method.GET;
-			}
-			else {
-				throw new UnsupportedOperationException("Scope not supported");
-			}
-
-			return this;
-		}
-
-		public Builder setPath(String path) {
-			_path = path;
-
-			return this;
-		}
-
-		public Builder setScope(String scope) {
-			String lowerCase = StringUtil.toLowerCase(scope);
-
-			if (lowerCase.equals("instance")) {
-				_scope = Scope.INSTANCE;
-			}
-			else if (lowerCase.equals("site")) {
-				_scope = Scope.SITE;
-			}
-			else {
-				throw new UnsupportedOperationException("Scope not supported");
-			}
-
-			return this;
-		}
-
-		private Http.Method _method;
-		private String _path;
-		private Scope _scope;
-
+		return _scope;
 	}
 
 	public enum Scope {
@@ -94,6 +46,34 @@ public class Operation {
 
 	}
 
-	private final Builder _builder;
+	private Http.Method _setMethod(String method) {
+		if (StringUtil.toUpperCase(
+				method
+			).equals(
+				"GET"
+			)) {
+
+			return Http.Method.GET;
+		}
+
+		throw new UnsupportedOperationException("Scope not supported");
+	}
+
+	private Scope _setScope(String scope) {
+		String lowerCase = StringUtil.toLowerCase(scope);
+
+		if (lowerCase.equals("instance")) {
+			return Scope.INSTANCE;
+		}
+		else if (lowerCase.equals("site")) {
+			return Scope.SITE;
+		}
+
+		throw new UnsupportedOperationException("Scope not supported");
+	}
+
+	private final Http.Method _method;
+	private final String _path;
+	private final Scope _scope;
 
 }

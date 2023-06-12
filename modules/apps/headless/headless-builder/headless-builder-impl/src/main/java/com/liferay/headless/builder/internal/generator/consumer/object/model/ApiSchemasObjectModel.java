@@ -62,21 +62,16 @@ public class ApiSchemasObjectModel extends ObjectModel {
 
 		_apiSchemaList = new ArrayList<>();
 
-		Schema.Builder builder = new Schema.Builder();
-
 		for (ObjectEntry schemaObjectEntry : objectEntriesPage.getItems()) {
 			_apiSchemaList.add(
-				builder.setName(
-					(String)getObjectEntryPropertyValue(
-						schemaObjectEntry, _NAME_PROPERTY_VALUE)
-				).setMainObjectDefinitionERC(
+				new Schema(
 					(String)getObjectEntryPropertyValue(
 						schemaObjectEntry,
-						_MAIN_OBJECT_DEFINITION_ERC_PROPERTY_VALUE)
-				).setProperties(
+						_MAIN_OBJECT_DEFINITION_ERC_PROPERTY_VALUE),
+					(String)getObjectEntryPropertyValue(
+						schemaObjectEntry, _NAME_PROPERTY_VALUE),
 					_getSchemaProperties(
-						schemaObjectEntry.getExternalReferenceCode())
-				).build());
+						schemaObjectEntry.getExternalReferenceCode())));
 		}
 	}
 
