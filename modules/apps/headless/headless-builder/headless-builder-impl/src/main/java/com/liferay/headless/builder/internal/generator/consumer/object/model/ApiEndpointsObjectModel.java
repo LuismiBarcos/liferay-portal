@@ -19,6 +19,7 @@ import com.liferay.headless.builder.internal.generator.application.Schema;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectRelationship;
 import com.liferay.object.related.models.ObjectRelatedModelsProvider;
+import com.liferay.object.rest.dto.v1_0.ListEntry;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.service.ObjectDefinitionLocalService;
@@ -77,15 +78,21 @@ public class ApiEndpointsObjectModel extends ObjectModel {
 		_operations = new ArrayList<>();
 
 		for (ObjectEntry endpointObjectEntry : items) {
+			ListEntry endpointScopeListEntryValue =
+				(ListEntry)getObjectEntryPropertyValue(
+					endpointObjectEntry, _SCOPE_PROPERTY_NAME);
+
+			ListEntry endpointHTTPMethodListEntryValue =
+				(ListEntry)getObjectEntryPropertyValue(
+					endpointObjectEntry, _HTTP_METHOD_PROPERTY_NAME);
+
 			_operations.add(
 				new Operation(
-					(String)getObjectEntryPropertyValue(
-						endpointObjectEntry, _HTTP_METHOD_PROPERTY_NAME),
+					endpointHTTPMethodListEntryValue.getKey(),
 					(String)getObjectEntryPropertyValue(
 						endpointObjectEntry, _PATH_PROPERTY_NAME),
 					_getResponse(endpointObjectEntry),
-					(String)getObjectEntryPropertyValue(
-						endpointObjectEntry, _SCOPE_PROPERTY_NAME)));
+					endpointScopeListEntryValue.getKey()));
 		}
 	}
 
@@ -109,10 +116,10 @@ public class ApiEndpointsObjectModel extends ObjectModel {
 				_SCHEMA_ENDPOINT_OBJECT_RELATIONSHIP_NAME);
 
 		List<com.liferay.object.model.ObjectEntry> relatedModels =
-			objectRelatedModelsProvider.getRelatedModels(
+			objectEntryLocalService.getOneToManyObjectEntries(
 				objectEntry.getGroupId(),
 				objectRelationship.getObjectRelationshipId(),
-				objectEntry.getPrimaryKey(), null, QueryUtil.ALL_POS,
+				objectEntry.getPrimaryKey(), true, null, QueryUtil.ALL_POS,
 				QueryUtil.ALL_POS);
 
 		if (relatedModels.isEmpty()) {
@@ -138,16 +145,16 @@ public class ApiEndpointsObjectModel extends ObjectModel {
 	}
 
 	private static final String _APPLICATION_ENDPOINT_OBJECT_RELATIONSHIP_NAME =
-		"applicationEndpoints";
+		"apiApplicationAPIEndpoints";
 
-	private static final String _HTTP_METHOD_PROPERTY_NAME = "hTTPMethod";
+	private static final String _HTTP_METHOD_PROPERTY_NAME = "httpMethod";
 
 	private static final String _OBJECT_DEFINITION_ERC = "MSOD_API_ENDPOINT";
 
 	private static final String _PATH_PROPERTY_NAME = "path";
 
 	private static final String _SCHEMA_ENDPOINT_OBJECT_RELATIONSHIP_NAME =
-		"endpointResponse";
+		"responseAPISchemaAPIEndpoints";
 
 	private static final String
 		_SCHEMA_MAIN_OBJECT_DEFINITION_ERC_PROPERTY_VALUE =

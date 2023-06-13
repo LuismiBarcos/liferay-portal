@@ -85,7 +85,7 @@ public class ApiPropertyObjectModel extends ObjectModel {
 		"objectFieldERC";
 
 	private static final String _SCHEMA_PROPERTY_OBJECT_RELATIONSHIP_NAME =
-		"schemaProperties";
+		"apiSchemasAPIProperties";
 
 	private List<Property> _properties;
 

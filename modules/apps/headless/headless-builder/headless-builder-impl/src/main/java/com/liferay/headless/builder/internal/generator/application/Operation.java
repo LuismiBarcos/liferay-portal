@@ -49,7 +49,7 @@ public class Operation {
 
 	public enum Scope {
 
-		INSTANCE, SITE
+		COMPANY, SITE
 
 	}
 
@@ -63,14 +63,14 @@ public class Operation {
 			return Http.Method.GET;
 		}
 
-		throw new UnsupportedOperationException("Scope not supported");
+		throw new UnsupportedOperationException("Method not supported");
 	}
 
 	private Scope _setScope(String scope) {
 		String lowerCase = StringUtil.toLowerCase(scope);
 
-		if (lowerCase.equals("instance")) {
-			return Scope.INSTANCE;
+		if (lowerCase.equals("company")) {
+			return Scope.COMPANY;
 		}
 		else if (lowerCase.equals("site")) {
 			return Scope.SITE;

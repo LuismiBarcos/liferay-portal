@@ -92,7 +92,7 @@ public class ApiSchemasObjectModel extends ObjectModel {
 	}
 
 	private static final String _APPLICATION_SCHEMA_OBJECT_RELATIONSHIP_NAME =
-		"applicationSchemas";
+		"apiApplicationAPISchemas";
 
 	private static final String _MAIN_OBJECT_DEFINITION_ERC_PROPERTY_VALUE =
 		"mainObjectDefinitionERC";
