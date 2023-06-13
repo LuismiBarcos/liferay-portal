@@ -22,19 +22,17 @@ import com.liferay.headless.builder.test.info.item.provider.TestEntryInfoItemFie
 import com.liferay.headless.builder.test.info.item.provider.TestEntryInfoItemFormProvider;
 import com.liferay.headless.builder.test.info.item.provider.TestEntryInfoItemObjectProvider;
 import com.liferay.headless.builder.test.model.TestEntry;
-import com.liferay.headless.builder.test.object.util.ObjectDefinitionTestUtil;
 import com.liferay.headless.builder.test.object.util.ObjectEntryTestUtil;
 import com.liferay.headless.builder.test.object.util.ObjectRelationshipTestUtil;
 import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
 import com.liferay.info.item.provider.InfoItemFormProvider;
 import com.liferay.info.item.provider.InfoItemObjectProvider;
-import com.liferay.object.constants.ObjectRelationshipConstants;
-import com.liferay.object.field.util.ObjectFieldUtil;
+import com.liferay.object.exception.NoSuchObjectDefinitionException;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
-import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectRelationship;
 import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.petra.function.UnsafeRunnable;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -42,7 +40,6 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.ContentTypes;
@@ -66,11 +63,12 @@ import java.nio.charset.StandardCharsets;
 
 import java.text.SimpleDateFormat;
 
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Application;
 
 import org.junit.After;
@@ -103,100 +101,120 @@ public class HeadlessBuilderTest {
 
 	@Before
 	public void setUp() throws Exception {
-		_apiApplicationObjectDefinition =
-			ObjectDefinitionTestUtil.publishObjectDefinition(
-				"MSOD_API_APPLICATION",
-				new ArrayList<ObjectField>() {
-					{
-						add(
-							ObjectFieldUtil.createObjectField(
-								"Text", "String", true, true, null,
-								RandomTestUtil.randomString(),
-								_API_APPLICATION_TITLE, false));
-						add(
-							ObjectFieldUtil.createObjectField(
-								"Text", "String", true, true, null,
-								RandomTestUtil.randomString(),
-								_API_APPLICATION_BASE_URL, false));
-					}
-				});
+		_apiApplicationObjectDefinition = _getObjectDefinition(
+			"MSOD_API_APPLICATION");
+		_apiEndpointObjectDefinition = _getObjectDefinition(
+			"MSOD_API_ENDPOINT");
+		_apiFilterObjectDefinition = _getObjectDefinition("MSOD_API_FILTER");
+		_apiPropertyObjectDefinition = _getObjectDefinition(
+			"MSOD_API_PROPERTY");
+		_apiSchemaObjectDefinition = _getObjectDefinition("MSOD_API_SCHEMA");
+		_apiSortrObjectDefinition = _getObjectDefinition("MSOD_API_SORT");
 
-		_apiEndpointObjectDefinition =
-			ObjectDefinitionTestUtil.publishObjectDefinition(
-				"MSOD_API_ENDPOINT",
-				new ArrayList<ObjectField>() {
-					{
-						add(
-							ObjectFieldUtil.createObjectField(
-								"Text", "String", true, true, null,
-								RandomTestUtil.randomString(),
-								_API_ENDPOINT_HTTP_METHOD, false));
-						add(
-							ObjectFieldUtil.createObjectField(
-								"Text", "String", true, true, null,
-								RandomTestUtil.randomString(),
-								_API_ENDPOINT_PATH, false));
-						add(
-							ObjectFieldUtil.createObjectField(
-								"Text", "String", true, true, null,
-								RandomTestUtil.randomString(),
-								_API_ENDPOINT_SCOPE, false));
-					}
-				});
+		_apiApplicationAPIEndpointsObjectRelationship =
+			_objectRelationshipLocalService.getObjectRelationship(
+				_apiApplicationObjectDefinition.getObjectDefinitionId(),
+				"apiApplicationAPIEndpoints");
 
-		_apiSchemaObjectDefinition =
-			ObjectDefinitionTestUtil.publishObjectDefinition(
-				"MSOD_API_SCHEMA",
-				new ArrayList<ObjectField>() {
-					{
-						add(
-							ObjectFieldUtil.createObjectField(
-								"Text", "String", true, true, null,
-								RandomTestUtil.randomString(), _API_SCHEMA_NAME,
-								false));
-						add(
-							ObjectFieldUtil.createObjectField(
-								"Text", "String", true, true, null,
-								RandomTestUtil.randomString(),
-								_API_SCHEMA_MAIN_OBJECT_DEFINITION_ERC, false));
-					}
-				});
+		_apiApplicationAPISchemasObjectRelationship =
+			_objectRelationshipLocalService.getObjectRelationship(
+				_apiApplicationObjectDefinition.getObjectDefinitionId(),
+				"apiApplicationAPISchemas");
 
-		_apiPropertyObjectDefinition =
-			ObjectDefinitionTestUtil.publishObjectDefinition(
-				"MSOD_API_PROPERTY",
-				new ArrayList<ObjectField>() {
-					{
-						add(
-							ObjectFieldUtil.createObjectField(
-								"Text", "String", true, true, null,
-								RandomTestUtil.randomString(),
-								_API_PROPERTY_NAME, false));
-						add(
-							ObjectFieldUtil.createObjectField(
-								"Text", "String", true, true, null,
-								RandomTestUtil.randomString(),
-								_API_PROPERTY_OBJECT_FIELD_ERC, false));
-					}
-				});
+		_apiEndpointAPIFiltersObjectRelationship =
+			_objectRelationshipLocalService.getObjectRelationship(
+				_apiEndpointObjectDefinition.getObjectDefinitionId(),
+				"apiEndpointAPIFilters");
 
-		_applicationEndpointsObjectRelationship =
-			ObjectRelationshipTestUtil.addObjectRelationship(
-				_apiApplicationObjectDefinition, "applicationEndpoints",
-				_apiEndpointObjectDefinition, TestPropsValues.getUserId(),
-				ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+		_apiEndpointAPISortsObjectRelationship =
+			_objectRelationshipLocalService.getObjectRelationship(
+				_apiEndpointObjectDefinition.getObjectDefinitionId(),
+				"apiEndpointAPISorts");
 
-		_applicationSchemasObjectRelationship =
-			ObjectRelationshipTestUtil.addObjectRelationship(
-				_apiApplicationObjectDefinition, "applicationSchemas",
-				_apiSchemaObjectDefinition, TestPropsValues.getUserId(),
-				ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
+		_apiPropertiesAPIPropertiesObjectRelationship =
+			_objectRelationshipLocalService.getObjectRelationship(
+				_apiPropertyObjectDefinition.getObjectDefinitionId(),
+				"apiPropertiesAPIProperties");
 
-		_schemaPropertyObjectRelationship =
-			ObjectRelationshipTestUtil.addObjectRelationship(
-				_apiSchemaObjectDefinition, "schemaProperties",
-				_apiPropertyObjectDefinition, TestPropsValues.getUserId(),
-				ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+		_apiSchemasAPIPropertiesObjectRelationship =
+			_objectRelationshipLocalService.getObjectRelationship(
+				_apiSchemaObjectDefinition.getObjectDefinitionId(),
+				"apiSchemasAPIProperties");
+
+		_requestAPISchemaAPIEndpointsObjectRelationship =
+			_objectRelationshipLocalService.getObjectRelationship(
+				_apiSchemaObjectDefinition.getObjectDefinitionId(),
+				"requestAPISchemaAPIEndpoints");
+
+		_responseAPISchemaAPIEndpointsObjectRelationship =
+			_objectRelationshipLocalService.getObjectRelationship(
+				_apiSchemaObjectDefinition.getObjectDefinitionId(),
+				"responseAPISchemaAPIEndpoints");
+
+		if (_anyNull(
+				_apiApplicationObjectDefinition, _apiEndpointObjectDefinition,
+				_apiFilterObjectDefinition, _apiPropertyObjectDefinition,
+				_apiSchemaObjectDefinition, _apiSortrObjectDefinition,
+				_apiApplicationAPIEndpointsObjectRelationship,
+				_apiApplicationAPISchemasObjectRelationship,
+				_apiEndpointAPIFiltersObjectRelationship,
+				_apiEndpointAPISortsObjectRelationship,
+				_apiPropertiesAPIPropertiesObjectRelationship,
+				_apiSchemasAPIPropertiesObjectRelationship,
+				_requestAPISchemaAPIEndpointsObjectRelationship,
+				_responseAPISchemaAPIEndpointsObjectRelationship)) {
+
+			throw new NotFoundException(
+				"Headless Builder Api Definition not well formed");
+		}
+
+		_apiSchemaObjectEntry = _createApiSchemaObjectEntry(
+			"mainObjectDefintionERC", "MySchema");
+
+		_apiApplicationObjectEntry1 = _createApiApplicationObjectEntry(
+			"base-url-one", "ApiApplication1");
+
+		_apiEndpointObjectEntry1 = _createApiEndpointObjectEntry(
+			"GET", "My endpoint", "/endpoint-one", "company");
+
+		ObjectRelationshipTestUtil.relateObjectEntries(
+			_apiApplicationObjectEntry1.getObjectEntryId(),
+			_apiEndpointObjectEntry1.getObjectEntryId(),
+			_apiApplicationAPIEndpointsObjectRelationship,
+			TestPropsValues.getUserId());
+
+		ObjectRelationshipTestUtil.relateObjectEntries(
+			_apiApplicationObjectEntry1.getObjectEntryId(),
+			_apiSchemaObjectEntry.getObjectEntryId(),
+			_apiApplicationAPISchemasObjectRelationship,
+			TestPropsValues.getUserId());
+
+		_apiApplicationObjectEntry2 = _createApiApplicationObjectEntry(
+			"base-url-two", "ApiApplication2");
+
+		_apiEndpointObjectEntry2 = _createApiEndpointObjectEntry(
+			"GET", "My endpoint", "/endpoint-two", "company");
+
+		ObjectRelationshipTestUtil.relateObjectEntries(
+			_apiApplicationObjectEntry2.getObjectEntryId(),
+			_apiEndpointObjectEntry2.getObjectEntryId(),
+			_apiApplicationAPIEndpointsObjectRelationship,
+			TestPropsValues.getUserId());
+
+		ObjectRelationshipTestUtil.relateObjectEntries(
+			_apiApplicationObjectEntry2.getObjectEntryId(),
+			_apiSchemaObjectEntry.getObjectEntryId(),
+			_apiApplicationAPISchemasObjectRelationship,
+			TestPropsValues.getUserId());
+
+		_apiPropertyObjectEntry = _createApiPropertyObjectEntry(
+			"myProperty", "objectFieldERC");
+
+		ObjectRelationshipTestUtil.relateObjectEntries(
+			_apiSchemaObjectEntry.getObjectEntryId(),
+			_apiPropertyObjectEntry.getObjectEntryId(),
+			_apiSchemasAPIPropertiesObjectRelationship,
+			TestPropsValues.getUserId());
 
 		Bundle bundle = FrameworkUtil.getBundle(HeadlessBuilderTest.class);
 
@@ -222,21 +240,43 @@ public class HeadlessBuilderTest {
 		_infoItemFormProviderServiceRegistration.unregister();
 		_infoItemObjectProviderServiceRegistration.unregister();
 
-		_objectRelationshipLocalService.deleteObjectRelationship(
-			_applicationEndpointsObjectRelationship);
-		_objectRelationshipLocalService.deleteObjectRelationship(
-			_applicationSchemasObjectRelationship);
-		_objectRelationshipLocalService.deleteObjectRelationship(
-			_schemaPropertyObjectRelationship);
+		ObjectRelationshipTestUtil.deleteObjectEntriesRelationship(
+			_apiApplicationObjectEntry1.getObjectEntryId(),
+			_apiEndpointObjectEntry1.getObjectEntryId(),
+			_apiApplicationAPIEndpointsObjectRelationship);
 
-		_objectDefinitionLocalService.deleteObjectDefinition(
-			_apiApplicationObjectDefinition);
-		_objectDefinitionLocalService.deleteObjectDefinition(
-			_apiEndpointObjectDefinition);
-		_objectDefinitionLocalService.deleteObjectDefinition(
-			_apiSchemaObjectDefinition);
-		_objectDefinitionLocalService.deleteObjectDefinition(
-			_apiPropertyObjectDefinition);
+		ObjectRelationshipTestUtil.deleteObjectEntriesRelationship(
+			_apiApplicationObjectEntry1.getObjectEntryId(),
+			_apiSchemaObjectEntry.getObjectEntryId(),
+			_apiApplicationAPISchemasObjectRelationship);
+
+		ObjectRelationshipTestUtil.deleteObjectEntriesRelationship(
+			_apiApplicationObjectEntry2.getObjectEntryId(),
+			_apiEndpointObjectEntry2.getObjectEntryId(),
+			_apiApplicationAPIEndpointsObjectRelationship);
+
+		ObjectRelationshipTestUtil.deleteObjectEntriesRelationship(
+			_apiApplicationObjectEntry2.getObjectEntryId(),
+			_apiSchemaObjectEntry.getObjectEntryId(),
+			_apiApplicationAPISchemasObjectRelationship);
+
+		ObjectRelationshipTestUtil.deleteObjectEntriesRelationship(
+			_apiSchemaObjectEntry.getObjectEntryId(),
+			_apiPropertyObjectEntry.getObjectEntryId(),
+			_apiSchemasAPIPropertiesObjectRelationship);
+
+		_objectEntryLocalService.deleteObjectEntry(
+			_apiEndpointObjectEntry1.getObjectEntryId());
+		_objectEntryLocalService.deleteObjectEntry(
+			_apiEndpointObjectEntry2.getObjectEntryId());
+		_objectEntryLocalService.deleteObjectEntry(
+			_apiSchemaObjectEntry.getObjectEntryId());
+		_objectEntryLocalService.deleteObjectEntry(
+			_apiPropertyObjectEntry.getObjectEntryId());
+		_objectEntryLocalService.deleteObjectEntry(
+			_apiApplicationObjectEntry1.getObjectEntryId());
+		_objectEntryLocalService.deleteObjectEntry(
+			_apiApplicationObjectEntry2.getObjectEntryId());
 	}
 
 	@FeatureFlags("LPS-171047")
@@ -313,34 +353,6 @@ public class HeadlessBuilderTest {
 
 	@Test
 	public void testPublishApiApplication() throws Exception {
-		String apiApplicationBaseURL = "base-url";
-		String apiEndpointPath = "/new-path";
-		ObjectEntry apiApplication = _createApiApplicationObjectEntry(
-			apiApplicationBaseURL, "ApiApplication");
-
-		ObjectEntry apiEndpoint = _createApiEndpointObjectEntry(
-			"GET", apiEndpointPath, "Instance");
-
-		ObjectRelationshipTestUtil.relateObjectEntries(
-			apiApplication.getObjectEntryId(), apiEndpoint.getObjectEntryId(),
-			_applicationEndpointsObjectRelationship,
-			TestPropsValues.getUserId());
-
-		ObjectEntry apiSchema = _createApiSchemaObjectEntry(
-			"mainObjectDefintionERC", "MySchema");
-
-		ObjectRelationshipTestUtil.relateObjectEntries(
-			apiApplication.getObjectEntryId(), apiSchema.getObjectEntryId(),
-			_applicationSchemasObjectRelationship, TestPropsValues.getUserId());
-
-		ObjectEntry apiPropertyObjectEntry = _createApiPropertyObjectEntry(
-			"myProperty", "objectFieldERC");
-
-		ObjectRelationshipTestUtil.relateObjectEntries(
-			apiSchema.getObjectEntryId(),
-			apiPropertyObjectEntry.getObjectEntryId(),
-			_schemaPropertyObjectRelationship, TestPropsValues.getUserId());
-
 		CountDownLatch addedCountLatch = new CountDownLatch(1);
 
 		Bundle bundle = FrameworkUtil.getBundle(getClass());
@@ -373,12 +385,18 @@ public class HeadlessBuilderTest {
 			serviceTracker.open();
 
 			_headlessBuilderApplicationManager.publishApplication(
-				apiApplication.getExternalReferenceCode());
+				_apiApplicationObjectEntry1.getExternalReferenceCode());
 
 			addedCountLatch.await(1, TimeUnit.MINUTES);
 
+			String apiApplication1baseURL =
+				(String)_getObjectEntryPropertyValue(
+					_apiApplicationObjectEntry1, _API_APPLICATION_BASE_URL);
+			String apiEndpoint1Path = (String)_getObjectEntryPropertyValue(
+				_apiEndpointObjectEntry1, _API_ENDPOINT_PATH);
+
 			HttpURLConnection httpURLConnection = _createHttpURLConnection(
-				apiApplicationBaseURL + apiEndpointPath, Http.Method.GET);
+				apiApplication1baseURL + apiEndpoint1Path, Http.Method.GET);
 
 			httpURLConnection.connect();
 
@@ -387,59 +405,12 @@ public class HeadlessBuilderTest {
 		finally {
 			serviceTracker.close();
 			_headlessBuilderApplicationManager.unpublishApplication(
-				apiApplication.getExternalReferenceCode());
+				_apiApplicationObjectEntry1.getExternalReferenceCode());
 		}
 	}
 
 	@Test
 	public void testPublishMultipleApiApplications() throws Exception {
-		String apiApplication1baseURL = "base-url-one";
-		String apiEndpoint1Path = "/endpoint-one";
-
-		ObjectEntry apiApplication1 = _createApiApplicationObjectEntry(
-			apiApplication1baseURL, "ApiApplication1");
-
-		ObjectEntry apiEndpoint1 = _createApiEndpointObjectEntry(
-			"GET", apiEndpoint1Path, "Instance");
-
-		ObjectRelationshipTestUtil.relateObjectEntries(
-			apiApplication1.getObjectEntryId(), apiEndpoint1.getObjectEntryId(),
-			_applicationEndpointsObjectRelationship,
-			TestPropsValues.getUserId());
-
-		String apiApplication2baseURL = "base-url-two";
-		String apiEndpoint2Path = "/endpoint-two";
-
-		ObjectEntry apiApplication2 = _createApiApplicationObjectEntry(
-			apiApplication2baseURL, "ApiApplication2");
-
-		ObjectEntry apiEndpoint2 = _createApiEndpointObjectEntry(
-			"GET", apiEndpoint2Path, "Instance");
-
-		ObjectRelationshipTestUtil.relateObjectEntries(
-			apiApplication2.getObjectEntryId(), apiEndpoint2.getObjectEntryId(),
-			_applicationEndpointsObjectRelationship,
-			TestPropsValues.getUserId());
-
-		ObjectEntry apiSchema = _createApiSchemaObjectEntry(
-			"mainObjectDefintionERC", "MySchema");
-
-		ObjectRelationshipTestUtil.relateObjectEntries(
-			apiApplication1.getObjectEntryId(), apiSchema.getObjectEntryId(),
-			_applicationSchemasObjectRelationship, TestPropsValues.getUserId());
-
-		ObjectRelationshipTestUtil.relateObjectEntries(
-			apiApplication2.getObjectEntryId(), apiSchema.getObjectEntryId(),
-			_applicationSchemasObjectRelationship, TestPropsValues.getUserId());
-
-		ObjectEntry apiPropertyObjectEntry = _createApiPropertyObjectEntry(
-			"myProperty", "objectFieldERC");
-
-		ObjectRelationshipTestUtil.relateObjectEntries(
-			apiSchema.getObjectEntryId(),
-			apiPropertyObjectEntry.getObjectEntryId(),
-			_schemaPropertyObjectRelationship, TestPropsValues.getUserId());
-
 		CountDownLatch addedCountLatch = new CountDownLatch(2);
 		CountDownLatch removedCountLatch = new CountDownLatch(1);
 
@@ -482,12 +453,18 @@ public class HeadlessBuilderTest {
 			serviceTracker.open();
 
 			_headlessBuilderApplicationManager.publishApplication(
-				apiApplication1.getExternalReferenceCode());
+				_apiApplicationObjectEntry1.getExternalReferenceCode());
 
 			_headlessBuilderApplicationManager.publishApplication(
-				apiApplication2.getExternalReferenceCode());
+				_apiApplicationObjectEntry2.getExternalReferenceCode());
 
 			addedCountLatch.await(1, TimeUnit.MINUTES);
+
+			String apiApplication1baseURL =
+				(String)_getObjectEntryPropertyValue(
+					_apiApplicationObjectEntry1, _API_APPLICATION_BASE_URL);
+			String apiEndpoint1Path = (String)_getObjectEntryPropertyValue(
+				_apiEndpointObjectEntry1, _API_ENDPOINT_PATH);
 
 			HttpURLConnection httpURLConnection = _createHttpURLConnection(
 				apiApplication1baseURL + apiEndpoint1Path, Http.Method.GET);
@@ -495,6 +472,12 @@ public class HeadlessBuilderTest {
 			httpURLConnection.connect();
 
 			Assert.assertEquals(200, httpURLConnection.getResponseCode());
+
+			String apiApplication2baseURL =
+				(String)_getObjectEntryPropertyValue(
+					_apiApplicationObjectEntry2, _API_APPLICATION_BASE_URL);
+			String apiEndpoint2Path = (String)_getObjectEntryPropertyValue(
+				_apiEndpointObjectEntry2, _API_ENDPOINT_PATH);
 
 			httpURLConnection = _createHttpURLConnection(
 				apiApplication2baseURL + apiEndpoint2Path, Http.Method.GET);
@@ -504,7 +487,7 @@ public class HeadlessBuilderTest {
 			Assert.assertEquals(200, httpURLConnection.getResponseCode());
 
 			_headlessBuilderApplicationManager.unpublishApplication(
-				apiApplication1.getExternalReferenceCode());
+				_apiApplicationObjectEntry1.getExternalReferenceCode());
 
 			removedCountLatch.await(1, TimeUnit.MINUTES);
 
@@ -525,17 +508,21 @@ public class HeadlessBuilderTest {
 		finally {
 			serviceTracker.close();
 			_headlessBuilderApplicationManager.unpublishApplication(
-				apiApplication1.getExternalReferenceCode());
+				_apiApplicationObjectEntry1.getExternalReferenceCode());
 			_headlessBuilderApplicationManager.unpublishApplication(
-				apiApplication2.getExternalReferenceCode());
+				_apiApplicationObjectEntry2.getExternalReferenceCode());
 		}
 	}
 
-	// TODO Missing tests:
-	//  Create multiple api applications with multiple endpoints
-	//  that should be accessible but not others
-	//  Create same endpoints in different applications with
-	//  different responses and ensure that the responses are ok
+	private boolean _anyNull(Object... objects) {
+		for (Object object : objects) {
+			if (object == null) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	private ObjectEntry _createApiApplicationObjectEntry(
 			String baseURL, String title)
@@ -551,13 +538,15 @@ public class HeadlessBuilderTest {
 	}
 
 	private ObjectEntry _createApiEndpointObjectEntry(
-			String httpMethod, String path, String scope)
+			String httpMethod, String name, String path, String scope)
 		throws Exception {
 
 		return ObjectEntryTestUtil.addObjectEntry(
 			_apiEndpointObjectDefinition,
 			HashMapBuilder.<String, Serializable>put(
 				_API_ENDPOINT_HTTP_METHOD, httpMethod
+			).put(
+				_API_ENDPOINT_NAME, name
 			).put(
 				_API_ENDPOINT_PATH, path
 			).put(
@@ -623,6 +612,29 @@ public class HeadlessBuilderTest {
 		return simpleDateFormat.format(date);
 	}
 
+	private ObjectDefinition _getObjectDefinition(String objectDefinitionERC)
+		throws Exception {
+
+		ObjectDefinition objectDefinition =
+			_objectDefinitionLocalService.
+				getObjectDefinitionByExternalReferenceCode(
+					objectDefinitionERC, TestPropsValues.getCompanyId());
+
+		if (objectDefinition == null) {
+			throw new NoSuchObjectDefinitionException();
+		}
+
+		return objectDefinition;
+	}
+
+	private Serializable _getObjectEntryPropertyValue(
+		ObjectEntry objectEntry, String propertyName) {
+
+		Map<String, Serializable> values = objectEntry.getValues();
+
+		return values.get(propertyName);
+	}
+
 	private JSONObject _invoke(String endpoint, Http.Method method)
 		throws Exception {
 
@@ -676,9 +688,17 @@ public class HeadlessBuilderTest {
 
 	private static final String _API_ENDPOINT_HTTP_METHOD = "hTTPMethod";
 
+	private static final String _API_ENDPOINT_NAME = "name";
+
 	private static final String _API_ENDPOINT_PATH = "path";
 
 	private static final String _API_ENDPOINT_SCOPE = "scope";
+
+	// TODO Missing tests:
+	//  Create multiple api applications with multiple endpoints
+	//  that should be accessible but not others
+	//  Create same endpoints in different applications with
+	//  different responses and ensure that the responses are ok
 
 	private static final String _API_PROPERTY_NAME = "name";
 
@@ -690,12 +710,24 @@ public class HeadlessBuilderTest {
 
 	private static final String _API_SCHEMA_NAME = "name";
 
+	private ObjectRelationship _apiApplicationAPIEndpointsObjectRelationship;
+	private ObjectRelationship _apiApplicationAPISchemasObjectRelationship;
 	private ObjectDefinition _apiApplicationObjectDefinition;
+	private ObjectEntry _apiApplicationObjectEntry1;
+	private ObjectEntry _apiApplicationObjectEntry2;
+	private ObjectRelationship _apiEndpointAPIFiltersObjectRelationship;
+	private ObjectRelationship _apiEndpointAPISortsObjectRelationship;
 	private ObjectDefinition _apiEndpointObjectDefinition;
+	private ObjectEntry _apiEndpointObjectEntry1;
+	private ObjectEntry _apiEndpointObjectEntry2;
+	private ObjectDefinition _apiFilterObjectDefinition;
+	private ObjectRelationship _apiPropertiesAPIPropertiesObjectRelationship;
 	private ObjectDefinition _apiPropertyObjectDefinition;
+	private ObjectEntry _apiPropertyObjectEntry;
 	private ObjectDefinition _apiSchemaObjectDefinition;
-	private ObjectRelationship _applicationEndpointsObjectRelationship;
-	private ObjectRelationship _applicationSchemasObjectRelationship;
+	private ObjectEntry _apiSchemaObjectEntry;
+	private ObjectRelationship _apiSchemasAPIPropertiesObjectRelationship;
+	private ObjectDefinition _apiSortrObjectDefinition;
 
 	@Inject
 	private HeadlessBuilderApplicationFactory
@@ -714,9 +746,13 @@ public class HeadlessBuilderTest {
 	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 	@Inject
+	private ObjectEntryLocalService _objectEntryLocalService;
+
+	@Inject
 	private ObjectRelationshipLocalService _objectRelationshipLocalService;
 
-	private ObjectRelationship _schemaPropertyObjectRelationship;
+	private ObjectRelationship _requestAPISchemaAPIEndpointsObjectRelationship;
+	private ObjectRelationship _responseAPISchemaAPIEndpointsObjectRelationship;
 	private final TestEntry _testEntry = TestEntry.INSTANCE;
 
 }

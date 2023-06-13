@@ -14,31 +14,25 @@
 
 package com.liferay.headless.builder.test.object.util;
 
-import com.liferay.object.constants.ObjectRelationshipConstants;
-import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectRelationship;
 import com.liferay.object.service.ObjectRelationshipLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
-import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 
 /**
  * @author Luis Miguel Barcos
  */
 public class ObjectRelationshipTestUtil {
 
-	public static ObjectRelationship addObjectRelationship(
-			ObjectDefinition objectDefinition, String objectRelationshipName,
-			ObjectDefinition relatedObjectDefinition, long userId, String type)
+	public static void deleteObjectEntriesRelationship(
+			long objectEntryId1, long objectEntryId2,
+			ObjectRelationship objectRelationship)
 		throws Exception {
 
-		return ObjectRelationshipLocalServiceUtil.addObjectRelationship(
-			userId, objectDefinition.getObjectDefinitionId(),
-			relatedObjectDefinition.getObjectDefinitionId(), 0,
-			ObjectRelationshipConstants.DELETION_TYPE_PREVENT,
-			LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
-			objectRelationshipName, type);
+		ObjectRelationshipLocalServiceUtil.
+			deleteObjectRelationshipMappingTableValues(
+				objectRelationship.getObjectRelationshipId(), objectEntryId1,
+				objectEntryId2);
 	}
 
 	public static void relateObjectEntries(
