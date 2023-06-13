@@ -216,6 +216,12 @@ public class HeadlessBuilderTest {
 			_apiSchemasAPIPropertiesObjectRelationship,
 			TestPropsValues.getUserId());
 
+		ObjectRelationshipTestUtil.relateObjectEntries(
+			_apiSchemaObjectEntry.getObjectEntryId(),
+			_apiEndpointObjectEntry1.getObjectEntryId(),
+			_responseAPISchemaAPIEndpointsObjectRelationship,
+			TestPropsValues.getUserId());
+
 		Bundle bundle = FrameworkUtil.getBundle(HeadlessBuilderTest.class);
 
 		BundleContext bundleContext = bundle.getBundleContext();
@@ -264,6 +270,11 @@ public class HeadlessBuilderTest {
 			_apiSchemaObjectEntry.getObjectEntryId(),
 			_apiPropertyObjectEntry.getObjectEntryId(),
 			_apiSchemasAPIPropertiesObjectRelationship);
+
+		ObjectRelationshipTestUtil.deleteObjectEntriesRelationship(
+			_apiSchemaObjectEntry.getObjectEntryId(),
+			_apiEndpointObjectEntry1.getObjectEntryId(),
+			_responseAPISchemaAPIEndpointsObjectRelationship);
 
 		_objectEntryLocalService.deleteObjectEntry(
 			_apiEndpointObjectEntry1.getObjectEntryId());
