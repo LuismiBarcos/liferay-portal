@@ -16,12 +16,10 @@ package com.liferay.headless.builder.internal.generator.consumer.object.model;
 
 import com.liferay.object.exception.NoSuchObjectDefinitionException;
 import com.liferay.object.model.ObjectDefinition;
-import com.liferay.object.related.models.ObjectRelatedModelsProvider;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
-import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
@@ -46,8 +44,6 @@ public abstract class ObjectModel {
 			ObjectDefinitionLocalService objectDefinitionLocalService,
 			ObjectEntryLocalService objectEntryLocalService,
 			ObjectEntryManager objectEntryManager,
-			ObjectRelatedModelsProvider objectRelatedModelsProvider,
-			ObjectRelationshipLocalService objectRelationshipLocalService,
 			PermissionCheckerFactory permissionCheckerFactory,
 			String relatedObjectEntryERC, UserLocalService userLocalService)
 		throws Exception {
@@ -56,8 +52,6 @@ public abstract class ObjectModel {
 		this.objectDefinitionLocalService = objectDefinitionLocalService;
 		this.objectEntryLocalService = objectEntryLocalService;
 		this.objectEntryManager = objectEntryManager;
-		this.objectRelatedModelsProvider = objectRelatedModelsProvider;
-		this.objectRelationshipLocalService = objectRelationshipLocalService;
 		this.permissionCheckerFactory = permissionCheckerFactory;
 		this.relatedObjectEntryERC = relatedObjectEntryERC;
 		this.userLocalService = userLocalService;
@@ -119,9 +113,6 @@ public abstract class ObjectModel {
 	protected final ObjectDefinitionLocalService objectDefinitionLocalService;
 	protected final ObjectEntryLocalService objectEntryLocalService;
 	protected final ObjectEntryManager objectEntryManager;
-	protected final ObjectRelatedModelsProvider objectRelatedModelsProvider;
-	protected final ObjectRelationshipLocalService
-		objectRelationshipLocalService;
 	protected final PermissionCheckerFactory permissionCheckerFactory;
 	protected final String relatedObjectEntryERC;
 	protected final UserLocalService userLocalService;
