@@ -16,10 +16,12 @@ package com.liferay.headless.builder.internal.generator.consumer.object.model;
 
 import com.liferay.headless.builder.internal.generator.application.Property;
 import com.liferay.headless.builder.internal.generator.application.Schema;
+import com.liferay.object.related.models.ObjectRelatedModelsProvider;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
+import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactory;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.vulcan.pagination.Page;
@@ -37,14 +39,17 @@ public class ApiSchemasObjectModel extends ObjectModel {
 			ObjectDefinitionLocalService objectDefinitionLocalService,
 			ObjectEntryLocalService objectEntryLocalService,
 			ObjectEntryManager objectEntryManager,
+			ObjectRelatedModelsProvider objectRelatedModelsProvider,
+			ObjectRelationshipLocalService objectRelationshipLocalService,
 			PermissionCheckerFactory permissionCheckerFactory,
 			String relatedObjectEntryERC, UserLocalService userLocalService)
 		throws Exception {
 
 		super(
 			companyId, objectDefinitionLocalService, objectEntryLocalService,
-			objectEntryManager, permissionCheckerFactory, relatedObjectEntryERC,
-			userLocalService);
+			objectEntryManager, objectRelatedModelsProvider,
+			objectRelationshipLocalService, permissionCheckerFactory,
+			relatedObjectEntryERC, userLocalService);
 	}
 
 	public List<Schema> getSchemas() {
@@ -80,7 +85,8 @@ public class ApiSchemasObjectModel extends ObjectModel {
 
 		return new ApiPropertyObjectModel(
 			companyId, objectDefinitionLocalService, objectEntryLocalService,
-			objectEntryManager, permissionCheckerFactory, schemaERC,
+			objectEntryManager, objectRelatedModelsProvider,
+			objectRelationshipLocalService, permissionCheckerFactory, schemaERC,
 			userLocalService
 		).getProperties();
 	}

@@ -17,9 +17,11 @@ package com.liferay.headless.builder.internal.generator.consumer.object;
 import com.liferay.headless.builder.internal.generator.application.ApiApplication;
 import com.liferay.headless.builder.internal.generator.consumer.Consumer;
 import com.liferay.headless.builder.internal.generator.consumer.object.model.ApiApplicationObjectModel;
+import com.liferay.object.related.models.ObjectRelatedModelsProvider;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
+import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactory;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -41,7 +43,8 @@ public class ObjectsConsumerImpl implements Consumer<String> {
 			new ApiApplicationObjectModel(
 				CompanyThreadLocal.getCompanyId(),
 				_objectDefinitionLocalService, _objectEntryLocalService,
-				_objectEntryManager, _permissionCheckerFactory,
+				_objectEntryManager, _objectRelatedModelsProvider,
+				_objectRelationshipLocalService, _permissionCheckerFactory,
 				apiApplicationERC, _userLocalService);
 
 		return new ApiApplication(
@@ -60,6 +63,12 @@ public class ObjectsConsumerImpl implements Consumer<String> {
 
 	@Reference(target = "(object.entry.manager.storage.type=default)")
 	private ObjectEntryManager _objectEntryManager;
+
+	@Reference
+	private ObjectRelatedModelsProvider _objectRelatedModelsProvider;
+
+	@Reference
+	private ObjectRelationshipLocalService _objectRelationshipLocalService;
 
 	@Reference
 	private PermissionCheckerFactory _permissionCheckerFactory;

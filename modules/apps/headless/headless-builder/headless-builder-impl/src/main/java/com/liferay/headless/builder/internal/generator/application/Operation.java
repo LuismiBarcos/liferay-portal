@@ -22,9 +22,12 @@ import com.liferay.portal.kernel.util.StringUtil;
  */
 public class Operation {
 
-	public Operation(String method, String path, String scope) {
+	public Operation(
+		String method, String path, Schema response, String scope) {
+
 		_method = _setMethod(method);
 		_path = path;
+		_response = response;
 		_scope = _setScope(scope);
 	}
 
@@ -34,6 +37,10 @@ public class Operation {
 
 	public String getPath() {
 		return _path;
+	}
+
+	public Schema getResponse() {
+		return _response;
 	}
 
 	public Scope getScope() {
@@ -74,6 +81,7 @@ public class Operation {
 
 	private final Http.Method _method;
 	private final String _path;
+	private final Schema _response;
 	private final Scope _scope;
 
 }

@@ -15,17 +15,26 @@
 package com.liferay.headless.builder.internal.generator.consumer.object.model;
 
 import com.liferay.headless.builder.internal.generator.application.Operation;
+import com.liferay.headless.builder.internal.generator.application.Schema;
+import com.liferay.object.model.ObjectDefinition;
+import com.liferay.object.model.ObjectRelationship;
+import com.liferay.object.related.models.ObjectRelatedModelsProvider;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
+import com.liferay.object.service.ObjectRelationshipLocalService;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactory;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.vulcan.pagination.Page;
 
+import java.io.Serializable;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Luis Miguel Barcos
@@ -37,14 +46,17 @@ public class ApiEndpointsObjectModel extends ObjectModel {
 			ObjectDefinitionLocalService objectDefinitionLocalService,
 			ObjectEntryLocalService objectEntryLocalService,
 			ObjectEntryManager objectEntryManager,
+			ObjectRelatedModelsProvider objectRelatedModelsProvider,
+			ObjectRelationshipLocalService objectRelationshipLocalService,
 			PermissionCheckerFactory permissionCheckerFactory,
 			String relatedObjectEntry, UserLocalService userLocalService)
 		throws Exception {
 
 		super(
 			companyId, objectDefinitionLocalService, objectEntryLocalService,
-			objectEntryManager, permissionCheckerFactory, relatedObjectEntry,
-			userLocalService);
+			objectEntryManager, objectRelatedModelsProvider,
+			objectRelationshipLocalService, permissionCheckerFactory,
+			relatedObjectEntry, userLocalService);
 	}
 
 	public List<Operation> getOperations() {
@@ -71,9 +83,58 @@ public class ApiEndpointsObjectModel extends ObjectModel {
 						endpointObjectEntry, _HTTP_METHOD_PROPERTY_NAME),
 					(String)getObjectEntryPropertyValue(
 						endpointObjectEntry, _PATH_PROPERTY_NAME),
+					_getResponse(endpointObjectEntry),
 					(String)getObjectEntryPropertyValue(
 						endpointObjectEntry, _SCOPE_PROPERTY_NAME)));
 		}
+	}
+
+	private Schema _getResponse(ObjectEntry endpointObjectEntry)
+		throws Exception {
+
+		ObjectDefinition endpointObjectDefinition = getObjectDefinition(
+			_OBJECT_DEFINITION_ERC);
+
+		com.liferay.object.model.ObjectEntry objectEntry =
+			objectEntryLocalService.getObjectEntry(
+				endpointObjectEntry.getExternalReferenceCode(),
+				endpointObjectDefinition.getObjectDefinitionId());
+
+		ObjectDefinition schemaObjectDefinition = getObjectDefinition(
+			_SCHEMA_OBJECT_DEFINITION_ERC);
+
+		ObjectRelationship objectRelationship =
+			objectRelationshipLocalService.getObjectRelationship(
+				schemaObjectDefinition.getObjectDefinitionId(),
+				_SCHEMA_ENDPOINT_OBJECT_RELATIONSHIP_NAME);
+
+		List<com.liferay.object.model.ObjectEntry> relatedModels =
+			objectRelatedModelsProvider.getRelatedModels(
+				objectEntry.getGroupId(),
+				objectRelationship.getObjectRelationshipId(),
+				objectEntry.getPrimaryKey(), null, QueryUtil.ALL_POS,
+				QueryUtil.ALL_POS);
+
+		if (relatedModels.isEmpty()) {
+			return null;
+		}
+
+		com.liferay.object.model.ObjectEntry schemaObjectEntry =
+			relatedModels.get(0);
+
+		Map<String, Serializable> values = schemaObjectEntry.getValues();
+
+		return new Schema(
+			(String)values.get(
+				_SCHEMA_MAIN_OBJECT_DEFINITION_ERC_PROPERTY_VALUE),
+			(String)values.get(_SCHEMA_NAME_PROPERTY_VALUE),
+			new ApiPropertyObjectModel(
+				companyId, objectDefinitionLocalService,
+				objectEntryLocalService, objectEntryManager,
+				objectRelatedModelsProvider, objectRelationshipLocalService,
+				permissionCheckerFactory,
+				schemaObjectEntry.getExternalReferenceCode(), userLocalService
+			).getProperties());
 	}
 
 	private static final String _APPLICATION_ENDPOINT_OBJECT_RELATIONSHIP_NAME =
@@ -84,6 +145,18 @@ public class ApiEndpointsObjectModel extends ObjectModel {
 	private static final String _OBJECT_DEFINITION_ERC = "MSOD_API_ENDPOINT";
 
 	private static final String _PATH_PROPERTY_NAME = "path";
+
+	private static final String _SCHEMA_ENDPOINT_OBJECT_RELATIONSHIP_NAME =
+		"endpointResponse";
+
+	private static final String
+		_SCHEMA_MAIN_OBJECT_DEFINITION_ERC_PROPERTY_VALUE =
+			"mainObjectDefinitionERC";
+
+	private static final String _SCHEMA_NAME_PROPERTY_VALUE = "name";
+
+	private static final String _SCHEMA_OBJECT_DEFINITION_ERC =
+		"MSOD_API_SCHEMA";
 
 	private static final String _SCOPE_PROPERTY_NAME = "scope";
 
