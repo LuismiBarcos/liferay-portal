@@ -122,7 +122,7 @@ public class ApiEndpointsObjectModel extends ObjectModel {
 	}
 
 	private static final String _APPLICATION_ENDPOINT_OBJECT_RELATIONSHIP_NAME =
-		"apiApplicationAPIEndpoints";
+		"apiApplicationToAPIEndpoints";
 
 	private static final String _HTTP_METHOD_PROPERTY_NAME = "httpMethod";
 
@@ -131,7 +131,7 @@ public class ApiEndpointsObjectModel extends ObjectModel {
 	private static final String _PATH_PROPERTY_NAME = "path";
 
 	private static final String _RELATED_RESPONSE_SCHEMA_ERC =
-		"responseAPISchemaAPIEndpointsERC";
+		"responseAPISchemaToAPIEndpointsERC";
 
 	private static final String
 		_SCHEMA_MAIN_OBJECT_DEFINITION_ERC_PROPERTY_VALUE =

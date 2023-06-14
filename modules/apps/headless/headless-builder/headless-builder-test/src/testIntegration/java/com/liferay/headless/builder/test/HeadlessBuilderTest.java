@@ -68,7 +68,6 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Application;
 
 import org.junit.After;
@@ -114,59 +113,42 @@ public class HeadlessBuilderTest {
 		_apiApplicationAPIEndpointsObjectRelationship =
 			_objectRelationshipLocalService.getObjectRelationship(
 				_apiApplicationObjectDefinition.getObjectDefinitionId(),
-				"apiApplicationAPIEndpoints");
+				"apiApplicationToAPIEndpoints");
 
 		_apiApplicationAPISchemasObjectRelationship =
 			_objectRelationshipLocalService.getObjectRelationship(
 				_apiApplicationObjectDefinition.getObjectDefinitionId(),
-				"apiApplicationAPISchemas");
+				"apiApplicationToAPISchemas");
 
 		_apiEndpointAPIFiltersObjectRelationship =
 			_objectRelationshipLocalService.getObjectRelationship(
 				_apiEndpointObjectDefinition.getObjectDefinitionId(),
-				"apiEndpointAPIFilters");
+				"apiEndpointToAPIFilters");
 
 		_apiEndpointAPISortsObjectRelationship =
 			_objectRelationshipLocalService.getObjectRelationship(
 				_apiEndpointObjectDefinition.getObjectDefinitionId(),
-				"apiEndpointAPISorts");
+				"apiEndpointToAPISorts");
 
 		_apiPropertiesAPIPropertiesObjectRelationship =
 			_objectRelationshipLocalService.getObjectRelationship(
 				_apiPropertyObjectDefinition.getObjectDefinitionId(),
-				"apiPropertiesAPIProperties");
+				"apiPropertiesToAPIProperties");
 
 		_apiSchemasAPIPropertiesObjectRelationship =
 			_objectRelationshipLocalService.getObjectRelationship(
 				_apiSchemaObjectDefinition.getObjectDefinitionId(),
-				"apiSchemasAPIProperties");
+				"apiSchemaToAPIProperties");
 
 		_requestAPISchemaAPIEndpointsObjectRelationship =
 			_objectRelationshipLocalService.getObjectRelationship(
 				_apiSchemaObjectDefinition.getObjectDefinitionId(),
-				"requestAPISchemaAPIEndpoints");
+				"requestAPISchemaToAPIEndpoints");
 
 		_responseAPISchemaAPIEndpointsObjectRelationship =
 			_objectRelationshipLocalService.getObjectRelationship(
 				_apiSchemaObjectDefinition.getObjectDefinitionId(),
-				"responseAPISchemaAPIEndpoints");
-
-		if (_anyNull(
-				_apiApplicationObjectDefinition, _apiEndpointObjectDefinition,
-				_apiFilterObjectDefinition, _apiPropertyObjectDefinition,
-				_apiSchemaObjectDefinition, _apiSortrObjectDefinition,
-				_apiApplicationAPIEndpointsObjectRelationship,
-				_apiApplicationAPISchemasObjectRelationship,
-				_apiEndpointAPIFiltersObjectRelationship,
-				_apiEndpointAPISortsObjectRelationship,
-				_apiPropertiesAPIPropertiesObjectRelationship,
-				_apiSchemasAPIPropertiesObjectRelationship,
-				_requestAPISchemaAPIEndpointsObjectRelationship,
-				_responseAPISchemaAPIEndpointsObjectRelationship)) {
-
-			throw new NotFoundException(
-				"Headless Builder Api Definition not well formed");
-		}
+				"responseAPISchemaToAPIEndpoints");
 
 		_apiSchemaObjectEntry = _createApiSchemaObjectEntry(
 			"mainObjectDefintionERC", "MySchema");
@@ -281,9 +263,9 @@ public class HeadlessBuilderTest {
 		_objectEntryLocalService.deleteObjectEntry(
 			_apiEndpointObjectEntry2.getObjectEntryId());
 		_objectEntryLocalService.deleteObjectEntry(
-			_apiSchemaObjectEntry.getObjectEntryId());
-		_objectEntryLocalService.deleteObjectEntry(
 			_apiPropertyObjectEntry.getObjectEntryId());
+		_objectEntryLocalService.deleteObjectEntry(
+			_apiSchemaObjectEntry.getObjectEntryId());
 		_objectEntryLocalService.deleteObjectEntry(
 			_apiApplicationObjectEntry1.getObjectEntryId());
 		_objectEntryLocalService.deleteObjectEntry(
@@ -523,16 +505,6 @@ public class HeadlessBuilderTest {
 			_headlessBuilderApplicationManager.unpublishApplication(
 				_apiApplicationObjectEntry2.getExternalReferenceCode());
 		}
-	}
-
-	private boolean _anyNull(Object... objects) {
-		for (Object object : objects) {
-			if (object == null) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	private ObjectEntry _createApiApplicationObjectEntry(
