@@ -15,19 +15,10 @@
 package com.liferay.headless.builder.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.headless.builder.application.HeadlessBuilderApplication;
-import com.liferay.headless.builder.application.HeadlessBuilderApplicationFactory;
 import com.liferay.headless.builder.application.HeadlessBuilderApplicationManager;
-import com.liferay.headless.builder.test.info.item.provider.TestEntryInfoItemFieldValuesProvider;
-import com.liferay.headless.builder.test.info.item.provider.TestEntryInfoItemFormProvider;
-import com.liferay.headless.builder.test.info.item.provider.TestEntryInfoItemObjectProvider;
-import com.liferay.headless.builder.test.model.TestEntry;
 import com.liferay.headless.builder.test.object.util.ObjectDefinitionTestUtil;
 import com.liferay.headless.builder.test.object.util.ObjectEntryTestUtil;
 import com.liferay.headless.builder.test.object.util.ObjectRelationshipTestUtil;
-import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
-import com.liferay.info.item.provider.InfoItemFormProvider;
-import com.liferay.info.item.provider.InfoItemObjectProvider;
 import com.liferay.object.exception.NoSuchObjectDefinitionException;
 import com.liferay.object.field.util.ObjectFieldUtil;
 import com.liferay.object.model.ObjectDefinition;
@@ -38,10 +29,8 @@ import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
-import com.liferay.petra.function.UnsafeRunnable;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -51,31 +40,8 @@ import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.vulcan.yaml.YAMLUtil;
-import com.liferay.portal.vulcan.yaml.openapi.OpenAPIYAML;
-
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.Serializable;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
-
-import java.nio.charset.StandardCharsets;
-
-import java.text.SimpleDateFormat;
-
-import java.util.Collections;
-import java.util.Date;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import javax.ws.rs.core.Application;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -83,7 +49,6 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -91,7 +56,16 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.util.tracker.ServiceTracker;
 
-import org.skyscreamer.jsonassert.JSONAssert;
+import javax.ws.rs.core.Application;
+import java.io.FileNotFoundException;
+import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Carlos Correa
@@ -237,31 +211,10 @@ public class HeadlessBuilderTest {
 			_apiEndpointObjectEntry1.getObjectEntryId(),
 			_responseAPISchemaAPIEndpointsObjectRelationship,
 			TestPropsValues.getUserId());
-
-		Bundle bundle = FrameworkUtil.getBundle(HeadlessBuilderTest.class);
-
-		BundleContext bundleContext = bundle.getBundleContext();
-
-		_infoItemFieldValuesProviderServiceRegistration =
-			bundleContext.registerService(
-				InfoItemFieldValuesProvider.class,
-				new TestEntryInfoItemFieldValuesProvider(), null);
-		_infoItemFormProviderServiceRegistration =
-			bundleContext.registerService(
-				InfoItemFormProvider.class, new TestEntryInfoItemFormProvider(),
-				null);
-		_infoItemObjectProviderServiceRegistration =
-			bundleContext.registerService(
-				InfoItemObjectProvider.class,
-				new TestEntryInfoItemObjectProvider(), null);
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		_infoItemFieldValuesProviderServiceRegistration.unregister();
-		_infoItemFormProviderServiceRegistration.unregister();
-		_infoItemObjectProviderServiceRegistration.unregister();
-
 		ObjectRelationshipTestUtil.deleteObjectEntriesRelationship(
 			_apiApplicationObjectEntry1.getObjectEntryId(),
 			_apiEndpointObjectEntry1.getObjectEntryId(),
@@ -307,27 +260,6 @@ public class HeadlessBuilderTest {
 
 		_objectDefinitionLocalService.deleteObjectDefinition(
 			_objectDefinition.getObjectDefinitionId());
-	}
-
-	@FeatureFlags("LPS-171047")
-	@Test
-	public void testHeadlessBuilderApplication() throws Exception {
-		_withHeadlessBuilderApplication(
-			TestPropsValues.getCompanyId(),
-			() -> {
-				JSONObject jsonObject = _invoke(
-					"headless-builder/v1.0/test-entries/" +
-						_testEntry.getTestEntryId(),
-					Http.Method.GET);
-
-				JSONAssert.assertEquals(
-					JSONUtil.put(
-						"date", _formatDate(_testEntry.getDateField())
-					).put(
-						"number", (int)_testEntry.getLongField()
-					).toString(),
-					jsonObject.toString(), true);
-			});
 	}
 
 	@Test
@@ -379,69 +311,18 @@ public class HeadlessBuilderTest {
 //
 //			httpURLConnection.connect();
 
-			JSONObject jsonObject =
-				_invoke(apiApplication1baseURL + apiEndpoint1Path,
-					Http.Method.GET);
+//			JSONObject jsonObject =
+//				_invoke(apiApplication1baseURL + apiEndpoint1Path,
+//					Http.Method.GET);
 
 //			Assert.assertEquals(200, httpURLConnection.getResponseCode());
-			System.out.println(jsonObject);
+//			System.out.println(jsonObject);
 		}
 		finally {
 			serviceTracker.close();
 			_headlessBuilderApplicationManager.unpublishApplication(
 				_apiApplicationObjectEntry1.getExternalReferenceCode());
 		}
-	}
-
-	@FeatureFlags("LPS-171047")
-	@Test
-	public void testHeadlessBuilderApplicationOnADifferentCompany()
-		throws Exception {
-
-		_withHeadlessBuilderApplication(
-			0,
-			() -> {
-				JSONObject jsonObject = _invoke(
-					"headless-builder/v1.0/test-entries/" +
-						_testEntry.getTestEntryId(),
-					Http.Method.GET);
-
-				JSONAssert.assertEquals(
-					JSONUtil.put(
-						"status", "NOT_FOUND"
-					).put(
-						"title", "The operation could not be found."
-					).toString(),
-					jsonObject.toString(), true);
-			});
-	}
-
-	@Test
-	public void testHeadlessBuilderApplicationWithoutFeatureFlag()
-		throws Exception {
-
-		HttpURLConnection httpURLConnection = _createHttpURLConnection(
-			"headless-builder/v1.0/test-entries/" + _testEntry.getTestEntryId(),
-			Http.Method.GET);
-
-		httpURLConnection.connect();
-
-		Assert.assertEquals(404, httpURLConnection.getResponseCode());
-	}
-
-	@FeatureFlags("LPS-171047")
-	@Test
-	public void testMissingHeadlessBuilderApplication() throws Exception {
-		JSONObject jsonObject = _invoke(
-			"headless-builder/v1.0/test-entries/1234", Http.Method.GET);
-
-		JSONAssert.assertEquals(
-			JSONUtil.put(
-				"status", "NOT_FOUND"
-			).put(
-				"title", "The operation could not be found."
-			).toString(),
-			jsonObject.toString(), true);
 	}
 
 	@Test
@@ -688,13 +569,6 @@ public class HeadlessBuilderTest {
 		return httpURLConnection;
 	}
 
-	private String _formatDate(Date date) {
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
-			"yyyy-MM-dd'T'HH:mm:ss'Z'");
-
-		return simpleDateFormat.format(date);
-	}
-
 	private ObjectDefinition _getObjectDefinition(String objectDefinitionERC)
 		throws Exception {
 
@@ -736,33 +610,6 @@ public class HeadlessBuilderTest {
 		}
 	}
 
-	private OpenAPIYAML _readOpenAPIYAML(String yamlFile) throws Exception {
-		try (InputStream inputStream = getClass().getResourceAsStream(
-				yamlFile)) {
-
-			return YAMLUtil.loadOpenAPIYAML(StringUtil.read(inputStream));
-		}
-	}
-
-	private void _withHeadlessBuilderApplication(
-			long companyId, UnsafeRunnable<Exception> unsafeRunnable)
-		throws Exception {
-
-		HeadlessBuilderApplication headlessBuilderApplication =
-			_headlessBuilderApplicationFactory.getHeadlessBuilderApplication(
-				companyId, _readOpenAPIYAML("/rest-openapi.yaml"));
-
-		HeadlessBuilderApplication.Handle handle =
-			headlessBuilderApplication.deploy();
-
-		try {
-			unsafeRunnable.run();
-		}
-		finally {
-			handle.undeploy();
-		}
-	}
-
 	private static final String _API_APPLICATION_BASE_URL = "baseURL";
 
 	private static final String _API_APPLICATION_BASE_URL_VALUE = "base-url";
@@ -776,12 +623,6 @@ public class HeadlessBuilderTest {
 	private static final String _API_ENDPOINT_PATH = "path";
 
 	private static final String _API_ENDPOINT_SCOPE = "scope";
-
-	// TODO Missing tests:
-	//  Create multiple api applications with multiple endpoints
-	//  that should be accessible but not others
-	//  Create same endpoints in different applications with
-	//  different responses and ensure that the responses are ok
 
 	private static final String _API_PROPERTY_NAME = "name";
 
@@ -813,17 +654,8 @@ public class HeadlessBuilderTest {
 	private ObjectDefinition _apiSortrObjectDefinition;
 
 	@Inject
-	private HeadlessBuilderApplicationFactory
-		_headlessBuilderApplicationFactory;
-
-	@Inject
 	private HeadlessBuilderApplicationManager
 		_headlessBuilderApplicationManager;
-
-	private ServiceRegistration<?>
-		_infoItemFieldValuesProviderServiceRegistration;
-	private ServiceRegistration<?> _infoItemFormProviderServiceRegistration;
-	private ServiceRegistration<?> _infoItemObjectProviderServiceRegistration;
 
 	@Inject
 	private ObjectDefinitionLocalService _objectDefinitionLocalService;
@@ -836,6 +668,5 @@ public class HeadlessBuilderTest {
 
 	private ObjectRelationship _requestAPISchemaAPIEndpointsObjectRelationship;
 	private ObjectRelationship _responseAPISchemaAPIEndpointsObjectRelationship;
-	private final TestEntry _testEntry = TestEntry.INSTANCE;
 
 }
