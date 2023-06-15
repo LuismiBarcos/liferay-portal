@@ -16,6 +16,7 @@ package com.liferay.headless.builder.internal.generator.publisher;
 
 import com.liferay.headless.builder.internal.generator.application.ApiApplication;
 import com.liferay.headless.builder.internal.generator.jaxrs.application.HeadlessBuilderApplication;
+import com.liferay.headless.builder.internal.generator.operation.handler.OperationHandler;
 import com.liferay.headless.builder.internal.generator.resource.BaseHeadlessBuilderResource;
 import com.liferay.headless.builder.internal.generator.resource.HeadlessBuilderResource;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
@@ -132,25 +133,25 @@ public class ApplicationPublisherImpl implements ApplicationPublisher {
 
 		return Collections.singletonList(
 			_bundleContext.registerService(
-				BaseHeadlessBuilderResource.class,
-				new PrototypeServiceFactory<BaseHeadlessBuilderResource>() {
+				HeadlessBuilderResource.class,
+				new PrototypeServiceFactory<HeadlessBuilderResource>() {
 
 					@Override
-					public BaseHeadlessBuilderResource getService(
+					public HeadlessBuilderResource getService(
 						Bundle bundle,
-						ServiceRegistration<BaseHeadlessBuilderResource>
+						ServiceRegistration<HeadlessBuilderResource>
 							serviceRegistration) {
 
 						return new HeadlessBuilderResource(
-							_portal, _serviceTracker);
+							_operationHandler, _portal, _serviceTracker);
 					}
 
 					@Override
 					public void ungetService(
 						Bundle bundle,
-						ServiceRegistration<BaseHeadlessBuilderResource>
+						ServiceRegistration<HeadlessBuilderResource>
 							serviceRegistration,
-						BaseHeadlessBuilderResource objectEntryResource) {
+						HeadlessBuilderResource objectEntryResource) {
 					}
 
 				},
@@ -219,6 +220,11 @@ public class ApplicationPublisherImpl implements ApplicationPublisher {
 			 <ServiceRegistration<Application>, List<ServiceRegistration<?>>>>
 				_headlessBuilderApplicationServiceRegistrationMap =
 					new HashMap<>();
+
+	@Reference(
+		target = "(component.name=com.liferay.headless.builder.internal.generator.operation.handler.OperationHandlerImpl)"
+	)
+	private OperationHandler _operationHandler;
 
 	@Reference
 	private Portal _portal;

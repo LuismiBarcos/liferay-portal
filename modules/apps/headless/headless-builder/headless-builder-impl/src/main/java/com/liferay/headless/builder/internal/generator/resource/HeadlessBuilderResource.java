@@ -16,6 +16,7 @@ package com.liferay.headless.builder.internal.generator.resource;
 
 import com.liferay.headless.builder.internal.generator.application.ApiApplication;
 import com.liferay.headless.builder.internal.generator.application.Operation;
+import com.liferay.headless.builder.internal.generator.operation.handler.OperationHandler;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 
@@ -36,30 +37,21 @@ import org.osgi.util.tracker.ServiceTracker;
 public class HeadlessBuilderResource extends BaseHeadlessBuilderResource {
 
 	public HeadlessBuilderResource(
-		Portal portal,
+		OperationHandler operationHandler, Portal portal,
 		ServiceTracker<Application, ApiApplication> serviceTracker) {
 
+		_operationHandler = operationHandler;
 		_portal = portal;
 		_serviceTracker = serviceTracker;
 	}
 
 	@Override
 	public Response get() throws Exception {
-		Operation operation = _getOperation(
-			_getCurrentApiApplication(contextHttpServletRequest),
-			contextHttpServletRequest);
-
-		// TODO At this point we find a operation that correspond with the
-		//  proper request. Now it is necessary to extract the
-		//  information from the Operation to handle the request and return
-		//  the proper Entity.
-
-		// TODO Delete this println. It is only to pass source formatter
-
-		System.out.println(operation);
-
-		return Response.ok(
-		).build();
+		return _operationHandler.handle(
+			contextAcceptLanguage, contextCompany, contextHttpServletRequest,
+			contextUriInfo, contextUser, _getOperation(
+				_getCurrentApiApplication(contextHttpServletRequest),
+				contextHttpServletRequest));
 	}
 
 	private ApiApplication _getCurrentApiApplication(
@@ -117,6 +109,7 @@ public class HeadlessBuilderResource extends BaseHeadlessBuilderResource {
 		return StringUtil.removeSubstring(url, "/o/");
 	}
 
+	private final OperationHandler _operationHandler;
 	private final Portal _portal;
 	private final ServiceTracker<Application, ApiApplication> _serviceTracker;
 
