@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 
 import javax.servlet.http.HttpServletRequest;
+
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
@@ -30,8 +31,9 @@ import javax.ws.rs.core.UriInfo;
 public interface OperationHandler {
 
 	public Response handle(
-		AcceptLanguage contextAcceptLanguage, Company contextCompany,
-		HttpServletRequest contextHttpServletRequest, UriInfo contextUriInfo,
-		User contextUser, Operation operation) throws Exception;
+			AcceptLanguage contextAcceptLanguage, Company contextCompany,
+			HttpServletRequest contextHttpServletRequest,
+			UriInfo contextUriInfo, User contextUser, Operation operation)
+		throws Exception;
 
 }

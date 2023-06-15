@@ -22,16 +22,16 @@ import java.util.List;
 public class Schema {
 
 	public Schema(
-		String mainObjectDefinitionERC, String name,
+		String mainInternalSchemaIdentifier, String name,
 		List<Property> properties) {
 
-		_mainObjectDefinitionERC = mainObjectDefinitionERC;
+		_mainInternalSchemaIdentifier = mainInternalSchemaIdentifier;
 		_name = name;
 		_properties = properties;
 	}
 
-	public String getMainObjectDefinitionERC() {
-		return _mainObjectDefinitionERC;
+	public String getMainInternalSchemaIdentifier() {
+		return _mainInternalSchemaIdentifier;
 	}
 
 	public String getName() {
@@ -42,7 +42,7 @@ public class Schema {
 		return _properties;
 	}
 
-	private final String _mainObjectDefinitionERC;
+	private final String _mainInternalSchemaIdentifier;
 	private final String _name;
 	private final List<Property> _properties;
 

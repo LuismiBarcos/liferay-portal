@@ -19,20 +19,20 @@ package com.liferay.headless.builder.internal.generator.application;
  */
 public class Property {
 
-	public Property(String name, String objectFieldERC) {
+	public Property(String internalPropertyIdentifier, String name) {
+		_internalPropertyIdentifier = internalPropertyIdentifier;
 		_name = name;
-		_objectFieldERC = objectFieldERC;
+	}
+
+	public String getInternalPropertyIdentifier() {
+		return _internalPropertyIdentifier;
 	}
 
 	public String getName() {
 		return _name;
 	}
 
-	public String getObjectFieldERC() {
-		return _objectFieldERC;
-	}
-
+	private final String _internalPropertyIdentifier;
 	private final String _name;
-	private final String _objectFieldERC;
 
 }

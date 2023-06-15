@@ -49,7 +49,8 @@ public class HeadlessBuilderResource extends BaseHeadlessBuilderResource {
 	public Response get() throws Exception {
 		return _operationHandler.handle(
 			contextAcceptLanguage, contextCompany, contextHttpServletRequest,
-			contextUriInfo, contextUser, _getOperation(
+			contextUriInfo, contextUser,
+			_getOperation(
 				_getCurrentApiApplication(contextHttpServletRequest),
 				contextHttpServletRequest));
 	}

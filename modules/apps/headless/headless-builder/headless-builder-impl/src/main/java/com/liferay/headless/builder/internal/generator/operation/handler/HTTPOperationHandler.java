@@ -33,23 +33,15 @@ import javax.ws.rs.core.UriInfo;
  */
 public abstract class HTTPOperationHandler {
 
-	protected final Company contextCompany;
-	protected final AcceptLanguage contextAcceptLanguage;
-	protected final HttpServletRequest contextHttpServletRequest;
-	protected final UriInfo contextUriInfo;
-	protected final User contextUser;
-	protected final DTOConverterRegistry dtoConverterRegistry;
-	protected final ObjectDefinitionLocalService objectDefinitionLocalService;
-	protected final ObjectFieldLocalService objectFieldLocalService;
-
 	public HTTPOperationHandler(
 		AcceptLanguage contextAcceptLanguage, Company contextCompany,
 		HttpServletRequest contextHttpServletRequest, UriInfo contextUriInfo,
 		User contextUser, DTOConverterRegistry dtoConverterRegistry,
 		ObjectDefinitionLocalService objectDefinitionLocalService,
 		ObjectFieldLocalService objectFieldLocalService) {
-		this.contextCompany = contextCompany;
+
 		this.contextAcceptLanguage = contextAcceptLanguage;
+		this.contextCompany = contextCompany;
 		this.contextHttpServletRequest = contextHttpServletRequest;
 		this.contextUriInfo = contextUriInfo;
 		this.contextUser = contextUser;
@@ -69,4 +61,14 @@ public abstract class HTTPOperationHandler {
 			contextAcceptLanguage.getPreferredLocale(), contextUriInfo,
 			contextUser);
 	}
+
+	protected final AcceptLanguage contextAcceptLanguage;
+	protected final Company contextCompany;
+	protected final HttpServletRequest contextHttpServletRequest;
+	protected final UriInfo contextUriInfo;
+	protected final User contextUser;
+	protected final DTOConverterRegistry dtoConverterRegistry;
+	protected final ObjectDefinitionLocalService objectDefinitionLocalService;
+	protected final ObjectFieldLocalService objectFieldLocalService;
+
 }

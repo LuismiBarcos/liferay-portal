@@ -31,7 +31,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Luis Miguel Barcos
  */
 @Component(service = Consumer.class)
-public class ObjectsConsumerImpl implements Consumer<String> {
+public class ObjectsConsumerImpl implements Consumer {
 
 	@Override
 	public ApiApplication getApiApplication(String apiApplicationERC)

@@ -33,42 +33,48 @@ import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 /**
  * @author Luis Miguel Barcos
  */
 public class GetHTTPOperationHandlerImpl extends HTTPOperationHandler {
 
-
-	private final ObjectEntryManagerRegistry _objectEntryManagerRegistry;
 	public GetHTTPOperationHandlerImpl(
-		AcceptLanguage contextAcceptLanguage,
-		Company contextCompany,
+		AcceptLanguage contextAcceptLanguage, Company contextCompany,
 		HttpServletRequest contextHttpServletRequest, UriInfo contextUriInfo,
 		User contextUser, DTOConverterRegistry dtoConverterRegistry,
 		ObjectDefinitionLocalService objectDefinitionLocalService,
 		ObjectEntryManagerRegistry objectEntryManagerRegistry,
 		ObjectFieldLocalService objectFieldLocalService) {
-		super(contextAcceptLanguage, contextCompany, contextHttpServletRequest,
+
+		super(
+			contextAcceptLanguage, contextCompany, contextHttpServletRequest,
 			contextUriInfo, contextUser, dtoConverterRegistry,
 			objectDefinitionLocalService, objectFieldLocalService);
+
 		_objectEntryManagerRegistry = objectEntryManagerRegistry;
 	}
 
 	@Override
-	public Response getResponse(Operation operation)
-		throws Exception {
-
+	public Response getResponse(Operation operation) throws Exception {
 		Schema responseSchema = operation.getResponse();
 
-		String mainObjectDefinitionERC = responseSchema.getMainObjectDefinitionERC();
+		if (responseSchema == null) {
+			return Response.ok(
+			).build();
+		}
+
+		String mainObjectDefinitionERC =
+			responseSchema.getMainInternalSchemaIdentifier();
 
 		ObjectDefinition objectDefinition =
 			objectDefinitionLocalService.
@@ -76,15 +82,17 @@ public class GetHTTPOperationHandlerImpl extends HTTPOperationHandler {
 					mainObjectDefinitionERC, contextCompany.getCompanyId());
 
 		Map<Property, ObjectField> propertyObjectFieldHashMap = new HashMap<>();
+
 		for (Property property : responseSchema.getProperties()) {
 			propertyObjectFieldHashMap.put(
-				property, objectFieldLocalService.fetchObjectField(
-					property.getObjectFieldERC(),
+				property,
+				objectFieldLocalService.fetchObjectField(
+					property.getInternalPropertyIdentifier(),
 					objectDefinition.getObjectDefinitionId()));
 		}
 
-		Page<ObjectEntry> objectEntryPage =
-			_getObjectEntries(null, objectDefinition);
+		Page<ObjectEntry> objectEntryPage = _getObjectEntries(
+			null, objectDefinition);
 
 		List<Map<String, Object>> schemas = new ArrayList<>();
 
@@ -94,37 +102,42 @@ public class GetHTTPOperationHandlerImpl extends HTTPOperationHandler {
 
 			Map<String, Object> schema = new HashMap<>();
 
-			for (Map.Entry<Property, ObjectField> propertyObjectFieldEntry : propertyObjectFieldHashMap.entrySet()) {
+			for (Map.Entry<Property, ObjectField> propertyObjectFieldEntry :
+					propertyObjectFieldHashMap.entrySet()) {
+
 				Property property = propertyObjectFieldEntry.getKey();
 				ObjectField objectField = propertyObjectFieldEntry.getValue();
 
-				schema.put(property.getName(),
+				schema.put(
+					property.getName(),
 					objectEntryProperties.get(objectField.getName()));
 			}
+
 			schemas.add(schema);
 		}
 
-
-		return Response.ok().entity(Page.of(schemas)).build();
+		return Response.ok(
+		).entity(
+			schemas
+		).build();
 	}
 
-	private Map<String, Object> _getAllObjectEntryProperties(ObjectEntry objectEntry) {
-		return HashMapBuilder
-			.<String, Object>putAll(objectEntry.getProperties())
-			.put(
-				"createDate",
-				objectEntry.getDateCreated()
-			).put(
-				"externalReferenceCode",
-				objectEntry.getExternalReferenceCode()
-			).put(
-				"modifiedDate",
-				objectEntry.getDateModified()
-			).build();
+	private Map<String, Object> _getAllObjectEntryProperties(
+		ObjectEntry objectEntry) {
+
+		return HashMapBuilder.<String, Object>putAll(
+			objectEntry.getProperties()
+		).put(
+			"createDate", objectEntry.getDateCreated()
+		).put(
+			"externalReferenceCode", objectEntry.getExternalReferenceCode()
+		).put(
+			"modifiedDate", objectEntry.getDateModified()
+		).build();
 	}
 
 	private Page<ObjectEntry> _getObjectEntries(
-		String filter, ObjectDefinition objectDefinition)
+			String filter, ObjectDefinition objectDefinition)
 		throws Exception {
 
 		ObjectEntryManager objectEntryManager =
@@ -136,5 +149,7 @@ public class GetHTTPOperationHandlerImpl extends HTTPOperationHandler {
 			getDTOConverterContext(null), filter,
 			Pagination.of(QueryUtil.ALL_POS, QueryUtil.ALL_POS), null, null);
 	}
+
+	private final ObjectEntryManagerRegistry _objectEntryManagerRegistry;
 
 }

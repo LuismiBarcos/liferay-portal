@@ -30,7 +30,8 @@ import java.util.List;
 public class ObjectDefinitionTestUtil {
 
 	public static ObjectDefinition publishObjectDefinition(
-		List<ObjectField> objectFields) throws Exception {
+			List<ObjectField> objectFields)
+		throws Exception {
 
 		ObjectDefinition objectDefinition =
 			ObjectDefinitionLocalServiceUtil.addCustomObjectDefinition(
@@ -38,10 +39,12 @@ public class ObjectDefinitionTestUtil {
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 				"A" + RandomTestUtil.randomString(), null, null,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
-				ObjectDefinitionConstants.SCOPE_COMPANY, ObjectDefinitionConstants.STORAGE_TYPE_DEFAULT,
-				objectFields);
+				ObjectDefinitionConstants.SCOPE_COMPANY,
+				ObjectDefinitionConstants.STORAGE_TYPE_DEFAULT, objectFields);
 
 		return ObjectDefinitionLocalServiceUtil.publishCustomObjectDefinition(
-			TestPropsValues.getUserId(), objectDefinition.getObjectDefinitionId());
+			TestPropsValues.getUserId(),
+			objectDefinition.getObjectDefinitionId());
 	}
+
 }

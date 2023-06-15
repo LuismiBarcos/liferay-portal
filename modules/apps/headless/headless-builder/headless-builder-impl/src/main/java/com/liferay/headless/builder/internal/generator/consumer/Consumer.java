@@ -19,9 +19,9 @@ import com.liferay.headless.builder.internal.generator.application.ApiApplicatio
 /**
  * @author Luis Miguel Barcos
  */
-public interface Consumer<T> {
+public interface Consumer {
 
-	public ApiApplication getApiApplication(T apiApplicationIdentifier)
+	public ApiApplication getApiApplication(String apiApplicationIdentifier)
 		throws Exception;
 
 }

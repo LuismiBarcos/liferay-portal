@@ -17,13 +17,14 @@ package com.liferay.headless.builder.application;
 /**
  * @author Luis Miguel Barcos
  */
-public interface HeadlessBuilderApplicationManager<T> {
+public interface HeadlessBuilderApplicationManager {
 
-	public void publishApplication(T applicationIdentifier)
+	public void publishApplication(String applicationIdentifier)
 		throws Exception;
 
 	// TODO Delete this method
 
-	public void unpublishApplication(T applicationIdentifier) throws Exception;
+	public void unpublishApplication(String applicationIdentifier)
+		throws Exception;
 
 }

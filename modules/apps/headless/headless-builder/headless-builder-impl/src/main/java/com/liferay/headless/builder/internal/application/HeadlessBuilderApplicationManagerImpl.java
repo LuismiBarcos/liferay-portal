@@ -26,11 +26,12 @@ import org.osgi.service.component.annotations.Reference;
  * @author Luis Miguel Barcos
  */
 @Component(service = HeadlessBuilderApplicationManager.class)
-public class HeadlessBuilderApplicationManagerImpl<T>
-	implements HeadlessBuilderApplicationManager<T> {
+public class HeadlessBuilderApplicationManagerImpl
+	implements HeadlessBuilderApplicationManager {
 
 	@Override
-	public void publishApplication(T applicationIdentifier) throws Exception {
+	public void publishApplication(String applicationIdentifier)
+		throws Exception {
 
 		// TODO Implement the extraction of the information from the @Consumer
 
@@ -44,7 +45,9 @@ public class HeadlessBuilderApplicationManagerImpl<T>
 	}
 
 	@Override
-	public void unpublishApplication(T applicationIdentifier) throws Exception {
+	public void unpublishApplication(String applicationIdentifier)
+		throws Exception {
+
 		_applicationPublisher.undeploy(
 			_consumer.getApiApplication(applicationIdentifier));
 	}
@@ -53,6 +56,6 @@ public class HeadlessBuilderApplicationManagerImpl<T>
 	private ApplicationPublisher _applicationPublisher;
 
 	@Reference
-	private Consumer<T> _consumer;
+	private Consumer _consumer;
 
 }

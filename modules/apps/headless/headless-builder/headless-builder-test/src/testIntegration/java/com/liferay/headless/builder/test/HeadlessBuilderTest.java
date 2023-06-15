@@ -42,6 +42,22 @@ import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+
+import java.io.FileNotFoundException;
+import java.io.Serializable;
+
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+import java.nio.charset.StandardCharsets;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import javax.ws.rs.core.Application;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -49,23 +65,12 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
-import org.osgi.framework.ServiceRegistration;
 import org.osgi.util.tracker.ServiceTracker;
-
-import javax.ws.rs.core.Application;
-import java.io.FileNotFoundException;
-import java.io.Serializable;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Carlos Correa
@@ -77,35 +82,29 @@ public class HeadlessBuilderTest {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new LiferayIntegrationTestRule();
-	private ObjectDefinition _objectDefinition;
-	private static final String _OBJECT_FIELD_NAME =
-		"x" + RandomTestUtil.randomString();
-	private static final String _OBJECT_FIELD_VALUE =
-		RandomTestUtil.randomString();
-	private ObjectEntry _objectEntry;
-	private ObjectField _objectField;
-
-	@Inject
-	private ObjectFieldLocalService _objectFieldLocalService;
-
 
 	@Before
 	public void setUp() throws Exception {
+
 		// Create dummy objects used as information for the REST APIs responses.
+
 		_objectDefinition = ObjectDefinitionTestUtil.publishObjectDefinition(
 			Collections.singletonList(
-				ObjectFieldUtil.createObjectField("Text", "String", true, true,
-					null, RandomTestUtil.randomString(), _OBJECT_FIELD_NAME,
-					false)));
+				ObjectFieldUtil.createObjectField(
+					"Text", "String", true, true, null,
+					RandomTestUtil.randomString(), _OBJECT_FIELD_NAME, false)));
 
 		_objectField = _objectFieldLocalService.getObjectField(
 			_objectDefinition.getObjectDefinitionId(), _OBJECT_FIELD_NAME);
 
-		_objectEntry = ObjectEntryTestUtil.addObjectEntry(_objectDefinition,
-			HashMapBuilder.<String, Serializable>put(_OBJECT_FIELD_NAME,
-				_OBJECT_FIELD_VALUE).build());
+		_objectEntry = ObjectEntryTestUtil.addObjectEntry(
+			_objectDefinition,
+			HashMapBuilder.<String, Serializable>put(
+				_OBJECT_FIELD_NAME, _OBJECT_FIELD_VALUE
+			).build());
 
 		// Check all the Headless Builder infrastructure exists
+
 		_apiApplicationObjectDefinition = _getObjectDefinition(
 			"MSOD_API_APPLICATION");
 		_apiEndpointObjectDefinition = _getObjectDefinition(
@@ -263,7 +262,9 @@ public class HeadlessBuilderTest {
 	}
 
 	@Test
-	public void testHeadlessBuilderApplicationReturnExpectedSchema() throws Exception {
+	public void testHeadlessBuilderApplicationReturnExpectedSchema()
+		throws Exception {
+
 		CountDownLatch addedCountLatch = new CountDownLatch(1);
 
 		Bundle bundle = FrameworkUtil.getBundle(getClass());
@@ -306,17 +307,16 @@ public class HeadlessBuilderTest {
 			String apiEndpoint1Path = (String)_getObjectEntryPropertyValue(
 				_apiEndpointObjectEntry1, _API_ENDPOINT_PATH);
 
-//			HttpURLConnection httpURLConnection = _createHttpURLConnection(
-//				apiApplication1baseURL + apiEndpoint1Path, Http.Method.GET);
-//
-//			httpURLConnection.connect();
+			HttpURLConnection httpURLConnection = _createHttpURLConnection(
+				apiApplication1baseURL + apiEndpoint1Path, Http.Method.GET);
 
-//			JSONObject jsonObject =
-//				_invoke(apiApplication1baseURL + apiEndpoint1Path,
-//					Http.Method.GET);
+			httpURLConnection.connect();
 
-//			Assert.assertEquals(200, httpURLConnection.getResponseCode());
-//			System.out.println(jsonObject);
+			JSONObject jsonObject = _invoke(
+				apiApplication1baseURL + apiEndpoint1Path, Http.Method.GET);
+
+			Assert.assertEquals(200, httpURLConnection.getResponseCode());
+			System.out.println(jsonObject);
 		}
 		finally {
 			serviceTracker.close();
@@ -634,6 +634,12 @@ public class HeadlessBuilderTest {
 
 	private static final String _API_SCHEMA_NAME = "name";
 
+	private static final String _OBJECT_FIELD_NAME =
+		"x" + RandomTestUtil.randomString();
+
+	private static final String _OBJECT_FIELD_VALUE =
+		RandomTestUtil.randomString();
+
 	private ObjectRelationship _apiApplicationAPIEndpointsObjectRelationship;
 	private ObjectRelationship _apiApplicationAPISchemasObjectRelationship;
 	private ObjectDefinition _apiApplicationObjectDefinition;
@@ -657,11 +663,20 @@ public class HeadlessBuilderTest {
 	private HeadlessBuilderApplicationManager
 		_headlessBuilderApplicationManager;
 
+	private ObjectDefinition _objectDefinition;
+
 	@Inject
 	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
+	private ObjectEntry _objectEntry;
+
 	@Inject
 	private ObjectEntryLocalService _objectEntryLocalService;
+
+	private ObjectField _objectField;
+
+	@Inject
+	private ObjectFieldLocalService _objectFieldLocalService;
 
 	@Inject
 	private ObjectRelationshipLocalService _objectRelationshipLocalService;

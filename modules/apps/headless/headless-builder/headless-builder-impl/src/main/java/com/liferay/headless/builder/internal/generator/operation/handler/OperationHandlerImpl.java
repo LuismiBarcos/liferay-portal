@@ -15,19 +15,22 @@
 package com.liferay.headless.builder.internal.generator.operation.handler;
 
 import com.liferay.headless.builder.internal.generator.application.Operation;
+import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
+import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.object.service.ObjectFieldLocalService;
+import com.liferay.portal.kernel.model.Company;
+import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.util.Http;
+import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
+import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
+
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
-import com.liferay.object.service.ObjectDefinitionLocalService;
-import com.liferay.object.service.ObjectFieldLocalService;
-import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
-import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -39,29 +42,31 @@ public class OperationHandlerImpl implements OperationHandler {
 
 	@Override
 	public Response handle(
-		AcceptLanguage contextAcceptLanguage, Company contextCompany,
-		HttpServletRequest contextHttpServletRequest, UriInfo contextUriInfo,
-		User contextUser, Operation operation) throws Exception {
+			AcceptLanguage contextAcceptLanguage, Company contextCompany,
+			HttpServletRequest contextHttpServletRequest,
+			UriInfo contextUriInfo, User contextUser, Operation operation)
+		throws Exception {
 
 		HTTPOperationHandler httpOperationHandler;
 
-		switch (operation.getMethod()) {
-			case GET:
-				httpOperationHandler = new GetHTTPOperationHandlerImpl(
-					contextAcceptLanguage, contextCompany,
-					contextHttpServletRequest, contextUriInfo, contextUser,
-					_dtoConverterRegistry, _objectDefinitionLocalService,
-					_objectEntryManagerRegistry, _objectFieldLocalService);
-				break;
-			case DELETE:
-			case HEAD:
-			case PATCH:
-			case POST:
-			case PUT:
-				throw new UnsupportedOperationException(
-					"Operation not supported");
-			default:
-				return Response.noContent().build();
+		if (Objects.requireNonNull(operation.getMethod()) == Http.Method.GET) {
+			httpOperationHandler = new GetHTTPOperationHandlerImpl(
+				contextAcceptLanguage, contextCompany,
+				contextHttpServletRequest, contextUriInfo, contextUser,
+				_dtoConverterRegistry, _objectDefinitionLocalService,
+				_objectEntryManagerRegistry, _objectFieldLocalService);
+		}
+		else if ((operation.getMethod() == Http.Method.DELETE) ||
+				 (operation.getMethod() == Http.Method.HEAD) ||
+				 (operation.getMethod() == Http.Method.PATCH) ||
+				 (operation.getMethod() == Http.Method.POST) ||
+				 (operation.getMethod() == Http.Method.PUT)) {
+
+			throw new UnsupportedOperationException("Operation not supported");
+		}
+		else {
+			return Response.noContent(
+			).build();
 		}
 
 		return httpOperationHandler.getResponse(operation);
@@ -69,12 +74,14 @@ public class OperationHandlerImpl implements OperationHandler {
 
 	@Reference
 	private DTOConverterRegistry _dtoConverterRegistry;
+
 	@Reference
 	private ObjectDefinitionLocalService _objectDefinitionLocalService;
-	@Reference
-	private ObjectFieldLocalService _objectFieldLocalService;
 
 	@Reference
 	private ObjectEntryManagerRegistry _objectEntryManagerRegistry;
+
+	@Reference
+	private ObjectFieldLocalService _objectFieldLocalService;
 
 }

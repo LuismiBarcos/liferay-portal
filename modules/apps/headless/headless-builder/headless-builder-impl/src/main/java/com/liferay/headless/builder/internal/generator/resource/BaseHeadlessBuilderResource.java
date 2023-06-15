@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 
 import javax.servlet.http.HttpServletRequest;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -37,15 +38,18 @@ public abstract class BaseHeadlessBuilderResource {
 	@Produces({"application/json", "application/xml"})
 	public abstract Response get() throws Exception;
 
-
 	@Context
 	protected AcceptLanguage contextAcceptLanguage;
+
 	@Context
 	protected Company contextCompany;
+
 	@Context
 	protected HttpServletRequest contextHttpServletRequest;
+
 	@Context
 	protected UriInfo contextUriInfo;
+
 	@Context
 	protected User contextUser;
 

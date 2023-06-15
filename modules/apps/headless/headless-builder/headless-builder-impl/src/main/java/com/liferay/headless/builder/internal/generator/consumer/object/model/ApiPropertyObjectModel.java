@@ -65,10 +65,9 @@ public class ApiPropertyObjectModel extends ObjectModel {
 			_properties.add(
 				new Property(
 					(String)getObjectEntryPropertyValue(
-						propertyObjectEntry, _NAME_PROPERTY_VALUE),
+						propertyObjectEntry, _OBJECT_FIELD_ERC_PROPERTY_VALUE),
 					(String)getObjectEntryPropertyValue(
-						propertyObjectEntry,
-						_OBJECT_FIELD_ERC_PROPERTY_VALUE)));
+						propertyObjectEntry, _NAME_PROPERTY_VALUE)));
 		}
 	}
 
