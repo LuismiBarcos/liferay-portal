@@ -6,6 +6,7 @@
 package com.liferay.portal.vulcan.internal.jaxrs.context.provider;
 
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
@@ -15,13 +16,13 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.vulcan.internal.configuration.HeadlessAPICompanyConfiguration;
 import com.liferay.portal.vulcan.pagination.InvalidPaginationException;
 import com.liferay.portal.vulcan.pagination.Pagination;
-
-import javax.servlet.http.HttpServletRequest;
-
-import javax.ws.rs.ext.Provider;
-
 import org.apache.cxf.jaxrs.ext.ContextProvider;
 import org.apache.cxf.message.Message;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.Provider;
 
 /**
  * @author Zoltán Takács
@@ -55,10 +56,6 @@ public class PaginationContextProvider implements ContextProvider<Pagination> {
 		int pageSize = GetterUtil.getInteger(
 			httpServletRequest.getParameter("pageSize"), 20);
 
-		if (pageSize == 0) {
-			pageSize = -1;
-		}
-
 		try {
 			HeadlessAPICompanyConfiguration headlessAPICompanyConfiguration =
 				_configurationProvider.getCompanyConfiguration(
@@ -67,10 +64,13 @@ public class PaginationContextProvider implements ContextProvider<Pagination> {
 
 			int maxPageSize =
 				headlessAPICompanyConfiguration.paginationSizeLimit();
+			
+			if(maxPageSize <= 0) {
+				return Pagination.of(
+					page, pageSize <= 0 ? QueryUtil.ALL_POS : pageSize);
+			}
 
-			if ((maxPageSize > 0) &&
-				((pageSize > maxPageSize) || (pageSize <= 0))) {
-
+			if((pageSize > maxPageSize) || (pageSize <= 0)) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						StringBundler.concat(
@@ -82,16 +82,16 @@ public class PaginationContextProvider implements ContextProvider<Pagination> {
 							"settings."));
 				}
 
-				pageSize = maxPageSize;
+				return Pagination.of(page, maxPageSize);
 			}
+
+			return Pagination.of(page, pageSize);
 		}
 		catch (ConfigurationException configurationException) {
-			_log.error(configurationException);
-			pageSize = 20;
+			throw new ServerErrorException(
+				configurationException.getMessage(),
+				Response.Status.INTERNAL_SERVER_ERROR);
 		}
-
-		return Pagination.of(
-			GetterUtil.getInteger(page), GetterUtil.getInteger(pageSize));
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
